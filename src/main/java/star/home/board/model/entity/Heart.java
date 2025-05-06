@@ -9,7 +9,7 @@ import star.common.entity.SoftDeletableEntity;
 import star.member.model.entity.Member;
 
 @Entity
-public class Like extends SoftDeletableEntity {
+public class Heart extends SoftDeletableEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

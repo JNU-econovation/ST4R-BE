@@ -6,7 +6,7 @@ import jakarta.persistence.Embeddable;
 public record Marker(
         Double latitude,
         Double longitude,
-        String title
+        String markerTitle
 ) {
 
 }
