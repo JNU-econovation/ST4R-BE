@@ -28,7 +28,7 @@ import star.member.service.MemberService;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final static String BEARER_TYPE = "Bearer ";
-    private final static String UNKNOWN_AUTH_ERROR_MESSAGE = "알 수 없는 예외로 인한 인증 실패";
+    private final static String CRITICAL_AUTH_ERROR_MESSAGE = "알 수 없는 예외로 인한 인증 실패";
     private final JwtManager jwtManager;
 
     private final MemberService memberService;
@@ -75,8 +75,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         } catch (Exception ex) {
             SecurityContextHolder.clearContext();
 
-            log.error(UNKNOWN_AUTH_ERROR_MESSAGE, ex);
-            throw new AuthenticationServiceException(UNKNOWN_AUTH_ERROR_MESSAGE, ex);
+            log.error(CRITICAL_AUTH_ERROR_MESSAGE, ex);
+            throw new AuthenticationServiceException(CRITICAL_AUTH_ERROR_MESSAGE, ex);
         }
     }
 }
