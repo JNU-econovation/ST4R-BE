@@ -10,7 +10,6 @@ import star.member.dto.SocialRegisterDTO;
 import star.member.exception.MemberDuplicatedEmailException;
 import star.member.exception.MemberNotFoundException;
 import star.member.model.entity.Member;
-import star.member.model.vo.Email;
 import star.member.repository.MemberRepository;
 
 @Service
