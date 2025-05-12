@@ -12,3 +12,20 @@ services:
     container_name: star-app
     environment:
       - SPRING_PROFILES_ACTIVE=prod
+    networks:
+      - my-network
+
+  mysql:
+    image: mysql:8.4.5
+    container_name: my-mysql-db
+    environment:
+      MYSQL_ROOT_PASSWORD: StArFaLl
+      MYSQL_DATABASE: star
+    ports:
+      - "3306:3306"
+    networks:
+      - my-network
+
+networks:
+  my-network:
+    driver: bridge
