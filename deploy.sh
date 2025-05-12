@@ -2,7 +2,7 @@
 set -e
 
 echo "🔄 Pulling latest code..."
-git pull origin main
+git pull origin master
 
 echo "🐳 Building and starting containers..."
 docker-compose down   # 기존 컨테이너 정리 (선택)
