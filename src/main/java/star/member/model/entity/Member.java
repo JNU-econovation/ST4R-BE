@@ -4,6 +4,8 @@ import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -33,24 +35,24 @@ public class Member extends SoftDeletableEntity {
     private Nickname nickname;
 
     @Column(nullable = false)
-    private Long kakaoMemberId;
-
-    @Column(nullable = false)
     private String kakaoAccessToken;
 
     @Column(nullable = true)
     private String profileImageUrl;
 
-//    @Enumerated(EnumType.STRING)
-//    private Role role;
+    @Enumerated(EnumType.STRING)
+    private Role role;
 
     @Builder
-    public Member(Email email, Nickname nickname, Long kakaoMemberId, String kakaoAccessToken,
-            String profileImageUrl) {
+    public Member(Email email, Nickname nickname, String kakaoAccessToken, String profileImageUrl) {
         this.email = email;
         this.nickname = nickname;
-        this.kakaoMemberId = kakaoMemberId;
         this.kakaoAccessToken = kakaoAccessToken;
         this.profileImageUrl = profileImageUrl;
+        this.role = Role.USER;
+    }
+
+    public void promoteToAdmin() {
+        this.role = Role.ADMIN;
     }
 }

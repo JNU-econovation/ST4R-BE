@@ -45,7 +45,7 @@ public class Board extends SoftDeletableEntity {
     private Integer viewCount;
 
     @Column(nullable = false)
-    private Integer likeCount;
+    private Integer heartCount;
 
     @Column(nullable = false)
     private Integer commentCount;
@@ -57,7 +57,7 @@ public class Board extends SoftDeletableEntity {
         this.content = content;
         this.category = category;
         this.viewCount = 0;
-        this.likeCount = 0;
+        this.heartCount = 0;
         this.commentCount = 0;
     }
 
@@ -68,7 +68,7 @@ public class Board extends SoftDeletableEntity {
     }
 
     public void increaseLikeCount() {
-        this.likeCount++;
+        this.heartCount++;
     }
 
     public void increaseCommentCount() {
