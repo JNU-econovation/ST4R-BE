@@ -4,6 +4,9 @@ set -e
 echo "🔄 Pulling latest code..."
 git pull origin master
 
+echo "🔨 Building latest JAR with Gradle..."
+./gradlew clean build -x test
+
 echo "🐳 Building and starting containers..."
 docker compose down   # 기존 컨테이너 정리 (선택)
 docker compose up --build -d
