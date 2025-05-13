@@ -15,7 +15,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import star.common.entity.SoftDeletableEntity;
 import star.member.model.vo.Email;
-import star.member.model.vo.Nickname;
 
 @Entity
 @Getter
@@ -30,12 +29,12 @@ public class Member extends SoftDeletableEntity {
     @AttributeOverride(name = "value", column = @Column(name = "email", nullable = false))
     private Email email;
 
-    @Embedded
-    @AttributeOverride(name = "value", column = @Column(name = "nickname", nullable = false))
-    private Nickname nickname;
+//    @Embedded
+//    @AttributeOverride(name = "value", column = @Column(name = "nickname", nullable = false))
+//    private Nickname nickname;
 
     @Column(nullable = false)
-    private String kakaoAccessToken;
+    private String encryptedKakaoAccessToken;
 
     @Column(nullable = true)
     private String profileImageUrl;
@@ -44,15 +43,17 @@ public class Member extends SoftDeletableEntity {
     private Role role;
 
     @Builder
-    public Member(Email email, Nickname nickname, String kakaoAccessToken, String profileImageUrl) {
+    public Member(Email email, String encryptedKakaoAccessToken, String profileImageUrl) {
         this.email = email;
-        this.nickname = nickname;
-        this.kakaoAccessToken = kakaoAccessToken;
+        this.encryptedKakaoAccessToken = encryptedKakaoAccessToken;
         this.profileImageUrl = profileImageUrl;
         this.role = Role.USER;
     }
 
     public void promoteToAdmin() {
         this.role = Role.ADMIN;
+    }
+    public void invalidateKakaoAccessToken() {
+        this.encryptedKakaoAccessToken = null;
     }
 }
