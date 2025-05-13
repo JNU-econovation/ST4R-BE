@@ -33,7 +33,7 @@ public class Member extends SoftDeletableEntity {
 //    @AttributeOverride(name = "value", column = @Column(name = "nickname", nullable = false))
 //    private Nickname nickname;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String encryptedKakaoAccessToken;
 
     @Column(nullable = true)

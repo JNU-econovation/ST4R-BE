@@ -16,6 +16,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 import star.common.security.dto.StarUserDetails;
 import star.common.security.encryption.jwt.JwtManager;
@@ -30,6 +31,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final static String BEARER_TYPE = "Bearer ";
     private final static String CRITICAL_AUTH_ERROR_MESSAGE = "알 수 없는 예외로 인한 인증 실패";
     private final JwtManager jwtManager;
+    private final AntPathMatcher pathMatcher = new AntPathMatcher();
+
 
     private final MemberService memberService;
     //private final ApplicationContext applicationContext; 나중에 순환참조 문제 생기면 이걸로 Lazy 하게 해결하기
@@ -37,7 +40,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        return HttpMethod.GET.matches(request.getMethod()); //모든 get 요청은 필터 X
+        String path = request.getRequestURI();
+        return HttpMethod.GET.matches(request.getMethod()) || pathMatcher.match("/h2-console/**", path);
     }
 
 
