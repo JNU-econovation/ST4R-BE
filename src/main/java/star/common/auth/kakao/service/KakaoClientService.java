@@ -11,6 +11,7 @@ import star.common.auth.kakao.dto.client.response.KakaoErrorResponse;
 import star.common.auth.kakao.exception.InvalidAuthCodeException;
 import star.common.auth.kakao.exception.KakaoAuthServerException;
 import star.common.exception.InternalServerException;
+import star.member.model.vo.Email;
 
 @Service
 @Slf4j
@@ -41,13 +42,17 @@ public class KakaoClientService {
         try {
             var userInfo = kakaoApiClient.getMemberInfo(kakaoAccessToken);
             var kakaoAccount = userInfo.kakaoAccount();
-            return new KakaoMemberInfoDTO(kakaoAccount.email());
+            return new KakaoMemberInfoDTO(new Email(kakaoAccount.email()));
         } catch (HttpClientErrorException e) {
             handleClientError(e);
         } catch (HttpServerErrorException e) {
             handleServerError(e);
         }
         throw new InternalServerException(CRITICAL_KAKAO_AUTH_ERROR_MESSAGE);
+    }
+
+    public void logout(String kakaoAccessToken) {
+        kakaoApiClient.logout(kakaoAccessToken);
     }
 
 //    public void unlinkKakao(KakaoMemberWithdrawDTO kakaoMemberWithdrawDTO) {

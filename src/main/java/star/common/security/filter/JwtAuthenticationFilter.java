@@ -18,7 +18,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import star.common.security.dto.StarUserDetails;
-import star.common.security.jwt.JwtManager;
+import star.common.security.encryption.jwt.JwtManager;
 import star.member.dto.MemberInfoDTO;
 import star.member.service.MemberService;
 

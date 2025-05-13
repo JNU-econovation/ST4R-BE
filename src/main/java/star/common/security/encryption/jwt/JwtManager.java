@@ -1,4 +1,4 @@
-package star.common.security.jwt;
+package star.common.security.encryption.jwt;
 
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.JwtParser;

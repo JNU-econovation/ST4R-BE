@@ -6,23 +6,21 @@ import java.io.IOException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import star.common.dto.response.CommonResponse;
 
 @Component
 public class Rest401Handler implements AuthenticationEntryPoint {
 
-    private static final String UNAUTHORIZED_RESPONSE_BODY =
-            """
-                {
-                    "isError" : true,
-                    "message" : "인증이 필요합니다."
-                }
-            """;
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response,
             AuthenticationException authException) throws IOException {
+
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType("application/json");
-        response.getWriter().write(UNAUTHORIZED_RESPONSE_BODY);
+
+        objectMapper.writeValue(response.getWriter(), CommonResponse.failure("인증이 필요합니다."));
     }
 }

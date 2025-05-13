@@ -53,4 +53,7 @@ public class Member extends SoftDeletableEntity {
     public void promoteToAdmin() {
         this.role = Role.ADMIN;
     }
+    public void invalidateKakaoAccessToken() {
+        this.encryptedKakaoAccessToken = null;
+    }
 }
