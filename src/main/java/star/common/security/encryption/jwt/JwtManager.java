@@ -13,7 +13,7 @@ import star.member.dto.MemberInfoDTO;
 
 @Component
 public class JwtManager {
-
+    //todo: 나중에 refresh token도 구현하기
     private final static Integer HOUR_SECOND = 3600;
     private final static Integer SECOND_MILLI = 1000;
     private final static Integer EXPIRED_MILLISECOND = 6 * HOUR_SECOND * SECOND_MILLI;

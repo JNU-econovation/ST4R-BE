@@ -19,6 +19,7 @@ import star.common.security.filter.JwtAuthenticationFilter;
 @Configuration
 @RequiredArgsConstructor
 public class WebSecurityConfig {
+    //todo: oauth2 나중에 시큐리티 고도화
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final Rest401Handler rest401Handler;
