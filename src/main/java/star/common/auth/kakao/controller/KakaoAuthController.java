@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import star.common.auth.dto.client.response.TokenResponse;
+import org.springframework.web.util.UriComponentsBuilder;
 import star.common.auth.kakao.service.KakaoAuthService;
 import star.common.dto.response.CommonResponse;
 import star.common.security.dto.StarUserDetails;
@@ -26,9 +26,16 @@ public class KakaoAuthController {
     private final JwtManager jwtManager;
 
     @GetMapping("/callback")
-    public ResponseEntity<TokenResponse> loginOrRegister(@RequestParam String code) {
+    public String loginOrRegister(@RequestParam String code) {
         String accessToken = jwtManager.generateToken(kakaoAuthService.kakaoLoginOrRegister(code));
-        return new ResponseEntity<>(new TokenResponse(accessToken), HttpStatus.OK);
+
+        String redirectUrl = UriComponentsBuilder
+                .fromUriString("/home")
+                .queryParam("accessToken", accessToken)
+                .build()
+                .toUriString();
+
+        return "redirect:" + redirectUrl;
     }
 
     @PostMapping("/logout")
