@@ -2,6 +2,7 @@ package star.common.auth.kakao.controller;
 
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -25,12 +26,15 @@ public class KakaoAuthController {
     private final KakaoAuthService kakaoAuthService;
     private final JwtManager jwtManager;
 
+    @Value("${fe.dev.redirect-uri}")
+    private String feRedirectUri;
+
     @GetMapping("/callback")
     public String loginOrRegister(@RequestParam String code) {
         String accessToken = jwtManager.generateToken(kakaoAuthService.kakaoLoginOrRegister(code));
 
         String redirectUrl = UriComponentsBuilder
-                .fromUriString("/home")
+                .fromUriString(feRedirectUri + "/home")
                 .queryParam("accessToken", accessToken)
                 .build()
                 .toUriString();
