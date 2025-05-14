@@ -20,6 +20,7 @@ public class Rest401Handler implements AuthenticationEntryPoint {
 
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
 
         objectMapper.writeValue(response.getWriter(), CommonResponse.failure("인증이 필요합니다."));
     }
