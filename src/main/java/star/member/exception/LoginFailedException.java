@@ -1,6 +1,8 @@
 package star.member.exception;
 
-public class LoginFailedException extends RuntimeException {
+import star.common.exception.InternalServerException;
+
+public class LoginFailedException extends InternalServerException {
     private static final String ERROR_MESSAGE = "로그인에 실패하였습니다.";
 
     public LoginFailedException() {

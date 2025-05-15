@@ -14,7 +14,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import star.common.entity.SoftDeletableEntity;
+import star.common.entity.BaseEntity;
 import star.home.board.model.vo.Content;
 import star.home.board.model.vo.Title;
 import star.home.category.model.entity.Category;
@@ -23,7 +23,7 @@ import star.member.model.entity.Member;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Board extends SoftDeletableEntity {
+public class Board extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -53,9 +53,9 @@ public class Board extends SoftDeletableEntity {
     private Integer commentCount;
 
     @Builder
-    public Board(Member member, Title title, Content content, Category category) {
+    public Board(Member member, String title, Content content, Category category) {
         this.member = member;
-        this.title = title;
+        this.title = new Title(title);
         this.content = content;
         this.category = category;
         this.viewCount = 0;

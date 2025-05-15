@@ -1,13 +1,23 @@
 package star.home.board.dto.request;
 
 import java.util.List;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import star.home.board.model.vo.Content;
-import star.home.board.model.vo.Title;
+import jakarta.validation.constraints.NotBlank;
 
 public record BoardRequest(
-        Title title,
+
+        @NotBlank(message = "제목을 입력해주세요")
+        @Size(min = 2, max = 30, message = "제목의 길이는 최소 {min}자, 최대 {max}자여야 합니다.")
+        String title,
+        
+        @NotNull(message = "이미지 url 필드를 입력해주세요")
+        @Size(max = 10, message = "이미지는 최대 {max}개까지 등록할 수 있습니다.")
         List<String> imageUrls, //todo: vo로 만들어서 url 정규식 유효성 검사
+
         Content content,
+
         String category
 ) {
 

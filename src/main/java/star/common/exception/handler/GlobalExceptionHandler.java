@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
-import star.common.auth.exception.InvalidRedirectUriException;
 import star.common.dto.response.CommonResponse;
+import star.common.exception.ClientException;
 import star.common.exception.InternalServerException;
 
 @RestControllerAdvice
@@ -39,8 +39,14 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    @ExceptionHandler(InvalidRedirectUriException.class)
-    public ResponseEntity<CommonResponse> handleInvalidRedirectUriException(InvalidRedirectUriException e) {
+    @ExceptionHandler(ClientException.class)
+    public ResponseEntity<CommonResponse> handleClientException(ClientException e) {
+        return new ResponseEntity<>(CommonResponse.failure(e.getMessage()),
+                HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<CommonResponse> handleIllegalArgumentException(IllegalArgumentException e) {
         return new ResponseEntity<>(CommonResponse.failure(e.getMessage()),
                 HttpStatus.BAD_REQUEST);
     }
