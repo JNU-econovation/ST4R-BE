@@ -1,9 +1,14 @@
 package star.common.auth.kakao.service;
 
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.UriComponentsBuilder;
+import star.common.auth.exception.InvalidRedirectUriException;
+import star.common.auth.kakao.config.KakaoAuthConfig;
 import star.common.auth.kakao.dto.KakaoMemberInfoDTO;
 import star.common.exception.InternalServerException;
 import star.member.dto.MemberInfoDTO;
@@ -20,6 +25,32 @@ public class KakaoAuthService {
 
     private final KakaoClientService kakaoClientService;
     private final MemberService memberService;
+    private final KakaoAuthConfig kakaoAuthConfig;
+
+    public String getAuthorizationUri(String feRedirectUri) {
+        if (!kakaoAuthConfig.allowedFeRedirectOrigins().contains(feRedirectUri))
+            throw new InvalidRedirectUriException("%s 는 허용된 redirect uri가 아닙니다.".formatted(feRedirectUri));
+
+        return UriComponentsBuilder
+                .fromUriString("https://kauth.kakao.com/oauth/authorize")
+                .queryParam("response_type", "code")
+                .queryParam("client_id", kakaoAuthConfig.restApiKey())
+                .queryParam("redirect_uri", kakaoAuthConfig.beCallbackUrl())
+                .queryParam("state", URLEncoder.encode(feRedirectUri, StandardCharsets.UTF_8))
+                .build()
+                .toUriString();
+    }
+
+    public String getHomeUriWithToken(String feRedirectUri, String accessToken) {
+        if (!kakaoAuthConfig.allowedFeRedirectOrigins().contains(feRedirectUri))
+            throw new InvalidRedirectUriException("%s 는 허용된 redirect uri가 아닙니다.".formatted(feRedirectUri));
+
+        return UriComponentsBuilder
+                .fromUriString(feRedirectUri + "/home")
+                .queryParam("accessToken", accessToken)
+                .build()
+                .toUriString();
+    }
 
     public MemberInfoDTO kakaoLoginOrRegister(String authorizationCode) {
         String accessToken = kakaoClientService.getAccessToken(authorizationCode);

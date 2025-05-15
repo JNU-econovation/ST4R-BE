@@ -2,10 +2,12 @@ package star.common.auth.kakao.config;
 
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.PropertySource;
 
 @Configuration
+@Profile("prod")
 @EnableConfigurationProperties(KakaoAuthConfig.class)  // KakaoAuthConfig를 빈으로 등록
 @PropertySource({"classpath:application-kakao-auth.properties",
-        "classpath:application-secret.properties"})
-public class KakaoAuthConfigRegistrar { }
+        "classpath:application-kakao-auth-prod.properties", "classpath:application-secret.properties"})
+public class ProdKakaoAuthConfigRegistrar { }
