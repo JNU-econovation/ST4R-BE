@@ -12,4 +12,20 @@ public record Content(
         Jido map
 ) {
 
+    private static final int CONTENT_MAX_LENGTH = 5000;
+    private static final int CONTENT_MIN_LENGTH = 10;
+
+    public Content {
+        validate(text);
+    }
+
+    private void validate(String text) {
+        if (text == null || text.length() < CONTENT_MIN_LENGTH
+                || text.length() > CONTENT_MAX_LENGTH) {
+            throw new IllegalArgumentException(
+                    "내용의 길이는 최소 %d자, 최대 %d자여야 합니다.".formatted(CONTENT_MIN_LENGTH,
+                            CONTENT_MAX_LENGTH));
+        }
+    }
+
 }
