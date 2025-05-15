@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+import star.common.auth.exception.InvalidRedirectUriException;
 import star.common.dto.response.CommonResponse;
 import star.common.exception.InternalServerException;
 
@@ -18,13 +19,6 @@ import star.common.exception.InternalServerException;
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     private static final String CRITICAL_ERROR_MESSAGE = "서버에서 예상치 못한 에러가 발생하였습니다.";
-
-    @ExceptionHandler(InternalServerException.class)
-    public ResponseEntity<CommonResponse> handleMemberException(RuntimeException e) {
-        log.error(e.getMessage(), e);
-        return new ResponseEntity<>(CommonResponse.failure(CRITICAL_ERROR_MESSAGE),
-                HttpStatus.INTERNAL_SERVER_ERROR);
-    }
 
     @Override
     protected ResponseEntity<Object> handleMissingServletRequestParameter(
@@ -38,9 +32,21 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(CommonResponse.failure(message), status);
     }
 
+    @ExceptionHandler(InternalServerException.class)
+    public ResponseEntity<CommonResponse> handleInternalServerException(InternalServerException e) {
+        log.error(e.getMessage(), e);
+        return new ResponseEntity<>(CommonResponse.failure(CRITICAL_ERROR_MESSAGE),
+                HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(InvalidRedirectUriException.class)
+    public ResponseEntity<CommonResponse> handleInvalidRedirectUriException(InvalidRedirectUriException e) {
+        return new ResponseEntity<>(CommonResponse.failure(e.getMessage()),
+                HttpStatus.BAD_REQUEST);
+    }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<CommonResponse> handleMemberException(Exception e) {
+    public ResponseEntity<CommonResponse> handleException(Exception e) {
         log.error(CRITICAL_ERROR_MESSAGE, e);
         return new ResponseEntity<>(CommonResponse.failure(CRITICAL_ERROR_MESSAGE),
                 HttpStatus.INTERNAL_SERVER_ERROR);
