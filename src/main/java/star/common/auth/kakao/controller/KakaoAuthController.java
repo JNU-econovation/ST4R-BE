@@ -37,8 +37,7 @@ public class KakaoAuthController {
     @PostMapping("/logout")
     public ResponseEntity<CommonResponse> logout(
             @AuthenticationPrincipal StarUserDetails userDetails) {
-        MemberInfoDTO memberInfoDTO = userDetails.getMemberInfoDTO();
-        kakaoAuthService.kakaoLogout(memberInfoDTO);
+        kakaoAuthService.kakaoLogout(userDetails.getMemberInfoDTO());
 
         return ResponseEntity.ok(CommonResponse.success());
     }

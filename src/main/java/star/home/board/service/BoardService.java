@@ -16,8 +16,8 @@ import star.member.service.MemberService;
 public class BoardService {
 
     private final MemberService memberService;
-    private final BoardRepository boardRepository;
     private final CategoryService categoryService;
+    private final BoardRepository boardRepository;
 
     @Transactional
     public Long createBoard(MemberInfoDTO memberInfoDTO, BoardRequest request) {

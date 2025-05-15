@@ -5,12 +5,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import star.common.dto.response.CommonResponse;
+import star.common.security.dto.StarUserDetails;
 import star.home.board.dto.request.BoardRequest;
 import star.home.board.service.BoardService;
-import star.member.dto.MemberInfoDTO;
 
 @RestController
 @RequiredArgsConstructor
@@ -21,8 +22,9 @@ public class BoardController {
 
     @PostMapping
     public ResponseEntity<CommonResponse> createBoard(
-            @AuthenticationPrincipal MemberInfoDTO memberInfoDTO, BoardRequest request) {
-        Long boardId = boardService.createBoard(memberInfoDTO, request);
+            @AuthenticationPrincipal StarUserDetails userDetails,
+            @RequestBody BoardRequest request) {
+        Long boardId = boardService.createBoard(userDetails.getMemberInfoDTO(), request);
 
         URI location = URI.create("/home/boards/" + boardId);
 
