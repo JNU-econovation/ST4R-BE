@@ -1,5 +1,6 @@
 package star.home.board.model.entity;
 
+import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
@@ -15,6 +16,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import star.common.entity.SoftDeletableEntity;
 import star.home.board.model.vo.Content;
+import star.home.board.model.vo.Title;
 import star.home.category.model.entity.Category;
 import star.member.model.entity.Member;
 
@@ -31,14 +33,14 @@ public class Board extends SoftDeletableEntity {
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
-    @Column(nullable = false, length = 100)
-    private String title;
+    @AttributeOverride(name = "value", column = @Column(name = "title", nullable = false))
+    private Title title;
 
     @Embedded
     private Content content;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id", nullable = false)
+    @JoinColumn(name = "category", referencedColumnName = "name", nullable = false)
     private Category category;
 
     @Column(nullable = false)
@@ -51,7 +53,7 @@ public class Board extends SoftDeletableEntity {
     private Integer commentCount;
 
     @Builder
-    public Board(Member member, String title, Content content, Category category) {
+    public Board(Member member, Title title, Content content, Category category) {
         this.member = member;
         this.title = title;
         this.content = content;
