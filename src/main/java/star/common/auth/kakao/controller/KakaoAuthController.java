@@ -2,7 +2,6 @@ package star.common.auth.kakao.controller;
 
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -36,9 +35,11 @@ public class KakaoAuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<CommonResponse> logout(@AuthenticationPrincipal StarUserDetails userDetails) {
+    public ResponseEntity<CommonResponse> logout(
+            @AuthenticationPrincipal StarUserDetails userDetails) {
         MemberInfoDTO memberInfoDTO = userDetails.getMemberInfoDTO();
         kakaoAuthService.kakaoLogout(memberInfoDTO);
-        return new ResponseEntity<>(CommonResponse.success(), HttpStatus.OK);
+
+        return ResponseEntity.ok(CommonResponse.success());
     }
 }
