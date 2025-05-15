@@ -50,6 +50,10 @@ public class Member extends SoftDeletableEntity {
         this.role = Role.USER;
     }
 
+    public void updateEncryptedKakaoAccessToken(String encryptedKakaoAccessToken) {
+        this.encryptedKakaoAccessToken = encryptedKakaoAccessToken;
+    }
+
     public void promoteToAdmin() {
         this.role = Role.ADMIN;
     }

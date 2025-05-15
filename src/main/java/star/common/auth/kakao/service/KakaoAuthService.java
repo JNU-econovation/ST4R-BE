@@ -60,7 +60,7 @@ public class KakaoAuthService {
             // -> LoginFailedException 을 던질 수 있음
             MemberInfoDTO memberInfoDTO = memberService.login(kakaoMemberInfoDTO);
 
-            memberService.setMemberAccessToken(memberInfoDTO.id(), accessToken);
+            memberService.updateAccessToken(memberInfoDTO.id(), accessToken);
             return memberInfoDTO;
         } catch (LoginFailedException e) { // 유저를 못 찾거나 탈퇴한 유저라면 회원가입
             SocialRegisterDTO registerDTO = SocialRegisterDTO.builder()
@@ -69,7 +69,7 @@ public class KakaoAuthService {
                     .build();
             MemberInfoDTO memberInfoDTO = memberService.register(registerDTO);
 
-            memberService.setMemberAccessToken(memberInfoDTO.id(), accessToken);
+            memberService.updateAccessToken(memberInfoDTO.id(), accessToken);
             return memberInfoDTO;
         }
     }
