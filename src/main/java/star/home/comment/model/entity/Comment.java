@@ -1,6 +1,8 @@
 package star.home.comment.model.entity;
 
+import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -41,7 +43,8 @@ public class Comment extends SoftDeletableEntity {
 
     private Integer depth;
 
-    @Column(nullable = false)
+    @Embedded
+    @AttributeOverride(name = "value", column = @Column(name = "content", nullable = false))
     private Content content;
 
     @Builder
