@@ -46,4 +46,9 @@ public class HeartService {
         heartRepository.deleteHeartByMemberIdAndBoardId(member.getId(), board.getId());
     }
 
+    @Transactional(readOnly = true)
+    public Boolean hasLiked(Long memberId, Long boardId) {
+        return heartRepository.existsByMemberIdAndBoardId(memberId, boardId);
+    }
+
 }
