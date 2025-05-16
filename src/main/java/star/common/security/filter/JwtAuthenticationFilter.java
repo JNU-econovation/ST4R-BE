@@ -48,7 +48,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             String path = request.getRequestURI();
             String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
-            boolean isHomeBoardPath = pathMatcher.match("/home/board/**", path);
+            boolean isHomeBoardPath = pathMatcher.match("/home/boards/**", path);
 
             if (authHeader == null || !authHeader.startsWith(BEARER_TYPE)) {
                 if (isHomeBoardPath) {
@@ -90,7 +90,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private Boolean requestIsMatch(HttpServletRequest request) {
         String path = request.getRequestURI();
 
-        return (HttpMethod.GET.matches(request.getMethod()) && !pathMatcher.match("/home/board/**",
+        return (HttpMethod.GET.matches(request.getMethod()) && !pathMatcher.match("/home/boards/**",
                 path))
                 || pathMatcher.match("/h2-console/**", path);
     }

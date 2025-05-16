@@ -1,6 +1,7 @@
 package star.home.comment.dto;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
@@ -24,11 +25,13 @@ public class CommentDTO {
             return null;
 
         return CommentDTO.builder()
-                .boardId(comment.getBoard().getId())
+                .id(comment.getId())
                 .memberInfoDTO(MemberInfoDTO.from(comment.getAuthor()))
+                .boardId(comment.getBoard().getId())
                 .depth(comment.getDepth())
                 .content(comment.getContent().value())
                 .createdAt(comment.getCreatedAt())
+                .childCommentDTOs(new ArrayList<>())
                 .build();
     }
 
