@@ -4,6 +4,7 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import star.home.board.dto.request.BoardRequest;
+import star.home.board.dto.response.BoardResponse;
 import star.home.board.exception.NoSuchBoardException;
 import star.home.board.model.entity.Board;
 import star.home.board.repository.BoardRepository;
@@ -36,6 +37,11 @@ public class BoardService {
         boardImageService.addImageUrls(board, request.imageUrls());
 
         return board.getId();
+    }
+
+    @Transactional(readOnly = true)
+    public BoardResponse getBoard(MemberInfoDTO memberInfoDTO, Long boardId) {
+
     }
 
     @Transactional
