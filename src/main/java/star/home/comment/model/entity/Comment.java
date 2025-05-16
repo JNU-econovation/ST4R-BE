@@ -35,13 +35,13 @@ public class Comment extends SoftDeletableEntity {
     @JoinColumn(name = "board_id", nullable = false)
     private Board board;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "comment_id", nullable = true)
     private Comment parentComment;
 
     private Integer depth;
 
-    @Column(nullable = false, length = 10000)
+    @Column(nullable = false)
     private Content content;
 
     @Builder
