@@ -12,7 +12,7 @@ public record BoardResponse (
         Boolean isViewerAuthor,
         Boolean liked,
         String title,
-        String imageUrl,
+        List<String> imageUrls,
         Content content,
         String category,
         Integer viewCount,
@@ -37,6 +37,8 @@ public record BoardResponse (
             Boolean isViewerAuthor,
             Boolean isCommenterAuthor,
             String content,
-            LocalDateTime createdAt
+            LocalDateTime createdAt,
+            List<Comment> childComments,
+            Integer depth
     ) { }
 }

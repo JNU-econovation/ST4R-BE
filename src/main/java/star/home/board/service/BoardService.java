@@ -1,14 +1,22 @@
 package star.home.board.service;
 
-import org.springframework.transaction.annotation.Transactional;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import star.home.board.dto.request.BoardImageDTO;
 import star.home.board.dto.request.BoardRequest;
 import star.home.board.dto.response.BoardResponse;
+import star.home.board.dto.response.BoardResponse.Author;
+import star.home.board.dto.response.BoardResponse.Comment;
 import star.home.board.exception.NoSuchBoardException;
+import star.home.board.mapper.BoardCommentMapper;
 import star.home.board.model.entity.Board;
+import star.home.board.model.vo.Content;
 import star.home.board.repository.BoardRepository;
 import star.home.category.service.CategoryService;
+import star.home.comment.dto.CommentDTO;
+import star.home.comment.service.CommentService;
 import star.member.dto.MemberInfoDTO;
 import star.member.model.entity.Member;
 import star.member.service.MemberService;
@@ -20,8 +28,11 @@ public class BoardService {
     private final MemberService memberService;
     private final CategoryService categoryService;
     private final BoardImageService boardImageService;
-    private final BoardRepository boardRepository;
     private final HeartService heartService;
+    private final CommentService commentService;
+
+    private final BoardRepository boardRepository;
+
 
     @Transactional
     public Long createBoard(MemberInfoDTO memberInfoDTO, BoardRequest request) {
@@ -41,7 +52,39 @@ public class BoardService {
 
     @Transactional(readOnly = true)
     public BoardResponse getBoard(MemberInfoDTO memberInfoDTO, Long boardId) {
+        Board board = getBoardEntity(boardId);
+        Long viewerId = memberInfoDTO.id();
+        Long authorId = board.getMember().getId();
 
+        List<CommentDTO> commentDTOs = commentService.getComments(boardId);
+        List<Comment> commentVOs = BoardCommentMapper.toCommentVOs(commentDTOs, viewerId, authorId);
+
+        Author author = Author.builder()
+                .id(authorId)
+                .imageUrl(memberInfoDTO.profileImageUrl())
+                .nickname(memberInfoDTO.email().value())
+                .build();
+
+        List<String> imageUrlStrings = boardImageService.getImageUrls(boardId)
+                .stream()
+                .map(BoardImageDTO::imageUrl)
+                .toList();
+
+        return BoardResponse.builder()
+                .id(boardId)
+                .author(author)
+                .isViewerAuthor(viewerId.equals(authorId))
+                .liked(heartService.hasLiked(viewerId, boardId))
+                .title(board.getTitle().value())
+                .imageUrls(imageUrlStrings)
+                .content(Content.copyOf(board.getContent())) //안전하게 깊은 복사하기
+                .category(board.getCategory().getName())
+                .viewCount(board.getViewCount())
+                .createdAt(board.getCreatedAt())
+                .likeCount(board.getHeartCount())
+                .commentCount(board.getCommentCount())
+                .comments(commentVOs)
+                .build();
     }
 
     @Transactional
@@ -81,5 +124,26 @@ public class BoardService {
     @Transactional(readOnly = true)
     public Board getBoardEntity(Long boardId) {
         return boardRepository.getBoardById((boardId)).orElseThrow(NoSuchBoardException::new);
+    }
+
+    private List<Comment> mapChildComments(List<CommentDTO> childDTOs, Long viewerId, Long authorId) {
+        if (childDTOs == null || childDTOs.isEmpty()) return List.of();
+
+        return childDTOs.stream()
+                .map(dto -> BoardResponse.Comment.builder()
+                        .id(dto.getId())
+                        .author(BoardResponse.Author.builder()
+                                .id(dto.getMemberInfoDTO().id())
+                                .imageUrl(dto.getMemberInfoDTO().profileImageUrl())
+                                .nickname(dto.getMemberInfoDTO().email().value())
+                                .build())
+                        .isViewerAuthor(viewerId.equals(dto.getMemberInfoDTO().id()))
+                        .isCommenterAuthor(authorId.equals(dto.getMemberInfoDTO().id()))
+                        .content(dto.getContent())
+                        .createdAt(dto.getCreatedAt())
+                        .depth(dto.getDepth())
+                        .childComments(mapChildComments(dto.getChildCommentDTOs(), viewerId, authorId))
+                        .build())
+                .toList();
     }
 }
