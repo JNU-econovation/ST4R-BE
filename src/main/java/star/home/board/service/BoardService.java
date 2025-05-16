@@ -30,7 +30,6 @@ public class BoardService {
     private final BoardImageService boardImageService;
     private final HeartService heartService;
     private final CommentService commentService;
-
     private final BoardRepository boardRepository;
 
 
