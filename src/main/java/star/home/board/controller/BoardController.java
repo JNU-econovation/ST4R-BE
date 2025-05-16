@@ -29,7 +29,7 @@ public class BoardController {
     public ResponseEntity<BoardResponse> getBoard(
             @AuthenticationPrincipal StarUserDetails userDetails,
             @PathVariable Long boardId) {
-        boardService.getBoard(userDetails.getMemberInfoDTO(), boardId);
+        return ResponseEntity.ok(boardService.getBoard(userDetails.getMemberInfoDTO(), boardId));
     }
 
     @PostMapping
