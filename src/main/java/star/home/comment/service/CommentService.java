@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import star.common.exception.InternalServerException;
 import star.home.board.model.entity.Board;
-import star.home.board.service.BoardService;
 import star.home.comment.dto.CommentDTO;
 import star.home.comment.dto.request.CommentRequest;
 import star.home.comment.exception.InvalidIdCommentException;
@@ -25,20 +24,18 @@ public class CommentService {
     private static final Integer TOP_LEVEL_COMMENT_DEPTH = 0;
 
     private final MemberService memberService;
-    private final BoardService boardService;
     private final CommentRepository commentRepository;
 
     @Transactional
-    public Long createComment(MemberInfoDTO memberInfoDTO, Long boardId, CommentRequest request) {
+    public Long createComment(MemberInfoDTO memberInfoDTO, CommentRequest request, Board board) {
         Member member = memberService.getMemberEntityById(memberInfoDTO.id());
-        Board board = boardService.getBoardEntity(boardId);
         Comment parentComment = null;
 
         int depth = TOP_LEVEL_COMMENT_DEPTH;
 
         if (request.parentCommentId() != null) {
             parentComment = commentRepository.getCommentByIdAndBoardId(request.parentCommentId(),
-                            boardId)
+                            board.getId())
                     .orElseThrow(InvalidIdCommentException::new);
             depth = parentComment.getDepth() + 1;
         }
@@ -74,6 +71,11 @@ public class CommentService {
             findParentAndAllocate(iLevelCommentList, commentDTOList);
         }
         return commentDTOList;
+    }
+
+    @Transactional
+    public void hardDeleteComments(Long boardId) {
+        commentRepository.deleteCommentsByBoardId(boardId);
     }
 
     private void findParentAndAllocate(List<Comment> iLevelCommentList,

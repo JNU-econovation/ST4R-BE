@@ -1,5 +1,6 @@
 package star.home.board.service;
 
+import jakarta.annotation.Nullable;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,7 @@ import star.member.service.MemberService;
 @Service
 @RequiredArgsConstructor
 public class BoardService {
+    private static final Long ANONYMOUS_MEMBER_ID = -12345678L;
 
     private final MemberService memberService;
     private final CategoryService categoryService;
@@ -50,18 +52,19 @@ public class BoardService {
     }
 
     @Transactional(readOnly = true)
-    public BoardResponse getBoard(MemberInfoDTO memberInfoDTO, Long boardId) {
+    public BoardResponse getBoard(@Nullable MemberInfoDTO memberInfoDTO, Long boardId) {
         Board board = getBoardEntity(boardId);
-        Long viewerId = memberInfoDTO.id();
-        Long authorId = board.getMember().getId();
+        Long viewerId = (memberInfoDTO != null) ? memberInfoDTO.id() : ANONYMOUS_MEMBER_ID;
+        MemberInfoDTO authorMember = memberService.getMemberById(board.getMember().getId());
+        Long authorId = authorMember.id();
 
         List<CommentDTO> commentDTOs = commentService.getComments(boardId);
         List<Comment> commentVOs = BoardCommentMapper.toCommentVOs(commentDTOs, viewerId, authorId);
 
         Author author = Author.builder()
                 .id(authorId)
-                .imageUrl(memberInfoDTO.profileImageUrl())
-                .nickname(memberInfoDTO.email().value())
+                .imageUrl(authorMember.profileImageUrl())
+                .nickname(authorMember.email().value())
                 .build();
 
         List<String> imageUrlStrings = boardImageService.getImageUrls(boardId)
@@ -102,7 +105,6 @@ public class BoardService {
                 .content(request.content())
                 .build();
 
-        boardRepository.save(board);
         boardImageService.overwriteImageUrls(board, request.imageUrls());
     }
 
@@ -111,14 +113,14 @@ public class BoardService {
         Member member = memberService.getMemberEntityById(memberInfoDTO.id());
         Board board = getBoardEntity(boardId);
 
-        if (!member.equals(board.getMember())) {
+        if (!member.equals(board.getMember()))
             throw new NoSuchBoardException();
-        }
 
+        commentService.hardDeleteComments(boardId);
         heartService.deleteHeartsByBoardDelete(boardId);
         boardImageService.deleteBoardImageUrls(boardId);
+        boardRepository.delete(board);
     }
-
 
     @Transactional(readOnly = true)
     public Board getBoardEntity(Long boardId) {

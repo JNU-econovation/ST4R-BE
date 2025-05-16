@@ -1,13 +1,16 @@
 package star.home.board.controller;
 
+import jakarta.annotation.Nullable;
 import java.net.URI;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -16,6 +19,7 @@ import star.common.security.dto.StarUserDetails;
 import star.home.board.dto.request.BoardRequest;
 import star.home.board.dto.response.BoardResponse;
 import star.home.board.service.BoardService;
+import star.member.dto.MemberInfoDTO;
 
 @RestController
 @RequiredArgsConstructor
@@ -24,13 +28,6 @@ import star.home.board.service.BoardService;
 public class BoardController {
 
     private final BoardService boardService;
-
-    @GetMapping("/{boardId}")
-    public ResponseEntity<BoardResponse> getBoard(
-            @AuthenticationPrincipal StarUserDetails userDetails,
-            @PathVariable Long boardId) {
-        return ResponseEntity.ok(boardService.getBoard(userDetails.getMemberInfoDTO(), boardId));
-    }
 
     @PostMapping
     public ResponseEntity<CommonResponse> createBoard(
@@ -43,5 +40,30 @@ public class BoardController {
         return ResponseEntity
                 .created(location)
                 .body(CommonResponse.success());
+    }
+
+    @GetMapping("/{boardId}")
+    public ResponseEntity<BoardResponse> getBoard(
+            @Nullable @AuthenticationPrincipal StarUserDetails userDetails,
+            @PathVariable Long boardId) {
+        MemberInfoDTO memberInfoDTO = (userDetails != null) ? userDetails.getMemberInfoDTO() : null;
+        return ResponseEntity.ok(boardService.getBoard(memberInfoDTO, boardId));
+    }
+
+    @PutMapping("/{boardId}")
+    public ResponseEntity<CommonResponse> updateBoard(
+            @AuthenticationPrincipal StarUserDetails userDetails,
+            @PathVariable Long boardId,
+            @RequestBody BoardRequest request) {
+        boardService.updateBoard(userDetails.getMemberInfoDTO(), boardId, request);
+        return ResponseEntity.ok(CommonResponse.success());
+    }
+
+    @DeleteMapping("/{boardId}")
+    public ResponseEntity<CommonResponse> deleteBoard(
+            @AuthenticationPrincipal StarUserDetails userDetails,
+            @PathVariable Long boardId) {
+        boardService.deleteBoard(userDetails.getMemberInfoDTO(), boardId);
+        return ResponseEntity.noContent().build();
     }
 }

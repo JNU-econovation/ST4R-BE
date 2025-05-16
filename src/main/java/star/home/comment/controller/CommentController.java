@@ -12,14 +12,13 @@ import org.springframework.web.bind.annotation.RestController;
 import star.common.dto.response.CommonResponse;
 import star.common.security.dto.StarUserDetails;
 import star.home.comment.dto.request.CommentRequest;
-import star.home.comment.service.CommentService;
+import star.home.comment.service.BoardCommentFacadeService;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/home/boards")
 public class CommentController {
-
-    private final CommentService commentService;
+    private final BoardCommentFacadeService boardCommentFacadeService;
 
     @PostMapping("/{boardId}")
     public ResponseEntity<CommonResponse> createComment(
@@ -27,7 +26,8 @@ public class CommentController {
             @AuthenticationPrincipal StarUserDetails userDetails,
             @RequestBody CommentRequest request
     ) {
-        Long commentId = commentService.createComment(userDetails.getMemberInfoDTO(), boardId, request);
+        Long commentId = boardCommentFacadeService.createComment(userDetails.getMemberInfoDTO(),
+                request, boardId);
         URI location = URI.create("/home/boards/" + boardId + "/comments/" + commentId);
 
         return ResponseEntity
