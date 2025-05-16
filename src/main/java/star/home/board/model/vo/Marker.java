@@ -14,6 +14,11 @@ public record Marker(
         validate(latitude, longitude, markerTitle);
     }
 
+    public static Marker copyOf(Marker marker) {
+        if (marker == null) return null;
+        return new Marker(marker.latitude(), marker.longitude(), marker.markerTitle());
+    }
+
     private void validate(Double latitude, Double longitude, String markerTitle) {
         if (latitude == null || latitude < -90 || latitude > 90) {
             throw new IllegalArgumentException("위도는 -90 이상 90 이하의 값이어야 합니다.");
@@ -28,3 +33,4 @@ public record Marker(
         }
     }
 }
+

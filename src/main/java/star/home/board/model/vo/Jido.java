@@ -14,6 +14,11 @@ public record Jido(
         validate(zoomLevel);
     }
 
+    public static Jido copyOf(Jido jido) {
+        if (jido == null) return null;
+        return new Jido(Marker.copyOf(jido.marker()), jido.zoomLevel());
+    }
+
     private void validate(Integer zoomLevel) {
         if (zoomLevel == null || zoomLevel < MIN_ZOOM_LEVEL || zoomLevel > MAX_ZOOM_LEVEL) {
             throw new IllegalArgumentException(
