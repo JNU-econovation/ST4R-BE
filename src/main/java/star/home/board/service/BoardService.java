@@ -97,13 +97,8 @@ public class BoardService {
         if (!member.equals(board.getMember())) {
             throw new NoSuchBoardException();
         }
-
-        board = Board.builder()
-                .member(member)
-                .title(request.title())
-                .category(categoryService.getCategory(request.category()))
-                .content(request.content())
-                .build();
+        board.update(request.title(), request.content(),
+                categoryService.getCategory(request.category()));
 
         boardImageService.overwriteImageUrls(board, request.imageUrls());
     }
@@ -113,8 +108,9 @@ public class BoardService {
         Member member = memberService.getMemberEntityById(memberInfoDTO.id());
         Board board = getBoardEntity(boardId);
 
-        if (!member.equals(board.getMember()))
+        if (!member.equals(board.getMember())) {
             throw new NoSuchBoardException();
+        }
 
         commentService.hardDeleteComments(boardId);
         heartService.deleteHeartsByBoardDelete(boardId);

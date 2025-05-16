@@ -63,6 +63,12 @@ public class Board extends BaseEntity {
         this.commentCount = 0;
     }
 
+    public void update(String title, Content content, Category category) {
+        this.title = new Title(title);
+        this.content = content;
+        this.category = category;
+    }
+
     //todo : thread safe 하게 하기
     //todo : 아니 조회수 어떻게 구현하지 redis 어쩌구 하라는데 -> 추후에 고도화 해야할듯
     public void increaseViewCount() {
