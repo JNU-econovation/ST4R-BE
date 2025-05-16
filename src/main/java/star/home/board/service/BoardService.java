@@ -125,25 +125,4 @@ public class BoardService {
     public Board getBoardEntity(Long boardId) {
         return boardRepository.getBoardById((boardId)).orElseThrow(NoSuchBoardException::new);
     }
-
-    private List<Comment> mapChildComments(List<CommentDTO> childDTOs, Long viewerId, Long authorId) {
-        if (childDTOs == null || childDTOs.isEmpty()) return List.of();
-
-        return childDTOs.stream()
-                .map(dto -> BoardResponse.Comment.builder()
-                        .id(dto.getId())
-                        .author(BoardResponse.Author.builder()
-                                .id(dto.getMemberInfoDTO().id())
-                                .imageUrl(dto.getMemberInfoDTO().profileImageUrl())
-                                .nickname(dto.getMemberInfoDTO().email().value())
-                                .build())
-                        .isViewerAuthor(viewerId.equals(dto.getMemberInfoDTO().id()))
-                        .isCommenterAuthor(authorId.equals(dto.getMemberInfoDTO().id()))
-                        .content(dto.getContent())
-                        .createdAt(dto.getCreatedAt())
-                        .depth(dto.getDepth())
-                        .childComments(mapChildComments(dto.getChildCommentDTOs(), viewerId, authorId))
-                        .build())
-                .toList();
-    }
 }
