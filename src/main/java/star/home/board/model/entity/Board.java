@@ -1,5 +1,6 @@
 package star.home.board.model.entity;
 
+import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
@@ -13,15 +14,16 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import star.common.entity.SoftDeletableEntity;
+import star.common.entity.BaseEntity;
 import star.home.board.model.vo.Content;
+import star.home.board.model.vo.Title;
 import star.home.category.model.entity.Category;
 import star.member.model.entity.Member;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Board extends SoftDeletableEntity {
+public class Board extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,14 +33,14 @@ public class Board extends SoftDeletableEntity {
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
-    @Column(nullable = false, length = 100)
-    private String title;
+    @AttributeOverride(name = "value", column = @Column(name = "title", nullable = false))
+    private Title title;
 
     @Embedded
     private Content content;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id", nullable = false)
+    @JoinColumn(name = "category", referencedColumnName = "name", nullable = false)
     private Category category;
 
     @Column(nullable = false)
@@ -53,12 +55,18 @@ public class Board extends SoftDeletableEntity {
     @Builder
     public Board(Member member, String title, Content content, Category category) {
         this.member = member;
-        this.title = title;
+        this.title = new Title(title);
         this.content = content;
         this.category = category;
         this.viewCount = 0;
         this.heartCount = 0;
         this.commentCount = 0;
+    }
+
+    public void update(String title, Content content, Category category) {
+        this.title = new Title(title);
+        this.content = content;
+        this.category = category;
     }
 
     //todo : thread safe 하게 하기

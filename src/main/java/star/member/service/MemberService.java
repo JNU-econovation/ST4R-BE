@@ -1,6 +1,5 @@
 package star.member.service;
 
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -55,25 +54,27 @@ public class MemberService {
 
     @Transactional(readOnly = true)
     public MemberInfoDTO getMemberById(Long memberId) {
-        Member member = getOptionalMemberEntity(memberId).orElseThrow(
-                () -> new MemberNotFoundException("id가 %d인 회원을 찾지 못했습니다.".formatted(memberId)));
+        return MemberInfoDTO.from(getMemberEntityById(memberId));
+    }
 
-        return MemberInfoDTO.from(member);
+    @Transactional(readOnly = true)
+    public Member getMemberEntityById(Long memberId) {
+        return memberRepository.findById(memberId).orElseThrow(
+                () -> new MemberNotFoundException("id가 %d인 회원을 찾지 못했습니다.".formatted(memberId)));
     }
 
     @Transactional
-    public void setMemberAccessToken(Long memberId, String plainAccessToken) {
-        Member member = getOptionalMemberEntity(memberId).orElseThrow(
-                () -> new MemberNotFoundException("id가 %d인 회원을 찾지 못했습니다.".formatted(memberId)));
+    public void updateAccessToken(Long memberId, String plainAccessToken) {
+        Member member = getMemberEntityById(memberId);
         String encryptedAccessToken = encryptToken(plainAccessToken);
+        member.updateEncryptedKakaoAccessToken(encryptedAccessToken);
     }
 
     @Transactional
     public String invalidateAccessToken(Long memberId) {
-        Member member = getOptionalMemberEntity(memberId).orElseThrow(
-                () -> new MemberNotFoundException("id가 %d인 회원을 찾지 못했습니다.".formatted(memberId)));
-
+        Member member = getMemberEntityById(memberId);
         String encryptedKakaoAccessToken = member.getEncryptedKakaoAccessToken();
+
         if (encryptedKakaoAccessToken == null) {
             throw new AlreadyInvalidatedTokenException();
         }
@@ -82,10 +83,6 @@ public class MemberService {
         member.invalidateKakaoAccessToken();
 
         return decryptedKakaoAccessToken;
-    }
-
-    private Optional<Member> getOptionalMemberEntity(Long memberId) {
-        return memberRepository.findById(memberId);
     }
 
     private String encryptToken(String plainToken) {
