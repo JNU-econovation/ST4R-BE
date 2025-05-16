@@ -58,7 +58,11 @@ public class CommentService {
     public List<CommentDTO> getComments(Long boardId) {
 
         List<CommentDTO> commentDTOList = new ArrayList<>();
-        final Integer maxDepth = commentRepository.getMaxDepthByBoardId(boardId);
+        Integer maxDepth = commentRepository.findTopDepthByBoardId(boardId);
+
+        if(maxDepth == null){
+            maxDepth = TOP_LEVEL_COMMENT_DEPTH - 1;
+        }
 
         for (int i = TOP_LEVEL_COMMENT_DEPTH; i <= maxDepth; i++) {
             List<Comment> iLevelCommentList = commentRepository.getCommentsByBoardIdAndDepthOrderByCreatedAtAsc(
