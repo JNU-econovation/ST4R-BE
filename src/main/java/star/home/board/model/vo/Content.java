@@ -11,12 +11,16 @@ public record Content(
         @Column(nullable = true)
         Jido map
 ) {
-
     private static final int CONTENT_MAX_LENGTH = 5000;
     private static final int CONTENT_MIN_LENGTH = 10;
 
     public Content {
         validate(text);
+    }
+
+    public static Content copyOf(Content content) {
+        if (content == null) return null;
+        return new Content(content.text(), Jido.copyOf(content.map()));
     }
 
     private void validate(String text) {
@@ -27,5 +31,4 @@ public record Content(
                             CONTENT_MAX_LENGTH));
         }
     }
-
 }
