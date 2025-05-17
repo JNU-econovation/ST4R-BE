@@ -1,6 +1,8 @@
 package star.common.auth.kakao.exception;
 
-public class KakaoAuthServerException extends RuntimeException {
+import star.common.exception.server.InternalServerException;
+
+public class KakaoAuthServerException extends InternalServerException {
     private final static String ERROR_MESSAGE = "카카오 서버 에러 발생";
     public KakaoAuthServerException() {
         super(ERROR_MESSAGE);

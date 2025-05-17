@@ -30,18 +30,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final static String BEARER_TYPE = "Bearer ";
     private final static String CRITICAL_AUTH_ERROR_MESSAGE = "알 수 없는 예외로 인한 인증 실패";
+
     private final JwtManager jwtManager;
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
-
-
     private final MemberService memberService;
-    //private final ApplicationContext applicationContext; 나중에 순환참조 문제 생기면 이걸로 Lazy 하게 해결하기
-
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        String path = request.getRequestURI();
-        return HttpMethod.GET.matches(request.getMethod()) || pathMatcher.match("/h2-console/**", path);
+        return requestIsMatch(request);
     }
 
 
@@ -50,8 +46,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain filterChain) {
         try {
+            String path = request.getRequestURI();
             String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+            boolean isHomeBoardPath = pathMatcher.match("/home/boards/**", path);
+
             if (authHeader == null || !authHeader.startsWith(BEARER_TYPE)) {
+                if (isHomeBoardPath) {
+                    filterChain.doFilter(request, response);
+                    return;
+                }
                 throw new InsufficientAuthenticationException("Auth 헤더가 유효하지 않습니다.");
             }
 
@@ -82,5 +85,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             log.error(CRITICAL_AUTH_ERROR_MESSAGE, ex);
             throw new AuthenticationServiceException(CRITICAL_AUTH_ERROR_MESSAGE, ex);
         }
+    }
+
+    private Boolean requestIsMatch(HttpServletRequest request) {
+        String path = request.getRequestURI();
+
+        return (HttpMethod.GET.matches(request.getMethod()) && !pathMatcher.match("/home/boards/**",
+                path))
+                || pathMatcher.match("/h2-console/**", path);
     }
 }

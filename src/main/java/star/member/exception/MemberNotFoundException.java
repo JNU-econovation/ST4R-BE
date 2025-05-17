@@ -1,6 +1,8 @@
 package star.member.exception;
 
-public class MemberNotFoundException extends MemberException {
+import star.common.exception.server.InternalServerException;
+
+public class MemberNotFoundException extends InternalServerException {
     public MemberNotFoundException(String message) {
         super(message);
     }

@@ -9,12 +9,12 @@ import jakarta.persistence.ManyToOne;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import star.common.entity.SoftDeletableEntity;
+import star.common.entity.BaseEntity;
 
 @Entity
 @RequiredArgsConstructor
 @Getter
-public class BoardImage extends SoftDeletableEntity {
+public class BoardImage extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

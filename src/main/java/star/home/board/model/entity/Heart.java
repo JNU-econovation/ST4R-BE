@@ -6,11 +6,17 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
-import star.common.entity.SoftDeletableEntity;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import star.common.entity.BaseEntity;
 import star.member.model.entity.Member;
 
 @Entity
-public class Heart extends SoftDeletableEntity {
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class Heart extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,4 +28,10 @@ public class Heart extends SoftDeletableEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     private Board board;
 
+
+    @Builder
+    public Heart(Member member, Board board) {
+        this.member = member;
+        this.board = board;
+    }
 }
