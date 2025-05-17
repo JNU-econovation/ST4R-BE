@@ -31,6 +31,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final static String BEARER_TYPE = "Bearer ";
     private final static String CRITICAL_AUTH_ERROR_MESSAGE = "알 수 없는 예외로 인한 인증 실패";
 
+    private static final String[] WHITELIST_PATHS = {
+            "/h2-console/**"
+    };
+
+    private static final String[] BLACKLIST_PATHS = {
+            "/upload/**"
+    };
+
     private final JwtManager jwtManager;
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
     private final MemberService memberService;
@@ -89,9 +97,25 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private Boolean requestIsMatch(HttpServletRequest request) {
         String path = request.getRequestURI();
+        String method = request.getMethod();
 
-        return (HttpMethod.GET.matches(request.getMethod()) && !pathMatcher.match("/home/boards/**",
-                path))
-                || pathMatcher.match("/h2-console/**", path);
+        for (String whitePattern : WHITELIST_PATHS) {
+            if (pathMatcher.match(whitePattern, path)) {
+                return true;
+            }
+        }
+
+        for (String blackPattern : BLACKLIST_PATHS) {
+            if (pathMatcher.match(blackPattern, path)) {
+                return false;
+            }
+        }
+
+        if (HttpMethod.GET.matches(method) && pathMatcher.match("/home/boards/**", path)) {
+            return true;
+        }
+
+        return false;
     }
+
 }
