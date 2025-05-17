@@ -10,7 +10,7 @@ public class CommonResponse {
     private final Boolean isError;
     private final String message;
 
-    private CommonResponse(Boolean isError, String message) {
+    protected CommonResponse(Boolean isError, String message) {
         this.isError = isError;
         this.message = message;
     }
