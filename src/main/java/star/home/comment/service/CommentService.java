@@ -6,7 +6,8 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import star.common.exception.InternalServerException;
+import star.common.exception.client.YouAreNotAuthorException;
+import star.common.exception.server.InternalServerException;
 import star.home.board.model.entity.Board;
 import star.home.comment.dto.CommentDTO;
 import star.home.comment.dto.request.CommentRequest;
@@ -60,7 +61,7 @@ public class CommentService {
         List<CommentDTO> commentDTOList = new ArrayList<>();
         Integer maxDepth = commentRepository.findTopDepthByBoardId(boardId);
 
-        if(maxDepth == null){
+        if (maxDepth == null) {
             maxDepth = TOP_LEVEL_COMMENT_DEPTH - 1;
         }
 
@@ -78,8 +79,33 @@ public class CommentService {
     }
 
     @Transactional
+    public void updateComment(Long boardId, Long commentId, MemberInfoDTO memberInfoDTO,
+            CommentRequest request) {
+        Comment comment = commentRepository.getCommentByIdAndBoardId(commentId, boardId)
+                .orElseThrow(InvalidIdCommentException::new);
+
+        if (!comment.getAuthor().getId().equals(memberInfoDTO.id())) {
+            throw new YouAreNotAuthorException();
+        }
+
+        comment.updateComment(request.content());
+    }
+
+    @Transactional
     public void hardDeleteComments(Long boardId) {
         commentRepository.deleteCommentsByBoardId(boardId);
+    }
+
+    @Transactional
+    public void softDeleteComment(Long boardId, Long commentId, MemberInfoDTO memberInfoDTO) {
+        Comment comment = commentRepository.getCommentByIdAndBoardId(commentId, boardId)
+                .orElseThrow(InvalidIdCommentException::new);
+
+        if (!comment.getAuthor().getId().equals(memberInfoDTO.id())) {
+            throw new YouAreNotAuthorException();
+        }
+
+        comment.markAsDeprecated();
     }
 
     private void findParentAndAllocate(List<Comment> iLevelCommentList,

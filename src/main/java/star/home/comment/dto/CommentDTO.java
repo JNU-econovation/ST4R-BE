@@ -12,6 +12,8 @@ import star.member.dto.MemberInfoDTO;
 @Getter
 public class CommentDTO {
 
+    private static final String SOFT_DELETED_COMMENT_CONTENT = "삭제된 댓글 입니다.";
+
     private Long id;
     private MemberInfoDTO memberInfoDTO;
     private Long boardId;
@@ -21,15 +23,17 @@ public class CommentDTO {
     private LocalDateTime createdAt;
 
     public static CommentDTO from(Comment comment) {
-        if (comment == null)
+        if (comment == null) {
             return null;
+        }
 
         return CommentDTO.builder()
                 .id(comment.getId())
                 .memberInfoDTO(MemberInfoDTO.from(comment.getAuthor()))
                 .boardId(comment.getBoard().getId())
                 .depth(comment.getDepth())
-                .content(comment.getContent().value())
+                .content(comment.isDeprecated() ?
+                        SOFT_DELETED_COMMENT_CONTENT : comment.getContent().value())
                 .createdAt(comment.getCreatedAt())
                 .childCommentDTOs(new ArrayList<>())
                 .build();

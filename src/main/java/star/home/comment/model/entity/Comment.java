@@ -56,7 +56,7 @@ public class Comment extends SoftDeletableEntity {
         this.content = new Content(content);
     }
 
-    public void editContent(String content) {
+    public void updateComment(String content) {
         this.content =  new Content(content);
     }
 }
