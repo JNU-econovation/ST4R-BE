@@ -5,6 +5,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import star.common.exception.client.YouAreNotAuthorException;
 import star.home.board.dto.request.BoardImageDTO;
 import star.home.board.dto.request.BoardRequest;
 import star.home.board.dto.response.BoardResponse;
@@ -109,7 +110,7 @@ public class BoardService {
         Board board = getBoardEntity(boardId);
 
         if (!member.equals(board.getMember())) {
-            throw new NoSuchBoardException();
+            throw new YouAreNotAuthorException();
         }
 
         commentService.hardDeleteComments(boardId);

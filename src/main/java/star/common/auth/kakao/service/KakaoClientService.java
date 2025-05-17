@@ -10,7 +10,7 @@ import star.common.auth.kakao.dto.KakaoMemberInfoDTO;
 import star.common.auth.kakao.dto.client.response.KakaoErrorResponse;
 import star.common.auth.kakao.exception.InvalidAuthCodeException;
 import star.common.auth.kakao.exception.KakaoAuthServerException;
-import star.common.exception.InternalServerException;
+import star.common.exception.server.InternalServerException;
 import star.member.model.vo.Email;
 
 @Service
