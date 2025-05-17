@@ -22,6 +22,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import star.common.security.dto.StarUserDetails;
 import star.common.security.encryption.jwt.JwtManager;
 import star.common.security.exception.handler.Rest401Handler;
+import star.common.security.exception.handler.Rest500Handler;
 import star.member.dto.MemberInfoDTO;
 import star.member.service.MemberService;
 
@@ -45,6 +46,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
     private final MemberService memberService;
     private final Rest401Handler rest401Handler;
+    private final Rest500Handler rest500Handler;
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
@@ -94,7 +96,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             SecurityContextHolder.clearContext();
 
             log.error(CRITICAL_AUTH_ERROR_MESSAGE, ex);
-            throw new AuthenticationServiceException(CRITICAL_AUTH_ERROR_MESSAGE, ex);
+            rest500Handler.commence(request, response,
+                    new AuthenticationServiceException(CRITICAL_AUTH_ERROR_MESSAGE, ex));
+
         }
     }
 
