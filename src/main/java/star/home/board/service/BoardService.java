@@ -1,11 +1,19 @@
 package star.home.board.service;
 
 import jakarta.annotation.Nullable;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.OptimisticLockException;
+import jakarta.persistence.PersistenceContext;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import star.common.constants.CommonConstants;
 import star.common.exception.client.YouAreNotAuthorException;
+import star.common.service.BaseRetryRecoverService;
 import star.home.board.dto.request.BoardImageDTO;
 import star.home.board.dto.request.BoardRequest;
 import star.home.board.dto.response.BoardResponse;
@@ -25,7 +33,9 @@ import star.member.service.MemberService;
 
 @Service
 @RequiredArgsConstructor
-public class BoardService {
+@Slf4j
+public class BoardService extends BaseRetryRecoverService {
+
     private static final Long ANONYMOUS_MEMBER_ID = -12345678L;
 
     private final MemberService memberService;
@@ -35,6 +45,8 @@ public class BoardService {
     private final CommentService commentService;
     private final BoardRepository boardRepository;
 
+    @PersistenceContext
+    private EntityManager entityManager;
 
     @Transactional
     public Long createBoard(MemberInfoDTO memberInfoDTO, BoardRequest request) {
@@ -52,12 +64,14 @@ public class BoardService {
         return board.getId();
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public BoardResponse getBoard(@Nullable MemberInfoDTO memberInfoDTO, Long boardId) {
         Board board = getBoardEntity(boardId);
         Long viewerId = (memberInfoDTO != null) ? memberInfoDTO.id() : ANONYMOUS_MEMBER_ID;
         MemberInfoDTO authorMember = memberService.getMemberById(board.getMember().getId());
         Long authorId = authorMember.id();
+
+        increaseViewCount(board);
 
         List<CommentDTO> commentDTOs = commentService.getComments(boardId);
         List<Comment> commentVOs = BoardCommentMapper.toCommentVOs(commentDTOs, viewerId, authorId);
@@ -77,7 +91,7 @@ public class BoardService {
                 .id(boardId)
                 .author(author)
                 .isViewerAuthor(viewerId.equals(authorId))
-                .liked(heartService.hasLiked(viewerId, boardId))
+                .liked(heartService.hasHearted(viewerId, boardId))
                 .title(board.getTitle().value())
                 .imageUrls(imageUrlStrings)
                 .content(Content.copyOf(board.getContent())) //안전하게 깊은 복사하기
@@ -122,5 +136,15 @@ public class BoardService {
     @Transactional(readOnly = true)
     public Board getBoardEntity(Long boardId) {
         return boardRepository.getBoardById((boardId)).orElseThrow(NoSuchBoardException::new);
+    }
+
+    @Retryable(
+            retryFor = OptimisticLockException.class,
+            maxAttempts = CommonConstants.OPTIMISTIC_ATTEMPT_COUNT,
+            backoff = @Backoff(delay = 100)
+    )
+    private void increaseViewCount(Board board) {
+        board.increaseViewCount();
+        entityManager.flush();
     }
 }
