@@ -10,6 +10,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Version;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -28,6 +29,10 @@ public class Board extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    //optimistic lock
+    @Version
+    private Long version;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
@@ -69,18 +74,20 @@ public class Board extends BaseEntity {
         this.category = category;
     }
 
-    //todo : thread safe 하게 하기
-    //todo : 아니 조회수 어떻게 구현하지 redis 어쩌구 하라는데 -> 추후에 고도화 해야할듯
     public void increaseViewCount() {
         this.viewCount++;
     }
 
-    public void increaseLikeCount() {
-        this.heartCount++;
-    }
 
     public void increaseCommentCount() {
         this.commentCount++;
     }
 
+    public void increaseHeartCount() {
+        this.heartCount++;
+    }
+
+    public void decreaseHeartCount() {
+        this.heartCount--;
+    }
 }

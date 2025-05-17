@@ -1,13 +1,20 @@
 package star.home.comment.service;
 
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.OptimisticLockException;
+import jakarta.persistence.PersistenceContext;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import star.common.constants.CommonConstants;
 import star.common.exception.client.YouAreNotAuthorException;
 import star.common.exception.server.InternalServerException;
+import star.common.service.BaseRetryRecoverService;
 import star.home.board.model.entity.Board;
 import star.home.comment.dto.CommentDTO;
 import star.home.comment.dto.request.CommentRequest;
@@ -20,12 +27,15 @@ import star.member.service.MemberService;
 
 @Service
 @RequiredArgsConstructor
-public class CommentService {
+public class CommentService extends BaseRetryRecoverService {
 
     private static final Integer TOP_LEVEL_COMMENT_DEPTH = 0;
 
     private final MemberService memberService;
     private final CommentRepository commentRepository;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     @Transactional
     public Long createComment(MemberInfoDTO memberInfoDTO, CommentRequest request, Board board) {
@@ -49,6 +59,7 @@ public class CommentService {
                 .content(request.content())
                 .build();
 
+        increaseCommentCount(board);
         commentRepository.save(comment);
 
         return comment.getId();
@@ -106,6 +117,16 @@ public class CommentService {
         }
 
         comment.markAsDeprecated();
+    }
+
+    @Retryable(
+            retryFor = OptimisticLockException.class,
+            maxAttempts = CommonConstants.OPTIMISTIC_ATTEMPT_COUNT,
+            backoff = @Backoff(delay = 100)
+    )
+    private void increaseCommentCount(Board board) {
+        board.increaseCommentCount();
+        entityManager.flush();
     }
 
     private void findParentAndAllocate(List<Comment> iLevelCommentList,
