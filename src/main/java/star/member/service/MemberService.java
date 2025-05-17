@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import star.common.auth.kakao.dto.KakaoMemberInfoDTO;
-import star.common.exception.InternalServerException;
+import star.common.exception.server.InternalServerException;
 import star.common.security.encryption.util.AESEncryptionUtil;
 import star.member.dto.MemberInfoDTO;
 import star.member.dto.SocialRegisterDTO;

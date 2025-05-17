@@ -10,7 +10,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import star.common.auth.exception.InvalidRedirectUriException;
 import star.common.auth.kakao.config.KakaoAuthConfig;
 import star.common.auth.kakao.dto.KakaoMemberInfoDTO;
-import star.common.exception.InternalServerException;
+import star.common.exception.server.InternalServerException;
 import star.member.dto.MemberInfoDTO;
 import star.member.dto.SocialRegisterDTO;
 import star.member.exception.AlreadyInvalidatedTokenException;

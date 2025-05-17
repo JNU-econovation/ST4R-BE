@@ -1,6 +1,6 @@
 package star.home.board.exception;
 
-import star.common.exception.ClientException;
+import star.common.exception.client.ClientException;
 
 public class NoSuchBoardException extends ClientException {
     public NoSuchBoardException() {
