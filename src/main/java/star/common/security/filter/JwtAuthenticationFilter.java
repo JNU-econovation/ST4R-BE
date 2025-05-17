@@ -4,6 +4,7 @@ package star.common.security.filter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -20,6 +21,7 @@ import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 import star.common.security.dto.StarUserDetails;
 import star.common.security.encryption.jwt.JwtManager;
+import star.common.security.exception.handler.Rest401Handler;
 import star.member.dto.MemberInfoDTO;
 import star.member.service.MemberService;
 
@@ -42,6 +44,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtManager jwtManager;
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
     private final MemberService memberService;
+    private final Rest401Handler rest401Handler;
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
@@ -52,7 +55,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request,
             HttpServletResponse response,
-            FilterChain filterChain) {
+            FilterChain filterChain) throws IOException {
         try {
             String path = request.getRequestURI();
             String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
@@ -86,7 +89,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         } catch (AuthenticationException ex) {
             SecurityContextHolder.clearContext();
-            throw ex;
+            rest401Handler.commence(request, response, ex);
         } catch (Exception ex) {
             SecurityContextHolder.clearContext();
 
@@ -111,7 +114,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         }
 
-        if (HttpMethod.GET.matches(method) && pathMatcher.match("/home/boards/**", path)) {
+        if (HttpMethod.GET.matches(method) && !pathMatcher.match("/home/boards/**", path)) {
             return true;
         }
 
