@@ -32,6 +32,7 @@ public class WebSecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/**").authenticated()
                         .requestMatchers(HttpMethod.PATCH, "/**").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/**").authenticated()
+                        .requestMatchers("/upload/**").authenticated()
                         .anyRequest().permitAll()
                 )
                 .exceptionHandling(ex -> ex

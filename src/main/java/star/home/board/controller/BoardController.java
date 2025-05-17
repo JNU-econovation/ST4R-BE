@@ -1,6 +1,7 @@
 package star.home.board.controller;
 
 import jakarta.annotation.Nullable;
+import jakarta.validation.Valid;
 import java.net.URI;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -23,8 +24,8 @@ import star.member.dto.MemberInfoDTO;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/home/boards")
 @Validated
+@RequestMapping("/home/boards")
 public class BoardController {
 
     private final BoardService boardService;
@@ -32,7 +33,7 @@ public class BoardController {
     @PostMapping
     public ResponseEntity<CommonResponse> createBoard(
             @AuthenticationPrincipal StarUserDetails userDetails,
-            @RequestBody BoardRequest request) {
+            @Valid @RequestBody BoardRequest request) {
         Long boardId = boardService.createBoard(userDetails.getMemberInfoDTO(), request);
 
         URI location = URI.create("/home/boards/" + boardId);
@@ -54,7 +55,7 @@ public class BoardController {
     public ResponseEntity<CommonResponse> updateBoard(
             @AuthenticationPrincipal StarUserDetails userDetails,
             @PathVariable Long boardId,
-            @RequestBody BoardRequest request) {
+            @Valid @RequestBody BoardRequest request) {
         boardService.updateBoard(userDetails.getMemberInfoDTO(), boardId, request);
         return ResponseEntity.ok(CommonResponse.success());
     }
