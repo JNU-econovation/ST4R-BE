@@ -1,5 +1,8 @@
 package star.team.model.vo;
 
+import static star.team.constants.TeamConstants.PARTICIPANT_MAX_CAPACITY;
+import static star.team.constants.TeamConstants.PARTICIPANT_MIN_CAPACITY;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 
@@ -12,9 +15,6 @@ public record Participant (
         Integer capacity
 
 ) {
-    private final static Integer PARTICIPANT_MIN_CAPACITY = 1;
-    private final static Integer PARTICIPANT_MAX_CAPACITY = 30;
-
     public Participant {
         validate(current, capacity);
     }

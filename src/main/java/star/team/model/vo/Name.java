@@ -1,5 +1,8 @@
 package star.team.model.vo;
 
+import static star.team.constants.TeamConstants.NAME_MAX_LENGTH;
+import static star.team.constants.TeamConstants.NAME_MIN_LENGTH;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 
@@ -8,10 +11,6 @@ public record Name(
         @Column(name = "name", nullable = false)
         String value
 ) {
-
-    private final static Integer NAME_MAX_LENGTH = 30;
-    private final static Integer NAME_MIN_LENGTH = 2;
-
     public Name {
         validate(value);
     }

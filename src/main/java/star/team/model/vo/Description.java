@@ -1,5 +1,7 @@
 package star.team.model.vo;
 
+import static star.team.constants.TeamConstants.DESCRIPTION_MAX_LENGTH;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 
@@ -8,9 +10,6 @@ public record Description(
         @Column(name = "description", nullable = true)
         String value
 ) {
-
-    private static final Integer DESCRIPTION_MAX_LENGTH = 1000;
-
     public Description {
         validate(value);
     }
