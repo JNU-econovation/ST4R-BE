@@ -5,6 +5,7 @@ import static star.team.constants.TeamConstants.PARTICIPANT_MIN_CAPACITY;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
+import lombok.Builder;
 
 @Embeddable
 public record Participant (
@@ -15,6 +16,7 @@ public record Participant (
         Integer capacity
 
 ) {
+    @Builder
     public Participant {
         validate(current, capacity);
     }

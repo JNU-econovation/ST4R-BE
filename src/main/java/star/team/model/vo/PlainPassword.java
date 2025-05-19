@@ -17,7 +17,7 @@ public record PlainPassword(
         if (value == null) {
             return;
         }
-        if (value.isEmpty() || value.length() < PASSWORD_MIN_LENGTH
+        if (value.length() < PASSWORD_MIN_LENGTH
                 || value.length() > PASSWORD_MAX_LENGTH) {
             throw new IllegalArgumentException(
                     "비밀번호는 최소 %d자리, 최대 %d자리만 가능합니다.".formatted(PASSWORD_MIN_LENGTH,

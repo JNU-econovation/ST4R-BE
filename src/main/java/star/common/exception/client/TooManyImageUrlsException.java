@@ -1,6 +1,4 @@
-package star.home.board.exception;
-
-import star.common.exception.client.ClientException;
+package star.common.exception.client;
 
 public class TooManyImageUrlsException extends ClientException {
 
