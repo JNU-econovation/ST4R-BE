@@ -1,12 +1,14 @@
 package star.home.board.service;
 
+import static star.common.constants.CommonConstants.MAX_IMAGE_COUNT;
+
 import java.util.List;
 import java.util.stream.IntStream;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import star.home.board.dto.BoardImageDTO;
-import star.home.board.exception.TooManyImageUrlsException;
+import star.common.exception.client.TooManyImageUrlsException;
 import star.home.board.model.entity.Board;
 import star.home.board.model.entity.BoardImage;
 import star.home.board.repository.BoardImageRepository;
@@ -14,8 +16,6 @@ import star.home.board.repository.BoardImageRepository;
 @Service
 @RequiredArgsConstructor
 public class BoardImageService {
-
-    private final static Integer MAX_IMAGE_COUNT = 10;
 
     private final BoardImageRepository boardImageRepository;
 
