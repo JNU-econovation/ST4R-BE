@@ -1,4 +1,4 @@
-package star.home.board.dto.request;
+package star.home.board.dto;
 
 import star.home.board.model.entity.BoardImage;
 
