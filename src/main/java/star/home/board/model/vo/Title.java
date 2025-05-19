@@ -1,15 +1,14 @@
 package star.home.board.model.vo;
 
+import static star.home.constants.HomeConstants.TITLE_MAX_LENGTH;
+import static star.home.constants.HomeConstants.TITLE_MIN_LENGTH;
+
 import jakarta.persistence.Embeddable;
 
 @Embeddable
 public record Title(
         String value
 ) {
-
-    private static final int TITLE_MIN_LENGTH = 2;
-    private static final int TITLE_MAX_LENGTH = 30;
-
     public Title {
         validateTitle(value);
     }

@@ -14,7 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import star.common.constants.CommonConstants;
 import star.common.exception.client.YouAreNotAuthorException;
 import star.common.service.BaseRetryRecoverService;
-import star.home.board.dto.request.BoardImageDTO;
+import star.home.board.dto.BoardImageDTO;
 import star.home.board.dto.request.BoardRequest;
 import star.home.board.dto.response.BoardResponse;
 import star.home.board.dto.response.BoardResponse.Author;

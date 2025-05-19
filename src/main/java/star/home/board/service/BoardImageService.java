@@ -5,7 +5,7 @@ import java.util.stream.IntStream;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import star.home.board.dto.request.BoardImageDTO;
+import star.home.board.dto.BoardImageDTO;
 import star.home.board.exception.TooManyImageUrlsException;
 import star.home.board.model.entity.Board;
 import star.home.board.model.entity.BoardImage;
