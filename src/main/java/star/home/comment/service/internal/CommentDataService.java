@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import star.common.constants.CommonConstants;
 import star.common.exception.client.YouAreNotAuthorException;
-import star.common.service.BaseRetryRecoverService;
 import star.home.board.model.entity.Board;
 import star.home.comment.dto.request.CommentRequest;
 import star.home.comment.exception.InvalidIdCommentException;
@@ -88,7 +87,8 @@ public class CommentDataService {
     @Transactional(readOnly = true)
     public List<Comment> getChildCommentEntitiesUsingRootCommentIds(Long boardId,
             List<Long> rootCommentIds) {
-        return commentRepository.getCommentsByBoardIdAndRootCommentIdIn(boardId, rootCommentIds);
+        return commentRepository.getCommentsByBoardIdAndRootCommentIdInAndDepthNot(boardId,
+                rootCommentIds, ROOT_COMMENT_DEPTH);
     }
 
     @Transactional
