@@ -10,7 +10,7 @@ import star.member.dto.MemberInfoDTO;
 
 @Service
 @RequiredArgsConstructor
-public class BoardCommentFacadeService { //순환참조 때매 만듦
+public class CreateCommentFacadeService { //순환참조 때매 만듦
     private final BoardService boardService;
     private final CommentService commentService;
 
