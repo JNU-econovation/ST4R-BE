@@ -11,8 +11,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import star.common.exception.client.InvalidPageableFieldException;
 import star.common.exception.server.InternalServerException;
 import star.common.service.BaseRetryRecoverService;
 import star.home.board.mapper.BoardCommentMapper;
@@ -28,6 +30,7 @@ import star.member.dto.MemberInfoDTO;
 @RequiredArgsConstructor
 public class CommentService extends BaseRetryRecoverService {
 
+    private static final List<String> ALLOWED_SORT_FIELDS = List.of("createdAt");
     private final CommentDataService commentDataService;
 
     @Transactional
@@ -38,7 +41,7 @@ public class CommentService extends BaseRetryRecoverService {
     @Transactional(readOnly = true)
     public Page<CommentResponse> getCommentsPage(@Nullable MemberInfoDTO memberInfoDTO,
             Long boardId, Pageable pageable) {
-
+        validateSortFields(pageable);
         boolean haveComment = commentDataService.existsComment(boardId);
 
         if (!haveComment) {
@@ -77,6 +80,13 @@ public class CommentService extends BaseRetryRecoverService {
         commentDataService.hardDeleteAllComments(boardId);
     }
 
+    private void validateSortFields(Pageable pageable) {
+        for (Sort.Order order : pageable.getSort()) {
+            if (!ALLOWED_SORT_FIELDS.contains(order.getProperty())) {
+                throw new InvalidPageableFieldException(order.getProperty());
+            }
+        }
+    }
 
     private List<CommentDTO> makeCommentDTOList(List<Comment> rootComments,
             List<Comment> notRootComments) {
