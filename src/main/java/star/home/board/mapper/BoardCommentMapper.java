@@ -2,19 +2,20 @@ package star.home.board.mapper;
 
 import java.util.List;
 import star.home.board.dto.response.BoardResponse.Author;
-import star.home.board.dto.response.BoardResponse.Comment;
 import star.home.comment.dto.CommentDTO;
+import star.home.comment.dto.response.CommentResponse;
 
 public class BoardCommentMapper {
 
-    public static List<Comment> toCommentVOs(List<CommentDTO> commentDTOs, Long viewerId, Long authorId) {
+    public static List<CommentResponse> toCommentVOs(List<CommentDTO> commentDTOs, Long viewerId,
+            Long authorId) {
         return commentDTOs.stream()
-                .map(dto -> toCommentVO(dto, viewerId, authorId))
+                .map(dto -> toCommentResponse(dto, viewerId, authorId))
                 .toList();
     }
 
-    private static Comment toCommentVO(CommentDTO dto, Long viewerId, Long authorId) {
-        return Comment.builder()
+    private static CommentResponse toCommentResponse(CommentDTO dto, Long viewerId, Long authorId) {
+        return CommentResponse.builder()
                 .id(dto.getId())
                 .author(Author.builder()
                         .id(dto.getMemberInfoDTO().id())
