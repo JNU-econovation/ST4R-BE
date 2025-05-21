@@ -65,8 +65,15 @@ public class CommentDataService {
                 .content(request.content())
                 .build();
 
-        comment.setRootComment(Objects.requireNonNullElse(rootComment, comment));
+        if (rootComment == null) {
+            commentRepository.save(comment);
+            /*
+             * save 안하면 db에 반영 안되어서
+             * org.hibernate.TransientPropertyValueException 이 뜸
+             */
+        }
 
+        comment.setRootComment(Objects.requireNonNullElse(rootComment, comment));
         increaseCommentCount(board);
         commentRepository.save(comment);
 
@@ -79,7 +86,8 @@ public class CommentDataService {
     }
 
     @Transactional(readOnly = true)
-    public List<Comment> getChildCommentEntitiesUsingRootCommentIds(Long boardId, List<Long> rootCommentIds) {
+    public List<Comment> getChildCommentEntitiesUsingRootCommentIds(Long boardId,
+            List<Long> rootCommentIds) {
         return commentRepository.getCommentsByBoardIdAndRootCommentIdIn(boardId, rootCommentIds);
     }
 
