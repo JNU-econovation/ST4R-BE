@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import star.common.constants.CommonConstants;
 import star.common.exception.client.YouAreNotAuthorException;
-import star.common.service.BaseRetryRecoverService;
 import star.home.board.model.entity.Board;
 import star.home.comment.dto.request.CommentRequest;
 import star.home.comment.exception.InvalidIdCommentException;
@@ -65,8 +64,15 @@ public class CommentDataService {
                 .content(request.content())
                 .build();
 
-        comment.setRootComment(Objects.requireNonNullElse(rootComment, comment));
+        if (rootComment == null) {
+            commentRepository.save(comment);
+            /*
+             * save 안하면 db에 반영 안되어서
+             * org.hibernate.TransientPropertyValueException 이 뜸
+             */
+        }
 
+        comment.setRootComment(Objects.requireNonNullElse(rootComment, comment));
         increaseCommentCount(board);
         commentRepository.save(comment);
 
@@ -79,8 +85,10 @@ public class CommentDataService {
     }
 
     @Transactional(readOnly = true)
-    public List<Comment> getChildCommentEntitiesUsingRootCommentIds(Long boardId, List<Long> rootCommentIds) {
-        return commentRepository.getCommentsByBoardIdAndRootCommentIdIn(boardId, rootCommentIds);
+    public List<Comment> getChildCommentEntitiesUsingRootCommentIds(Long boardId,
+            List<Long> rootCommentIds) {
+        return commentRepository.getCommentsByBoardIdAndRootCommentIdInAndDepthNot(boardId,
+                rootCommentIds, ROOT_COMMENT_DEPTH);
     }
 
     @Transactional

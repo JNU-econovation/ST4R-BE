@@ -16,7 +16,9 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
 
     Boolean existsByBoardId(Long boardId);
 
-    List<Comment> getCommentsByBoardIdAndRootCommentIdIn(Long boardId, List<Long> rootCommentIds);
+    List<Comment> getBoardsByBoardIdAndDepth(Long boardId, Integer rootCommentDepth,
+            Pageable pageable);
 
-    List<Comment> getBoardsByBoardIdAndDepth(Long boardId, Integer rootCommentDepth, Pageable pageable);
+    List<Comment> getCommentsByBoardIdAndRootCommentIdInAndDepthNot(Long boardId,
+            List<Long> rootCommentIds, Integer rootCommentDepth);
 }

@@ -40,7 +40,7 @@ public class Comment extends SoftDeletableEntity {
 
     @Setter
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "root_comment_id", nullable = false)
+    @JoinColumn(name = "root_comment_id", nullable = true)
     private Comment rootComment;
 
     @ManyToOne(fetch = FetchType.LAZY)
