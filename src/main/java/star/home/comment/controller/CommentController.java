@@ -25,7 +25,7 @@ import star.home.comment.service.CommentService;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/home/boards/{boardId}")
+@RequestMapping("/home/boards/{boardId}/comments")
 public class CommentController {
 
     private final CreateCommentFacadeService createCommentFacadeService;
@@ -54,7 +54,7 @@ public class CommentController {
                 commentService.getCommentsPage(userDetails.getMemberInfoDTO(), boardId, pageable));
     }
 
-    @PutMapping("/comments/{commentId}")
+    @PutMapping("/{commentId}")
     public ResponseEntity<CommonResponse> updateComment(
             @PathVariable Long boardId,
             @PathVariable Long commentId,
@@ -65,7 +65,7 @@ public class CommentController {
         return ResponseEntity.ok(CommonResponse.success());
     }
 
-    @DeleteMapping("/comments/{commentId}")
+    @DeleteMapping("/{commentId}")
     public ResponseEntity<CommonResponse> softDeleteComment(
             @PathVariable Long boardId,
             @PathVariable Long commentId,
