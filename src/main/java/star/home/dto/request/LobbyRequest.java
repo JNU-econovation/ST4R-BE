@@ -16,8 +16,7 @@ public record LobbyRequest(
 
     private void validate(String period) {
         if (!PERIOD_FIELD.contains(period)) {
-            throw new IllegalArgumentException(
-                    "period는 %s 중에 하나여야합니다.".formatted(PERIOD_FIELD.toString()));
+            throw new IllegalArgumentException("period는 %s 중에 하나여야합니다.".formatted(PERIOD_FIELD.toString()));
         }
     }
 }
