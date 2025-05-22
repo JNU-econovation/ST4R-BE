@@ -4,10 +4,13 @@ import jakarta.annotation.Nullable;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import star.common.exception.client.InvalidPageableFieldException;
 import star.common.exception.server.InternalServerException;
 import star.home.board.service.BoardService;
 import star.home.constants.Period;
@@ -17,11 +20,15 @@ import star.member.dto.MemberInfoDTO;
 @Service
 @RequiredArgsConstructor
 public class LobbyService {
+    private static final List<String> ALLOWED_SORT_FIELDS = List.of("createdAt", "viewCount", "likeCount");
 
     private final BoardService boardService;
 
     public LobbyBoardResponse getLobbyBoards(@Nullable MemberInfoDTO memberInfoDTO, Period period,
             Pageable pageable) {
+
+        validateSortFields(pageable);
+
         LocalDateTime start, end;
 
         switch (period) {
@@ -60,6 +67,14 @@ public class LobbyService {
         return LobbyBoardResponse.builder()
                 .boardPeeks(boardService.getBoardPeeks(memberInfoDTO, start, end, pageable))
                 .build();
+    }
+
+    private void validateSortFields(Pageable pageable) {
+        for (Sort.Order order : pageable.getSort()) {
+            if (!ALLOWED_SORT_FIELDS.contains(order.getProperty())) {
+                throw new InvalidPageableFieldException(order.getProperty());
+            }
+        }
     }
 
 }
