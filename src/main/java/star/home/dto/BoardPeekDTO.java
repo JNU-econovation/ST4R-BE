@@ -2,7 +2,7 @@ package star.home.dto;
 
 import java.time.LocalDateTime;
 import lombok.Builder;
-import star.home.board.dto.response.BoardResponse;
+import star.home.board.model.entity.Board;
 import star.home.board.model.vo.Marker;
 
 @Builder
@@ -14,6 +14,7 @@ public record BoardPeekDTO(
         Marker marker,
         String category,
         Integer viewCount,
+        Integer commentCount,
         Integer likeCount,
         Boolean liked,
         LocalDateTime createdAt
@@ -21,24 +22,25 @@ public record BoardPeekDTO(
 
     private static final Integer CONTENT_PREVIEW_MAX_LENGTH = 100;
 
-    public static BoardPeekDTO from(BoardResponse boardResponse) {
-        String contentText = boardResponse.content().text();
-        Marker marker = boardResponse.content().map().marker();
+    public static BoardPeekDTO from(Board board, String imageUrl, Boolean liked) {
+        String contentText = board.getContent().text();
 
         return BoardPeekDTO.builder()
-                .id(boardResponse.id())
-                .imageUrl(boardResponse.imageUrls().getFirst())
-                .liked(boardResponse.liked())
-                .title(boardResponse.title())
+                .id(board.getId())
+                .imageUrl(imageUrl)
+                .title(board.getTitle().value())
                 .contentPreview(
-                        contentText.length() > CONTENT_PREVIEW_MAX_LENGTH ? contentText.substring(0,
-                                CONTENT_PREVIEW_MAX_LENGTH) : contentText)
-                .marker(marker)
-                .category(boardResponse.category())
-                .viewCount(boardResponse.viewCount())
-                .likeCount(boardResponse.likeCount())
-                .createdAt(boardResponse.createdAt())
+                        contentText.length() > CONTENT_PREVIEW_MAX_LENGTH
+                                ? contentText.substring(0, CONTENT_PREVIEW_MAX_LENGTH)
+                                : contentText)
+                .marker(board.getContent().map().marker())
+                .category(board.getCategory().getName())
+                .viewCount(board.getViewCount())
+                .commentCount(board.getCommentCount())
+                .likeCount(board.getHeartCount())
+                .liked(liked)
+                .createdAt(board.getCreatedAt())
                 .build();
-
     }
+
 }
