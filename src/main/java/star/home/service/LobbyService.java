@@ -4,13 +4,16 @@ import jakarta.annotation.Nullable;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import star.common.exception.server.InternalServerException;
+import star.common.util.CommonUtils;
 import star.home.board.service.BoardService;
 import star.home.constants.Period;
+import star.common.constants.SortField;
 import star.home.dto.response.LobbyBoardResponse;
 import star.member.dto.MemberInfoDTO;
 
@@ -18,10 +21,16 @@ import star.member.dto.MemberInfoDTO;
 @RequiredArgsConstructor
 public class LobbyService {
 
+    private static final List<SortField> ALLOWED_SORT_FIELDS = List.of(SortField.CREATED_AT,
+            SortField.HEART_COUNT, SortField.VIEW_COUNT);
+
     private final BoardService boardService;
 
     public LobbyBoardResponse getLobbyBoards(@Nullable MemberInfoDTO memberInfoDTO, Period period,
             Pageable pageable) {
+
+        pageable = CommonUtils.convertSortForDb(ALLOWED_SORT_FIELDS, pageable);
+
         LocalDateTime start, end;
 
         switch (period) {
@@ -61,5 +70,4 @@ public class LobbyService {
                 .boardPeeks(boardService.getBoardPeeks(memberInfoDTO, start, end, pageable))
                 .build();
     }
-
 }

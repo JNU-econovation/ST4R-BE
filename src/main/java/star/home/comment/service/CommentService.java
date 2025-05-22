@@ -11,12 +11,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import star.common.exception.client.InvalidPageableFieldException;
 import star.common.exception.server.InternalServerException;
 import star.common.service.BaseRetryRecoverService;
+import star.common.util.CommonUtils;
 import star.home.board.mapper.BoardCommentMapper;
 import star.home.board.model.entity.Board;
 import star.home.comment.dto.CommentDTO;
@@ -24,13 +23,14 @@ import star.home.comment.dto.request.CommentRequest;
 import star.home.comment.dto.response.CommentResponse;
 import star.home.comment.model.entity.Comment;
 import star.home.comment.service.internal.CommentDataService;
+import star.common.constants.SortField;
 import star.member.dto.MemberInfoDTO;
 
 @Service
 @RequiredArgsConstructor
 public class CommentService extends BaseRetryRecoverService {
 
-    private static final List<String> ALLOWED_SORT_FIELDS = List.of("createdAt");
+    private static final List<SortField> ALLOWED_SORT_FIELDS = List.of(SortField.CREATED_AT);
     private final CommentDataService commentDataService;
 
     @Transactional
@@ -41,8 +41,9 @@ public class CommentService extends BaseRetryRecoverService {
     @Transactional(readOnly = true)
     public Page<CommentResponse> getCommentsPage(@Nullable MemberInfoDTO memberInfoDTO,
             Long boardId, Pageable pageable) {
-        validateSortFields(pageable);
-        boolean haveComment = commentDataService.existsComment(boardId);
+        pageable = CommonUtils.convertSortForDb(ALLOWED_SORT_FIELDS, pageable);
+
+        Boolean haveComment = commentDataService.existsComment(boardId);
 
         if (!haveComment) {
             return new PageImpl<>(new ArrayList<>());
@@ -82,13 +83,8 @@ public class CommentService extends BaseRetryRecoverService {
         commentDataService.hardDeleteAllComments(boardId);
     }
 
-    private void validateSortFields(Pageable pageable) {
-        for (Sort.Order order : pageable.getSort()) {
-            if (!ALLOWED_SORT_FIELDS.contains(order.getProperty())) {
-                throw new InvalidPageableFieldException(order.getProperty());
-            }
-        }
-    }
+
+
 
     private List<CommentDTO> makeCommentDTOList(List<Comment> rootComments,
             List<Comment> notRootComments) {

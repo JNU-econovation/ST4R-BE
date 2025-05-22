@@ -3,6 +3,8 @@ package star.common.exception.handler;
 import static star.common.constants.CommonConstants.CRITICAL_ERROR_MESSAGE;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanInstantiationException;
+import org.springframework.core.NestedExceptionUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
@@ -53,7 +55,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
 
-
     @ExceptionHandler(InternalServerException.class)
     public ResponseEntity<CommonResponse> handleInternalServerException(InternalServerException e) {
         log.error(e.getMessage(), e);
@@ -81,6 +82,24 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<CommonResponse> handleIllegalArgumentException(
             IllegalArgumentException e) {
         return new ResponseEntity<>(CommonResponse.failure(e.getMessage()), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(BeanInstantiationException.class)
+    public ResponseEntity<CommonResponse> handleBeanInstantiationException(
+            BeanInstantiationException e) {
+
+        Throwable cause = NestedExceptionUtils.getMostSpecificCause(e);
+
+        //rootCause 니까 instanceof 말고 getclass 로 하기
+        if (cause.getClass().equals(IllegalArgumentException.class)) {
+            return new ResponseEntity<>(CommonResponse.failure(cause.getMessage()),
+                    HttpStatus.BAD_REQUEST);
+        }
+
+        log.warn(e.getMessage(), e);
+        return new ResponseEntity<>(CommonResponse.failure("요청 파라미터가 잘못되었습니다."),
+                HttpStatus.BAD_REQUEST);
+
     }
 
     @ExceptionHandler(Exception.class)

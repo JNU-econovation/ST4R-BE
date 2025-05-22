@@ -8,6 +8,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import star.common.security.dto.StarUserDetails;
@@ -25,6 +26,7 @@ public class LobbyController {
     private final LobbyService lobbyService;
 
     //todo: 혹시라도 로비에서 board 말고 다른것도 응답해야 한다면 uri 리팩터링 하기
+    @GetMapping
     public ResponseEntity<LobbyBoardResponse> getLobbyBoards(
             @Nullable @AuthenticationPrincipal StarUserDetails userDetails,
             @Valid LobbyRequest request,
