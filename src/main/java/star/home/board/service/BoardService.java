@@ -6,10 +6,13 @@ import jakarta.annotation.Nullable;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.OptimisticLockException;
 import jakarta.persistence.PersistenceContext;
+import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
@@ -27,6 +30,7 @@ import star.home.board.model.vo.Content;
 import star.home.board.repository.BoardRepository;
 import star.home.category.service.CategoryService;
 import star.home.comment.service.CommentService;
+import star.home.dto.BoardPeekDTO;
 import star.member.dto.MemberInfoDTO;
 import star.member.model.entity.Member;
 import star.member.service.MemberService;
@@ -63,6 +67,26 @@ public class BoardService extends BaseRetryRecoverService {
         return board.getId();
     }
 
+    public Page<BoardPeekDTO> getBoardPeeks(
+            @Nullable MemberInfoDTO memberInfoDTO,
+            LocalDateTime start, LocalDateTime end,
+            Pageable pageable) {
+
+        Long viewerId = (memberInfoDTO != null) ? memberInfoDTO.id() : ANONYMOUS_MEMBER_ID;
+
+        Page<Board> boardsPage = boardRepository.getBoardsByCreatedAtBetween(start, end, pageable);
+
+        List<BoardPeekDTO> boardPeekDTOs = boardsPage.getContent().stream()
+                .map(board -> BoardPeekDTO.from(
+                        board,
+                        boardImageService.getImageUrls(board.getId()).getFirst().imageUrl(),
+                        heartService.hasHearted(viewerId, board.getId())
+                )).toList();
+
+        return new PageImpl<>(boardPeekDTOs, pageable, boardsPage.getTotalElements());
+    }
+
+
     @Transactional
     public BoardResponse getBoard(@Nullable MemberInfoDTO memberInfoDTO, Long boardId) {
         Board board = getBoardEntity(boardId);
@@ -82,7 +106,8 @@ public class BoardService extends BaseRetryRecoverService {
                 .stream()
                 .map(BoardImageDTO::imageUrl)
                 .toList();
-
+        
+        //todo: 추후에 boardResponse from 으로 더 간결하게 리팩터링하기
         return BoardResponse.builder()
                 .id(boardId)
                 .author(author)

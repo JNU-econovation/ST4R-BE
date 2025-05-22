@@ -61,7 +61,9 @@ public class CommentService extends BaseRetryRecoverService {
         List<CommentResponse> commentResponseList = BoardCommentMapper.toCommentVOs(commentDTOs,
                 viewerId, authorId);
 
-        return new PageImpl<>(commentResponseList, pageable, commentDTOs.size());
+        Integer totalRootCount = commentDataService.countAllRootComments(boardId);
+
+        return new PageImpl<>(commentResponseList, pageable, totalRootCount);
     }
 
     @Transactional

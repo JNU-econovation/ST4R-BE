@@ -91,6 +91,11 @@ public class CommentDataService {
                 rootCommentIds, ROOT_COMMENT_DEPTH);
     }
 
+    @Transactional(readOnly = true)
+    public Integer countAllRootComments(Long boardId) {
+        return commentRepository.countCommentsByBoardId(boardId);
+    }
+
     @Transactional
     public void updateComment(Long boardId, Long commentId, MemberInfoDTO memberInfoDTO,
             CommentRequest request) {
