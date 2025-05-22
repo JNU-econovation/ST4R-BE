@@ -1,5 +1,8 @@
 package star.home.constants;
 
+import lombok.Getter;
+
+@Getter
 public enum Period {
     DAILY("daily"),
     WEEKLY("weekly"),
@@ -10,10 +13,6 @@ public enum Period {
 
     Period(String value) {
         this.value = value;
-    }
-
-    public String getValue() {
-        return value;
     }
 
     public static Period from(String value) {
