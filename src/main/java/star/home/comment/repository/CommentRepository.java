@@ -21,4 +21,6 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
 
     List<Comment> getCommentsByBoardIdAndRootCommentIdInAndDepthNot(Long boardId,
             List<Long> rootCommentIds, Integer rootCommentDepth);
+
+    Integer countCommentsByBoardId(Long boardId);
 }
