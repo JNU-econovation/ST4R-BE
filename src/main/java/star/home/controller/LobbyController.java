@@ -30,7 +30,7 @@ public class LobbyController {
     public ResponseEntity<LobbyBoardResponse> getLobbyBoards(
             @Nullable @AuthenticationPrincipal StarUserDetails userDetails,
             @Valid LobbyRequest request,
-            @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+            @PageableDefault(sort = "likeCount", direction = Sort.Direction.DESC) Pageable pageable) {
 
         MemberInfoDTO memberInfoDTO = (userDetails != null) ? userDetails.getMemberInfoDTO() : null;
 
