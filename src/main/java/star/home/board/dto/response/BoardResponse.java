@@ -18,27 +18,12 @@ public record BoardResponse (
         Integer viewCount,
         LocalDateTime createdAt,
         Integer likeCount,
-        Integer commentCount,
-        List<Comment> comments
+        Integer commentCount
 ) {
     @Builder
     public record Author (
             Long id,
             String imageUrl,
             String nickname
-    ) {
-
-    }
-
-    @Builder
-    public record Comment (
-            Long id,
-            Author author,
-            Boolean isViewerAuthor,
-            Boolean isCommenterAuthor,
-            String content,
-            LocalDateTime createdAt,
-            List<Comment> childComments,
-            Integer depth
     ) { }
 }

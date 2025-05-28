@@ -14,6 +14,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import star.common.entity.SoftDeletableEntity;
 import star.home.board.model.entity.Board;
 import star.home.comment.model.vo.Content;
@@ -37,6 +38,11 @@ public class Comment extends SoftDeletableEntity {
     @JoinColumn(name = "board_id", nullable = false)
     private Board board;
 
+    @Setter
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "root_comment_id", nullable = true)
+    private Comment rootComment;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parrent_comment_id", nullable = true)
     private Comment parentComment;
@@ -48,7 +54,8 @@ public class Comment extends SoftDeletableEntity {
     private Content content;
 
     @Builder
-    public Comment(Member author, Board board, Comment parentComment, Integer depth, String content) {
+    public Comment(Member author, Board board, Comment parentComment, Integer depth,
+            String content) {
         this.author = author;
         this.board = board;
         this.parentComment = parentComment;
@@ -57,6 +64,7 @@ public class Comment extends SoftDeletableEntity {
     }
 
     public void updateComment(String content) {
-        this.content =  new Content(content);
+        this.content = new Content(content);
     }
+
 }

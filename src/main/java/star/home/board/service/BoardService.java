@@ -1,12 +1,18 @@
 package star.home.board.service;
 
+import static star.common.constants.CommonConstants.ANONYMOUS_MEMBER_ID;
+
 import jakarta.annotation.Nullable;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.OptimisticLockException;
 import jakarta.persistence.PersistenceContext;
+import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
@@ -18,15 +24,13 @@ import star.home.board.dto.BoardImageDTO;
 import star.home.board.dto.request.BoardRequest;
 import star.home.board.dto.response.BoardResponse;
 import star.home.board.dto.response.BoardResponse.Author;
-import star.home.board.dto.response.BoardResponse.Comment;
 import star.home.board.exception.NoSuchBoardException;
-import star.home.board.mapper.BoardCommentMapper;
 import star.home.board.model.entity.Board;
 import star.home.board.model.vo.Content;
 import star.home.board.repository.BoardRepository;
 import star.home.category.service.CategoryService;
-import star.home.comment.dto.CommentDTO;
 import star.home.comment.service.CommentService;
+import star.home.dto.BoardPeekDTO;
 import star.member.dto.MemberInfoDTO;
 import star.member.model.entity.Member;
 import star.member.service.MemberService;
@@ -36,14 +40,13 @@ import star.member.service.MemberService;
 @Slf4j
 public class BoardService extends BaseRetryRecoverService {
 
-    private static final Long ANONYMOUS_MEMBER_ID = -12345678L;
 
     private final MemberService memberService;
     private final CategoryService categoryService;
     private final BoardImageService boardImageService;
     private final HeartService heartService;
-    private final CommentService commentService;
     private final BoardRepository boardRepository;
+    private final CommentService commentService;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -64,6 +67,26 @@ public class BoardService extends BaseRetryRecoverService {
         return board.getId();
     }
 
+    public Page<BoardPeekDTO> getBoardPeeks(
+            @Nullable MemberInfoDTO memberInfoDTO,
+            LocalDateTime start, LocalDateTime end,
+            Pageable pageable) {
+
+        Long viewerId = (memberInfoDTO != null) ? memberInfoDTO.id() : ANONYMOUS_MEMBER_ID;
+
+        Page<Board> boardsPage = boardRepository.getBoardsByCreatedAtBetween(start, end, pageable);
+
+        List<BoardPeekDTO> boardPeekDTOs = boardsPage.getContent().stream()
+                .map(board -> BoardPeekDTO.from(
+                        board,
+                        boardImageService.getImageUrls(board.getId()).getFirst().imageUrl(),
+                        heartService.hasHearted(viewerId, board.getId())
+                )).toList();
+
+        return new PageImpl<>(boardPeekDTOs, pageable, boardsPage.getTotalElements());
+    }
+
+
     @Transactional
     public BoardResponse getBoard(@Nullable MemberInfoDTO memberInfoDTO, Long boardId) {
         Board board = getBoardEntity(boardId);
@@ -72,9 +95,6 @@ public class BoardService extends BaseRetryRecoverService {
         Long authorId = authorMember.id();
 
         increaseViewCount(board);
-
-        List<CommentDTO> commentDTOs = commentService.getComments(boardId);
-        List<Comment> commentVOs = BoardCommentMapper.toCommentVOs(commentDTOs, viewerId, authorId);
 
         Author author = Author.builder()
                 .id(authorId)
@@ -86,7 +106,8 @@ public class BoardService extends BaseRetryRecoverService {
                 .stream()
                 .map(BoardImageDTO::imageUrl)
                 .toList();
-
+        
+        //todo: 추후에 boardResponse from 으로 더 간결하게 리팩터링하기
         return BoardResponse.builder()
                 .id(boardId)
                 .author(author)
@@ -95,12 +116,11 @@ public class BoardService extends BaseRetryRecoverService {
                 .title(board.getTitle().value())
                 .imageUrls(imageUrlStrings)
                 .content(Content.copyOf(board.getContent())) //안전하게 깊은 복사하기
-                .category(board.getCategory().getName())
+                .category(board.getCategory().getName().name())
                 .viewCount(board.getViewCount())
                 .createdAt(board.getCreatedAt())
                 .likeCount(board.getHeartCount())
                 .commentCount(board.getCommentCount())
-                .comments(commentVOs)
                 .build();
     }
 
@@ -127,7 +147,7 @@ public class BoardService extends BaseRetryRecoverService {
             throw new YouAreNotAuthorException();
         }
 
-        commentService.hardDeleteComments(boardId);
+        commentService.hardDeleteAllComments(boardId);
         heartService.deleteHeartsByBoardDelete(boardId);
         boardImageService.deleteBoardImageUrls(boardId);
         boardRepository.delete(board);
