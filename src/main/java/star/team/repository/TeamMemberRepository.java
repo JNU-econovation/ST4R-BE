@@ -7,4 +7,5 @@ import star.team.model.entity.TeamMember;
 @Repository
 public interface TeamMemberRepository extends CrudRepository<TeamMember, Long> {
 
+    void deleteTeamMembersByTeamId(Long teamId);
 }
