@@ -34,7 +34,7 @@ public record BoardPeekDTO(
                                 ? contentText.substring(0, CONTENT_PREVIEW_MAX_LENGTH)
                                 : contentText)
                 .marker(board.getContent().map().marker())
-                .category(board.getCategory().getName())
+                .category(board.getCategory().getName().name())
                 .viewCount(board.getViewCount())
                 .commentCount(board.getCommentCount())
                 .likeCount(board.getHeartCount())
