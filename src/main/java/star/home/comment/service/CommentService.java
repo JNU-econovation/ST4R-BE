@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import star.common.exception.server.InternalServerException;
 import star.common.service.BaseRetryRecoverService;
-import star.common.util.CommonUtils;
 import star.home.board.mapper.BoardCommentMapper;
 import star.home.board.model.entity.Board;
 import star.home.comment.dto.CommentDTO;
@@ -41,8 +40,6 @@ public class CommentService extends BaseRetryRecoverService {
     @Transactional(readOnly = true)
     public Page<CommentResponse> getCommentsPage(@Nullable MemberInfoDTO memberInfoDTO,
             Long boardId, Pageable pageable) {
-        pageable = CommonUtils.convertSortForDb(ALLOWED_SORT_FIELDS, pageable);
-
         Boolean haveComment = commentDataService.existsComment(boardId);
 
         if (!haveComment) {
