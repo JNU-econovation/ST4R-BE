@@ -116,7 +116,7 @@ public class BoardService extends BaseRetryRecoverService {
                 .title(board.getTitle().value())
                 .imageUrls(imageUrlStrings)
                 .content(Content.copyOf(board.getContent())) //안전하게 깊은 복사하기
-                .category(board.getCategory().getName())
+                .category(board.getCategory().getName().name())
                 .viewCount(board.getViewCount())
                 .createdAt(board.getCreatedAt())
                 .likeCount(board.getHeartCount())
