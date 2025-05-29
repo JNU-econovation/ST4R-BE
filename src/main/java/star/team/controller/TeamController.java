@@ -42,7 +42,7 @@ public class TeamController {
     @GetMapping("/{teamId}")
     public ResponseEntity<TeamDetailsResponse> getTeamDetails(
             @Nullable @AuthenticationPrincipal StarUserDetails userDetails,
-            Long teamId
+            @PathVariable Long teamId
     ) {
         MemberInfoDTO memberInfoDTO = (userDetails != null) ? userDetails.getMemberInfoDTO() : null;
 
