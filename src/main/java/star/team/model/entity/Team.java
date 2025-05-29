@@ -11,6 +11,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import star.home.board.model.vo.Jido;
 import star.team.model.vo.Description;
 import star.team.model.vo.Name;
 import star.team.model.vo.Participant;
@@ -43,14 +44,28 @@ public class Team {
     @Column(nullable = false)
     private LocalDateTime whenToMeet;
 
+    @Column(nullable = false)
+    private Jido location;
+
     @Builder
     public Team(Name name, Description description, Long leaderId, Participant participant,
-            EncryptedPassword encryptedPassword, LocalDateTime whenToMeet) {
+            EncryptedPassword encryptedPassword, LocalDateTime whenToMeet, Jido location) {
         this.name = name;
         this.description = description;
         this.leaderId = leaderId;
         this.participant = participant;
         this.encryptedPassword = encryptedPassword;
         this.whenToMeet = whenToMeet;
+        this.location = location;
+    }
+
+    public void update(Name name, Description description, EncryptedPassword encryptedPassword,
+            LocalDateTime whenToMeet, Integer maxParticipant, Jido location) {
+        this.name = name;
+        this.description = description;
+        this.encryptedPassword = encryptedPassword;
+        this.whenToMeet = whenToMeet;
+        this.participant.setCapacity(maxParticipant);
+        this.location = location;
     }
 }
