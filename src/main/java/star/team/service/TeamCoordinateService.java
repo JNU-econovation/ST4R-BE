@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import star.common.dto.response.internal.Author;
+import star.common.util.CommonUtils;
 import star.member.dto.MemberInfoDTO;
 import star.member.model.entity.Member;
 import star.member.service.MemberService;
@@ -40,11 +41,14 @@ public class TeamCoordinateService {
 
     @Transactional
     public Long createTeam(MemberInfoDTO memberInfoDTO, TeamRequest request) {
-
+    
+        //todo: 인당 만들 수 있는 & 들어갈 수 있는 팀 개수 제한시키기
+        
         Long memberId = memberInfoDTO.id();
         TeamDTO teamDTO = TeamDTO.builder()
                 .name(new Name(request.name()))
                 .location(request.location())
+                .whenToMeet(request.whenToMeet())
                 .plainPassword(new PlainPassword(request.password()))
                 .maxParticipantCount(request.maxParticipantCount())
                 .description(new Description(request.description()))
@@ -76,17 +80,16 @@ public class TeamCoordinateService {
                 .name(team.getName().value())
                 .description(team.getDescription().value())
                 .location(team.getLocation())
-                .whenToMeet(team.getWhenToMeet())
+                .whenToMeet(CommonUtils.convertLocalDateTimeToOffsetDateTime(team.getWhenToMeet()))
                 .nowParticipants(team.getParticipant().getCurrent())
                 .maxParticipants(team.getParticipant().getCapacity())
-                .createdAt(team.getCreatedAt())
+                .createdAt(CommonUtils.convertLocalDateTimeToOffsetDateTime(team.getCreatedAt()))
                 .likeCount(team.getHeartCount())
                 .liked(teamHeartDataService.hasHearted(viewerId, teamId))
                 .isPublic(isPublic(team))
                 .isJoinable(isJoinable(team))
                 .build();
     }
-
 
     @Transactional
     public void updateTeam(MemberInfoDTO memberInfoDTO, Long teamId, TeamRequest request) {
@@ -97,6 +100,7 @@ public class TeamCoordinateService {
         TeamDTO teamDTO = TeamDTO.builder()
                 .name(new Name(request.name()))
                 .location(request.location())
+                .whenToMeet(request.whenToMeet())
                 .plainPassword(new PlainPassword(request.password()))
                 .maxParticipantCount(request.maxParticipantCount())
                 .description(new Description(request.description()))

@@ -1,7 +1,8 @@
 package star.home.dto;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import lombok.Builder;
+import star.common.util.CommonUtils;
 import star.home.board.model.entity.Board;
 import star.home.board.model.vo.Jido;
 import star.home.board.model.vo.Marker;
@@ -18,7 +19,7 @@ public record BoardPeekDTO(
         Integer commentCount,
         Integer likeCount,
         Boolean liked,
-        LocalDateTime createdAt
+        OffsetDateTime createdAt
 ) {
 
     private static final Integer CONTENT_PREVIEW_MAX_LENGTH = 100;
@@ -42,7 +43,7 @@ public record BoardPeekDTO(
                 .commentCount(board.getCommentCount())
                 .likeCount(board.getHeartCount())
                 .liked(liked)
-                .createdAt(board.getCreatedAt())
+                .createdAt(CommonUtils.convertLocalDateTimeToOffsetDateTime(board.getCreatedAt()))
                 .build();
     }
 

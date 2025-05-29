@@ -4,13 +4,13 @@ import static star.common.constants.CommonConstants.MAX_IMAGE_COUNT;
 import static star.team.constants.TeamConstants.*;
 
 import jakarta.annotation.Nullable;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
-import java.time.LocalDateTime;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import java.time.OffsetDateTime;
 import java.util.List;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 import star.home.board.model.vo.Jido;
 
 public record TeamRequest(
@@ -19,11 +19,12 @@ public record TeamRequest(
         @Size(max = MAX_IMAGE_COUNT, message = "이미지는 최대 {max}개까지 등록할 수 있습니다.")
         List<String> imageUrls,
 
-        @NotBlank(message = "제목을 입력해주세요")
-        @Size(min = NAME_MIN_LENGTH, max = NAME_MAX_LENGTH, message = "제목의 길이는 최소 {min}자, 최대 {max}자여야 합니다.")
+        @NotBlank(message = "모임 이름을 입력해주세요")
+        @Size(min = NAME_MIN_LENGTH, max = NAME_MAX_LENGTH, message = "모임 이름의 길이는 최소 {min}자, 최대 {max}자여야 합니다.")
         String name,
 
-        LocalDateTime whenToMeet,
+        @NotNull(message = "모임 시간을 입력해주세요")
+        OffsetDateTime whenToMeet,
 
         @Min(PARTICIPANT_MIN_CAPACITY) @Max(PARTICIPANT_MAX_CAPACITY)
         Integer maxParticipantCount,
@@ -31,6 +32,7 @@ public record TeamRequest(
         @Nullable
         String password,
 
+        @NotNull(message = "위치 정보를 입력해주세요")
         Jido location,
 
         @Nullable

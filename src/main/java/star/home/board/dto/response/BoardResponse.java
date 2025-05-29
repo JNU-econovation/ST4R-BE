@@ -1,6 +1,6 @@
 package star.home.board.dto.response;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 import lombok.Builder;
 import star.common.dto.response.internal.Author;
@@ -17,7 +17,7 @@ public record BoardResponse (
         Content content,
         String category,
         Integer viewCount,
-        LocalDateTime createdAt,
+        OffsetDateTime createdAt,
         Integer likeCount,
         Integer commentCount
 ) { }
