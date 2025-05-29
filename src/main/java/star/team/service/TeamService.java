@@ -84,7 +84,10 @@ public class TeamService {
 
     @Transactional
     public void updateTeam(MemberInfoDTO memberInfoDTO, Long teamId, TeamRequest request) {
-        Long memberId = memberInfoDTO.id();
+        Team team = teamDataService.getTeamEntityById(teamId);
+
+        validateTeamLeader(memberInfoDTO, team);
+
         TeamDTO teamDTO = TeamDTO.builder()
                 .name(new Name(request.name()))
                 .location(request.location())
@@ -93,7 +96,7 @@ public class TeamService {
                 .description(new Description(request.description()))
                 .build();
 
-        Team updatedTeam = teamDataService.overwriteTeam(memberId, teamId, teamDTO);
+        Team updatedTeam = teamDataService.overwriteTeam(team, teamDTO);
         teamImageDataService.overwriteImageUrls(updatedTeam, request.imageUrls());
     }
 
@@ -101,9 +104,7 @@ public class TeamService {
     public void deleteTeam(MemberInfoDTO memberInfoDTO, Long teamId) {
         Team team = teamDataService.getTeamEntityById(teamId);
 
-        if (!team.getLeaderId().equals(memberInfoDTO.id())) {
-            throw new YouAreNotTeamLeaderException();
-        }
+        validateTeamLeader(memberInfoDTO, team);
 
         teamImageDataService.deleteBoardImageUrls(teamId);
         teamMemberDataService.deleteAllTeamMemberForTeamDelete(teamId);
@@ -116,6 +117,12 @@ public class TeamService {
 
     private Boolean isJoinable(Team team) {
         return team.getParticipant().getCurrent() < team.getParticipant().getCapacity();
+    }
+
+    private void validateTeamLeader(MemberInfoDTO memberInfoDTO, Team team) {
+        if (!team.getLeaderId().equals(memberInfoDTO.id())) {
+            throw new YouAreNotTeamLeaderException();
+        }
     }
 
 }
