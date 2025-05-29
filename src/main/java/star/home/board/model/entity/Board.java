@@ -30,7 +30,7 @@ public class Board extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    //optimistic lock
+    //For optimistic lock
     @Version
     private Long version;
 
@@ -77,7 +77,6 @@ public class Board extends BaseEntity {
     public void increaseViewCount() {
         this.viewCount++;
     }
-
 
     public void increaseCommentCount() {
         this.commentCount++;

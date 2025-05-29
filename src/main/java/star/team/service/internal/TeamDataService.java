@@ -1,14 +1,16 @@
 package star.team.service.internal;
 
+import static star.team.constants.TeamConstants.PARTICIPANT_MIN_CAPACITY;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import star.common.exception.server.InternalServerException;
 import star.common.security.encryption.util.AESEncryptionUtil;
-import star.team.dto.request.TeamDTO;
+import star.common.util.CommonUtils;
+import star.team.dto.TeamDTO;
 import star.team.exception.TeamNotFoundException;
-import star.team.exception.YouAreNotTeamLeaderException;
 import star.team.model.entity.Team;
 import star.team.model.vo.EncryptedPassword;
 import star.team.model.vo.Participant;
@@ -19,6 +21,7 @@ import star.team.repository.TeamRepository;
 @RequiredArgsConstructor
 @Slf4j
 public class TeamDataService {
+
     private final TeamRepository teamRepository;
     private final AESEncryptionUtil aesEncryptionUtil;
 
@@ -32,12 +35,11 @@ public class TeamDataService {
                 .description(teamDTO.description())
                 .encryptedPassword(encryptedPassword)
                 .leaderId(memberId)
-                .participant(
-                        Participant.builder()
-                                .current(1).capacity(teamDTO.maxParticipantCount())
-                                .build()
-                )
-                .whenToMeet(teamDTO.whenToMeet())
+                .participant(Participant.builder()
+                        .current(PARTICIPANT_MIN_CAPACITY + 1)
+                        .capacity(teamDTO.maxParticipantCount())
+                        .build())
+                .whenToMeet(CommonUtils.convertOffsetDateTimeToLocalDateTime(teamDTO.whenToMeet()))
                 .location(teamDTO.location())
                 .build();
 
@@ -50,17 +52,12 @@ public class TeamDataService {
     }
 
     @Transactional
-    public Team overwriteTeam(Long memberId, Long teamId, TeamDTO teamDTO) {
+    public Team overwriteTeam(Team team, TeamDTO teamDTO) {
         EncryptedPassword encryptedPassword =
                 (teamDTO.plainPassword() == null) ? null : encryptPassword(teamDTO.plainPassword());
 
-        Team team = getTeamEntityById(teamId);
-
-        if (!team.getLeaderId().equals(memberId)) {
-            throw new YouAreNotTeamLeaderException();
-        }
-
-        team.update(teamDTO.name(), teamDTO.description(), encryptedPassword, teamDTO.whenToMeet(),
+        team.update(teamDTO.name(), teamDTO.description(), encryptedPassword,
+                CommonUtils.convertOffsetDateTimeToLocalDateTime(teamDTO.whenToMeet()),
                 teamDTO.maxParticipantCount(), teamDTO.location());
 
         return team;

@@ -60,7 +60,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             FilterChain filterChain) throws IOException {
         try {
             String path = request.getRequestURI();
-            String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);boolean isHomePath = pathMatcher.match("/home/**", path);
+            String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+            boolean isHomePath = pathMatcher.match("/home/**", path);
 
             if (authHeader == null || !authHeader.startsWith(BEARER_TYPE)) {
                 if (isHomePath) {
@@ -117,7 +118,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         }
 
-        if (HttpMethod.GET.matches(method) && !pathMatcher.match("/home/**", path)) {
+        if (HttpMethod.GET.matches(method) && !pathMatcher.match("/home/**", path)
+                && !pathMatcher.match("/groups/**", path)) {
             return true;
         }
 
