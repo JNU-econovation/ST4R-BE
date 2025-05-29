@@ -8,4 +8,8 @@ import star.team.model.entity.TeamMember;
 public interface TeamMemberRepository extends JpaRepository<TeamMember, Long> {
 
     void deleteTeamMembersByTeamId(Long teamId);
+
+    void deleteTeamMembersByTeamIdAndMemberId(Long teamId, Long memberId);
+
+    boolean existsByTeamIdAndMemberId(Long teamId, Long memberId);
 }

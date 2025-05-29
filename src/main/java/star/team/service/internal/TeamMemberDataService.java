@@ -26,6 +26,16 @@ public class TeamMemberDataService {
         teamMemberRepository.save(teamMember);
     }
 
+    @Transactional(readOnly = true)
+    public boolean existsTeamMember(Long teamId, Long memberId) {
+        return teamMemberRepository.existsByTeamIdAndMemberId(teamId, memberId);
+    }
+
+    @Transactional
+    public void deleteTeamMember(Long teamId, Long memberId) {
+        teamMemberRepository.deleteTeamMembersByTeamIdAndMemberId(teamId, memberId);
+    }
+
     @Transactional
     public void deleteAllTeamMemberForTeamDelete(Long teamId) {
         teamMemberRepository.deleteTeamMembersByTeamId(teamId);

@@ -1,6 +1,6 @@
 package star.team.dto.response;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 import lombok.Builder;
 import star.common.dto.response.internal.Author;
@@ -15,10 +15,10 @@ public record TeamDetailsResponse(
         String name,
         String description,
         Jido location,
-        LocalDateTime whenToMeet,
+        OffsetDateTime whenToMeet,
         Integer nowParticipants,
         Integer maxParticipants,
-        LocalDateTime createdAt,
+        OffsetDateTime createdAt,
         Integer likeCount,
         Boolean liked,
         Boolean isPublic,

@@ -1,6 +1,7 @@
 package star.team.controller;
 
 import jakarta.annotation.Nullable;
+import jakarta.validation.Valid;
 import java.net.URI;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import star.common.dto.response.CommonResponse;
@@ -29,7 +31,7 @@ public class TeamController {
     @PostMapping
     public ResponseEntity<CommonResponse> createTeam(
             @AuthenticationPrincipal StarUserDetails userDetails,
-            TeamRequest request
+            @Valid @RequestBody TeamRequest request
     ) {
         Long teamId = service.createTeam(userDetails.getMemberInfoDTO(), request);
         URI location = URI.create("/groups/" + teamId);
@@ -51,7 +53,7 @@ public class TeamController {
     public ResponseEntity<CommonResponse> updateTeam(
             @AuthenticationPrincipal StarUserDetails userDetails,
             @PathVariable Long teamId,
-            TeamRequest request
+            @Valid @RequestBody TeamRequest request
     ) {
         service.updateTeam(userDetails.getMemberInfoDTO(), teamId, request);
 
