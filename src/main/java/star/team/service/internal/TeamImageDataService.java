@@ -23,6 +23,13 @@ public class TeamImageDataService {
         overwriteImageUrls(team, imageUrls);
     }
 
+    @Transactional(readOnly = true)
+    public List<String> getImageUrls(Long teamId) {
+        return teamImageRepository.getTeamImagesById(teamId).stream()
+                .map(TeamImage::getImageUrl)
+                .toList();
+    }
+
     @Transactional
     public void overwriteImageUrls(Team team, List<String> imageUrls) {
         if (imageUrls.size() > MAX_IMAGE_COUNT) {

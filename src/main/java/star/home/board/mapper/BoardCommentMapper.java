@@ -1,7 +1,7 @@
 package star.home.board.mapper;
 
 import java.util.List;
-import star.home.board.dto.response.BoardResponse.Author;
+import star.common.dto.response.internal.Author;
 import star.home.comment.dto.CommentDTO;
 import star.home.comment.dto.response.CommentResponse;
 

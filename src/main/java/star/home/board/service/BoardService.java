@@ -23,7 +23,7 @@ import star.common.service.BaseRetryRecoverService;
 import star.home.board.dto.BoardImageDTO;
 import star.home.board.dto.request.BoardRequest;
 import star.home.board.dto.response.BoardResponse;
-import star.home.board.dto.response.BoardResponse.Author;
+import star.common.dto.response.internal.Author;
 import star.home.board.exception.NoSuchBoardException;
 import star.home.board.model.entity.Board;
 import star.home.board.model.vo.Content;
@@ -44,7 +44,7 @@ public class BoardService extends BaseRetryRecoverService {
     private final MemberService memberService;
     private final CategoryService categoryService;
     private final BoardImageService boardImageService;
-    private final HeartService heartService;
+    private final BoardHeartService boardHeartService;
     private final BoardRepository boardRepository;
     private final CommentService commentService;
 
@@ -80,7 +80,7 @@ public class BoardService extends BaseRetryRecoverService {
                 .map(board -> BoardPeekDTO.from(
                         board,
                         boardImageService.getImageUrls(board.getId()).getFirst().imageUrl(),
-                        heartService.hasHearted(viewerId, board.getId())
+                        boardHeartService.hasHearted(viewerId, board.getId())
                 )).toList();
 
         return new PageImpl<>(boardPeekDTOs, pageable, boardsPage.getTotalElements());
@@ -112,7 +112,7 @@ public class BoardService extends BaseRetryRecoverService {
                 .id(boardId)
                 .author(author)
                 .isViewerAuthor(viewerId.equals(authorId))
-                .liked(heartService.hasHearted(viewerId, boardId))
+                .liked(boardHeartService.hasHearted(viewerId, boardId))
                 .title(board.getTitle().value())
                 .imageUrls(imageUrlStrings)
                 .content(Content.copyOf(board.getContent())) //안전하게 깊은 복사하기
@@ -148,7 +148,7 @@ public class BoardService extends BaseRetryRecoverService {
         }
 
         commentService.hardDeleteAllComments(boardId);
-        heartService.deleteHeartsByBoardDelete(boardId);
+        boardHeartService.deleteHeartsByBoardDelete(boardId);
         boardImageService.deleteBoardImageUrls(boardId);
         boardRepository.delete(board);
     }

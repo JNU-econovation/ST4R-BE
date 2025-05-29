@@ -1,17 +1,25 @@
 package star.team.service;
 
+import static star.common.constants.CommonConstants.ANONYMOUS_MEMBER_ID;
+
+import jakarta.annotation.Nullable;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import star.common.dto.response.internal.Author;
 import star.member.dto.MemberInfoDTO;
+import star.member.service.MemberService;
 import star.team.dto.request.TeamDTO;
 import star.team.dto.request.TeamRequest;
+import star.team.dto.response.TeamDetailsResponse;
 import star.team.exception.YouAreNotTeamLeaderException;
 import star.team.model.entity.Team;
 import star.team.model.vo.Description;
 import star.team.model.vo.Name;
 import star.team.model.vo.PlainPassword;
 import star.team.service.internal.TeamDataService;
+import star.team.service.internal.TeamHeartDataService;
 import star.team.service.internal.TeamImageDataService;
 import star.team.service.internal.TeamMemberDataService;
 
@@ -19,9 +27,11 @@ import star.team.service.internal.TeamMemberDataService;
 @RequiredArgsConstructor
 public class TeamService {
 
-    private TeamDataService teamDataService;
-    private TeamImageDataService teamImageDataService;
-    private TeamMemberDataService teamMemberDataService;
+    private final MemberService memberService;
+    private final TeamHeartDataService teamHeartDataService;
+    private final TeamDataService teamDataService;
+    private final TeamImageDataService teamImageDataService;
+    private final TeamMemberDataService teamMemberDataService;
 
     @Transactional
     public Long createTeam(MemberInfoDTO memberInfoDTO, TeamRequest request) {
@@ -41,6 +51,36 @@ public class TeamService {
 
         return createdTeam.getId();
     }
+
+    @Transactional(readOnly = true)
+    public TeamDetailsResponse getTeamDetails(Long teamId, @Nullable MemberInfoDTO memberInfoDTO) {
+        Long viewerId = (memberInfoDTO != null) ? memberInfoDTO.id() : ANONYMOUS_MEMBER_ID;
+        Team team = teamDataService.getTeamEntityById(teamId);
+        MemberInfoDTO authorInfo = memberService.getMemberById(team.getLeaderId());
+        Long authorId = authorInfo.id();
+
+        return TeamDetailsResponse.builder()
+                .id(teamId)
+                .author(Author.builder()
+                        .id(authorId)
+                        .nickname(authorInfo.email().value())
+                        .imageUrl(authorInfo.profileImageUrl())
+                        .build())
+                .isViewerAuthor(Objects.equals(authorId, viewerId))
+                .imageUrls(teamImageDataService.getImageUrls(teamId))
+                .name(team.getName().value())
+                .description(team.getDescription().value())
+                .location(team.getLocation())
+                .whenToMeet(team.getWhenToMeet())
+                .nowParticipants(team.getParticipant().getCurrent())
+                .maxParticipants(team.getParticipant().getCapacity())
+                .createdAt(team.getCreatedAt())
+                .liked(teamHeartDataService.hasHearted(viewerId, teamId))
+                .isPublic(isPublic(team))
+                .isJoinable(isJoinable(team))
+                .build();
+    }
+
 
     @Transactional
     public void updateTeam(MemberInfoDTO memberInfoDTO, Long teamId, TeamRequest request) {
@@ -68,6 +108,14 @@ public class TeamService {
         teamImageDataService.deleteBoardImageUrls(teamId);
         teamMemberDataService.deleteAllTeamMemberForTeamDelete(teamId);
         teamDataService.deleteTeam(teamId);
+    }
+
+    private Boolean isPublic(Team team) {
+        return team.getEncryptedPassword() == null;
+    }
+
+    private Boolean isJoinable(Team team) {
+        return team.getParticipant().getCurrent() < team.getParticipant().getCapacity();
     }
 
 }

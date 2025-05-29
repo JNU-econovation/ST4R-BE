@@ -3,6 +3,7 @@ package star.home.board.dto.response;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.Builder;
+import star.common.dto.response.internal.Author;
 import star.home.board.model.vo.Content;
 
 @Builder
@@ -19,11 +20,4 @@ public record BoardResponse (
         LocalDateTime createdAt,
         Integer likeCount,
         Integer commentCount
-) {
-    @Builder
-    public record Author (
-            Long id,
-            String imageUrl,
-            String nickname
-    ) { }
-}
+) { }
