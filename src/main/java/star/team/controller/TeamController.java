@@ -34,9 +34,7 @@ public class TeamController {
         Long teamId = service.createTeam(userDetails.getMemberInfoDTO(), request);
         URI location = URI.create("/groups/" + teamId);
 
-        return ResponseEntity
-                .created(location)
-                .body(CommonResponse.success());
+        return ResponseEntity.created(location).body(CommonResponse.success());
     }
 
     @GetMapping("/{teamId}")
