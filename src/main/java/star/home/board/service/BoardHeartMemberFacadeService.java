@@ -17,12 +17,12 @@ public class BoardHeartMemberFacadeService {
     public void createHeart(MemberInfoDTO memberInfoDTO, Long boardId) {
         Member member = memberService.getMemberEntityById(memberInfoDTO.id());
         Board board = boardService.getBoardEntity(boardId);
-        boardHeartService.createHeart(member, board);
+        boardHeartService.createHeart(member, board, boardId);
     }
 
     public void deleteHeart(MemberInfoDTO memberInfoDTO, Long boardId) {
         Member member = memberService.getMemberEntityById(memberInfoDTO.id());
         Board board = boardService.getBoardEntity(boardId);
-        boardHeartService.deleteHeart(member, board);
+        boardHeartService.deleteHeart(member, board, boardId);
     }
 }
