@@ -10,6 +10,7 @@ import star.common.security.encryption.util.AESEncryptionUtil;
 import star.member.model.entity.Member;
 import star.member.service.MemberService;
 import star.team.dto.request.TeamDTO;
+import star.team.exception.TeamNotFoundException;
 import star.team.model.entity.Team;
 import star.team.model.vo.EncryptedPassword;
 import star.team.model.vo.Participant;
@@ -47,6 +48,16 @@ public class TeamDataService {
                 .build();
 
         return teamRepository.save(team);
+    }
+
+    @Transactional(readOnly = true)
+    public Team getTeamEntityById(Long teamId) {
+        return teamRepository.findById(teamId).orElseThrow(TeamNotFoundException::new);
+    }
+
+    @Transactional
+    public void deleteTeam(Long teamId) {
+        teamRepository.deleteById(teamId);
     }
 
     private EncryptedPassword encryptPassword(PlainPassword plainPassword) {

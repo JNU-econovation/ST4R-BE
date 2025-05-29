@@ -4,6 +4,9 @@ import java.net.URI;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import star.common.dto.response.CommonResponse;
@@ -17,6 +20,7 @@ import star.team.service.TeamService;
 public class TeamController {
     private final TeamService service;
 
+    @PostMapping
     public ResponseEntity<CommonResponse> createTeam(
             @AuthenticationPrincipal StarUserDetails userDetails,
             TeamRequest request
@@ -27,6 +31,16 @@ public class TeamController {
         return ResponseEntity
                 .created(location)
                 .body(CommonResponse.success());
+    }
+
+    @DeleteMapping("/{teamId}")
+    public ResponseEntity<Void> deleteTeam(
+            @AuthenticationPrincipal StarUserDetails userDetails,
+            @PathVariable Long teamId
+    ) {
+        service.deleteTeam(userDetails.getMemberInfoDTO(), teamId);
+
+        return ResponseEntity.noContent().build();
     }
 
 }

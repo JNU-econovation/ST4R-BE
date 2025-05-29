@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import star.member.dto.MemberInfoDTO;
 import star.team.dto.request.TeamDTO;
 import star.team.dto.request.TeamRequest;
+import star.team.exception.YouAreNotTeamLeaderException;
 import star.team.model.entity.Team;
 import star.team.model.vo.Description;
 import star.team.model.vo.Name;
@@ -39,6 +40,19 @@ public class TeamService {
         teamMemberDataService.addTeamMember(createdTeam, memberId);
 
         return createdTeam.getId();
+    }
+
+    @Transactional
+    public void deleteTeam(MemberInfoDTO memberInfoDTO, Long teamId) {
+        Team team = teamDataService.getTeamEntityById(teamId);
+
+        if (!team.getLeaderId().equals(memberInfoDTO.id())) {
+            throw new YouAreNotTeamLeaderException();
+        }
+
+        teamImageDataService.deleteBoardImageUrls(teamId);
+        teamMemberDataService.deleteAllTeamMemberForTeamDelete(teamId);
+        teamDataService.deleteTeam(teamId);
     }
 
 }
