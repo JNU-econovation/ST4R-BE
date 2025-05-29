@@ -1,16 +1,14 @@
 package star.team.service.internal;
 
-import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import star.common.exception.server.InternalServerException;
 import star.common.security.encryption.util.AESEncryptionUtil;
-import star.member.model.entity.Member;
-import star.member.service.MemberService;
 import star.team.dto.request.TeamDTO;
 import star.team.exception.TeamNotFoundException;
+import star.team.exception.YouAreNotTeamLeaderException;
 import star.team.model.entity.Team;
 import star.team.model.vo.EncryptedPassword;
 import star.team.model.vo.Participant;
@@ -21,16 +19,11 @@ import star.team.repository.TeamRepository;
 @RequiredArgsConstructor
 @Slf4j
 public class TeamDataService {
-
-    private final MemberService memberService;
-
     private final TeamRepository teamRepository;
-
     private final AESEncryptionUtil aesEncryptionUtil;
 
     @Transactional
     public Team createTeam(Long memberId, TeamDTO teamDTO) {
-        Member member = memberService.getMemberEntityById(memberId);
         EncryptedPassword encryptedPassword =
                 (teamDTO.plainPassword() == null) ? null : encryptPassword(teamDTO.plainPassword());
 
@@ -44,7 +37,8 @@ public class TeamDataService {
                                 .current(1).capacity(teamDTO.maxParticipantCount())
                                 .build()
                 )
-                .whenToMeet(LocalDateTime.now())
+                .whenToMeet(teamDTO.whenToMeet())
+                .location(teamDTO.location())
                 .build();
 
         return teamRepository.save(team);
@@ -53,6 +47,23 @@ public class TeamDataService {
     @Transactional(readOnly = true)
     public Team getTeamEntityById(Long teamId) {
         return teamRepository.findById(teamId).orElseThrow(TeamNotFoundException::new);
+    }
+
+    @Transactional
+    public Team overwriteTeam(Long memberId, Long teamId, TeamDTO teamDTO) {
+        EncryptedPassword encryptedPassword =
+                (teamDTO.plainPassword() == null) ? null : encryptPassword(teamDTO.plainPassword());
+
+        Team team = getTeamEntityById(teamId);
+
+        if (!team.getLeaderId().equals(memberId)) {
+            throw new YouAreNotTeamLeaderException();
+        }
+
+        team.update(teamDTO.name(), teamDTO.description(), encryptedPassword, teamDTO.whenToMeet(),
+                teamDTO.maxParticipantCount(), teamDTO.location());
+
+        return team;
     }
 
     @Transactional

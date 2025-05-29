@@ -30,6 +30,7 @@ public record TeamRequest(
 
         @Nullable
         String password,
+
         Jido location,
 
         @Nullable
