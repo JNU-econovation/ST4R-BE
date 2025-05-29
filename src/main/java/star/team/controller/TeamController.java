@@ -17,14 +17,14 @@ import star.common.security.dto.StarUserDetails;
 import star.member.dto.MemberInfoDTO;
 import star.team.dto.request.TeamRequest;
 import star.team.dto.response.TeamDetailsResponse;
-import star.team.service.TeamService;
+import star.team.service.TeamCoordinateService;
 
 @RestController
 @RequestMapping("/groups")
 @RequiredArgsConstructor
 public class TeamController {
 
-    private final TeamService service;
+    private final TeamCoordinateService service;
 
     @PostMapping
     public ResponseEntity<CommonResponse> createTeam(

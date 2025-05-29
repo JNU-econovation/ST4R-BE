@@ -19,6 +19,7 @@ public record TeamDetailsResponse(
         Integer nowParticipants,
         Integer maxParticipants,
         LocalDateTime createdAt,
+        Integer likeCount,
         Boolean liked,
         Boolean isPublic,
         Boolean isJoinable
