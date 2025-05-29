@@ -12,8 +12,8 @@ import star.team.repository.TeamMemberRepository;
 @RequiredArgsConstructor
 public class TeamMemberDataService {
 
-    private final TeamMemberRepository teamMemberRepository;
     private final MemberService memberService;
+    private final TeamMemberRepository teamMemberRepository;
 
     @Transactional
     public void addTeamMember(Team team, Long memberId) {
@@ -24,5 +24,10 @@ public class TeamMemberDataService {
                 .build();
 
         teamMemberRepository.save(teamMember);
+    }
+
+    @Transactional
+    public void deleteAllTeamMemberForTeamDelete(Long teamId) {
+        teamMemberRepository.deleteTeamMembersByTeamId(teamId);
     }
 }
