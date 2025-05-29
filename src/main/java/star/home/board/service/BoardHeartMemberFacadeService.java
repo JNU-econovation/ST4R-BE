@@ -11,18 +11,18 @@ import star.member.service.MemberService;
 @RequiredArgsConstructor
 public class BoardHeartMemberFacadeService {
     private final BoardService boardService;
-    private final HeartService heartService;
+    private final BoardHeartService boardHeartService;
     private final MemberService memberService;
 
     public void createHeart(MemberInfoDTO memberInfoDTO, Long boardId) {
         Member member = memberService.getMemberEntityById(memberInfoDTO.id());
         Board board = boardService.getBoardEntity(boardId);
-        heartService.createHeart(member, board);
+        boardHeartService.createHeart(member, board);
     }
 
     public void deleteHeart(MemberInfoDTO memberInfoDTO, Long boardId) {
         Member member = memberService.getMemberEntityById(memberInfoDTO.id());
         Board board = boardService.getBoardEntity(boardId);
-        heartService.deleteHeart(member, board);
+        boardHeartService.deleteHeart(member, board);
     }
 }

@@ -16,7 +16,7 @@ import star.member.model.entity.Member;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Heart extends BaseEntity {
+public class BoardHeart extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,7 +30,7 @@ public class Heart extends BaseEntity {
 
 
     @Builder
-    public Heart(Member member, Board board) {
+    public BoardHeart(Member member, Board board) {
         this.member = member;
         this.board = board;
     }

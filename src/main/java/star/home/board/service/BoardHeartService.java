@@ -12,17 +12,17 @@ import org.springframework.transaction.annotation.Transactional;
 import star.common.constants.CommonConstants;
 import star.common.service.BaseRetryRecoverService;
 import star.home.board.exception.AlreadyCanceledHeartException;
-import star.home.board.exception.AlreadyHeartedException;
+import star.common.exception.client.AlreadyHeartedException;
 import star.home.board.model.entity.Board;
-import star.home.board.model.entity.Heart;
-import star.home.board.repository.HeartRepository;
+import star.home.board.model.entity.BoardHeart;
+import star.home.board.repository.BoardHeartRepository;
 import star.member.model.entity.Member;
 
 @Service
 @RequiredArgsConstructor
-public class HeartService extends BaseRetryRecoverService {
+public class BoardHeartService extends BaseRetryRecoverService {
 
-    private final HeartRepository heartRepository;
+    private final BoardHeartRepository boardHeartRepository;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -30,35 +30,35 @@ public class HeartService extends BaseRetryRecoverService {
 
     @Transactional
     public void createHeart(Member member, Board board) {
-        if (heartRepository.existsByMemberIdAndBoardId(member.getId(), board.getId())) {
+        if (boardHeartRepository.existsByMemberIdAndBoardId(member.getId(), board.getId())) {
             throw new AlreadyHeartedException();
         }
 
-        Heart heart = Heart.builder().member(member).board(board).build();
+        BoardHeart boardHeart = BoardHeart.builder().member(member).board(board).build();
         increaseHeartCount(board);
-        heartRepository.save(heart);
+        boardHeartRepository.save(boardHeart);
     }
 
 
     @Transactional
     public void deleteHeart(Member member, Board board) {
-        if (!heartRepository.existsByMemberIdAndBoardId(member.getId(), board.getId())) {
+        if (!boardHeartRepository.existsByMemberIdAndBoardId(member.getId(), board.getId())) {
             throw new AlreadyCanceledHeartException();
         }
 
         decreaseHeartCount(board);
-        heartRepository.deleteHeartByMemberIdAndBoardId(member.getId(), board.getId());
+        boardHeartRepository.deleteHeartByMemberIdAndBoardId(member.getId(), board.getId());
     }
 
     @Transactional(readOnly = true)
     public Boolean hasHearted(Long memberId, Long boardId) {
-        return heartRepository.existsByMemberIdAndBoardId(memberId, boardId);
+        return boardHeartRepository.existsByMemberIdAndBoardId(memberId, boardId);
     }
 
 
     @Transactional
     public void deleteHeartsByBoardDelete(Long boardId) {
-        heartRepository.deleteHeartsByBoardId(boardId);
+        boardHeartRepository.deleteHeartsByBoardId(boardId);
     }
 
     @Retryable(
