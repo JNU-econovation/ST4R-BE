@@ -43,6 +43,21 @@ public class TeamService {
     }
 
     @Transactional
+    public void updateTeam(MemberInfoDTO memberInfoDTO, Long teamId, TeamRequest request) {
+        Long memberId = memberInfoDTO.id();
+        TeamDTO teamDTO = TeamDTO.builder()
+                .name(new Name(request.name()))
+                .location(request.location())
+                .plainPassword(new PlainPassword(request.password()))
+                .maxParticipantCount(request.maxParticipantCount())
+                .description(new Description(request.description()))
+                .build();
+
+        Team updatedTeam = teamDataService.overwriteTeam(memberId, teamId, teamDTO);
+        teamImageDataService.overwriteImageUrls(updatedTeam, request.imageUrls());
+    }
+
+    @Transactional
     public void deleteTeam(MemberInfoDTO memberInfoDTO, Long teamId) {
         Team team = teamDataService.getTeamEntityById(teamId);
 

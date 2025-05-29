@@ -7,6 +7,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import star.common.dto.response.CommonResponse;
@@ -31,6 +32,17 @@ public class TeamController {
         return ResponseEntity
                 .created(location)
                 .body(CommonResponse.success());
+    }
+
+    @PutMapping("/{teamId}")
+    public ResponseEntity<CommonResponse> updateTeam(
+            @AuthenticationPrincipal StarUserDetails userDetails,
+            @PathVariable Long teamId,
+            TeamRequest request
+    ) {
+        service.updateTeam(userDetails.getMemberInfoDTO(), teamId, request);
+
+        return ResponseEntity.ok(CommonResponse.success());
     }
 
     @DeleteMapping("/{teamId}")
