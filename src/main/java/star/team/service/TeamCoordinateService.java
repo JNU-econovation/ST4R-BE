@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import star.common.dto.response.internal.Author;
 import star.member.dto.MemberInfoDTO;
+import star.member.model.entity.Member;
 import star.member.service.MemberService;
 import star.team.dto.request.TeamDTO;
 import star.team.dto.request.TeamRequest;
@@ -25,7 +26,7 @@ import star.team.service.internal.TeamMemberDataService;
 
 @Service
 @RequiredArgsConstructor
-public class TeamService {
+public class TeamCoordinateService {
 
     private final MemberService memberService;
     private final TeamHeartDataService teamHeartDataService;
@@ -75,6 +76,7 @@ public class TeamService {
                 .nowParticipants(team.getParticipant().getCurrent())
                 .maxParticipants(team.getParticipant().getCapacity())
                 .createdAt(team.getCreatedAt())
+                .likeCount(team.getHeartCount())
                 .liked(teamHeartDataService.hasHearted(viewerId, teamId))
                 .isPublic(isPublic(team))
                 .isJoinable(isJoinable(team))
@@ -84,7 +86,10 @@ public class TeamService {
 
     @Transactional
     public void updateTeam(MemberInfoDTO memberInfoDTO, Long teamId, TeamRequest request) {
-        Long memberId = memberInfoDTO.id();
+        Team team = teamDataService.getTeamEntityById(teamId);
+
+        assertTeamLeader(memberInfoDTO, team);
+
         TeamDTO teamDTO = TeamDTO.builder()
                 .name(new Name(request.name()))
                 .location(request.location())
@@ -93,7 +98,7 @@ public class TeamService {
                 .description(new Description(request.description()))
                 .build();
 
-        Team updatedTeam = teamDataService.overwriteTeam(memberId, teamId, teamDTO);
+        Team updatedTeam = teamDataService.overwriteTeam(team, teamDTO);
         teamImageDataService.overwriteImageUrls(updatedTeam, request.imageUrls());
     }
 
@@ -101,13 +106,28 @@ public class TeamService {
     public void deleteTeam(MemberInfoDTO memberInfoDTO, Long teamId) {
         Team team = teamDataService.getTeamEntityById(teamId);
 
-        if (!team.getLeaderId().equals(memberInfoDTO.id())) {
-            throw new YouAreNotTeamLeaderException();
-        }
+        assertTeamLeader(memberInfoDTO, team);
 
         teamImageDataService.deleteBoardImageUrls(teamId);
         teamMemberDataService.deleteAllTeamMemberForTeamDelete(teamId);
+        teamHeartDataService.deleteHeartsByTeamDelete(teamId);
         teamDataService.deleteTeam(teamId);
+    }
+
+    @Transactional
+    public void createHeart(MemberInfoDTO memberInfoDTO, Long teamId) {
+        Member member = memberService.getMemberEntityById(memberInfoDTO.id());
+        Team team = teamDataService.getTeamEntityById(teamId);
+
+        teamHeartDataService.createHeart(member, team, teamId);
+    }
+
+    @Transactional
+    public void deleteHeart(MemberInfoDTO memberInfoDTO, Long teamId) {
+        Member member = memberService.getMemberEntityById(memberInfoDTO.id());
+        Team team = teamDataService.getTeamEntityById(teamId);
+
+        teamHeartDataService.deleteHeart(member, team, teamId);
     }
 
     private Boolean isPublic(Team team) {
@@ -118,4 +138,9 @@ public class TeamService {
         return team.getParticipant().getCurrent() < team.getParticipant().getCapacity();
     }
 
+    private void assertTeamLeader(MemberInfoDTO memberInfoDTO, Team team) {
+        if (!team.getLeaderId().equals(memberInfoDTO.id())) {
+            throw new YouAreNotTeamLeaderException();
+        }
+    }
 }

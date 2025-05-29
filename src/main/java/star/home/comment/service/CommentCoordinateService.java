@@ -27,7 +27,7 @@ import star.member.dto.MemberInfoDTO;
 
 @Service
 @RequiredArgsConstructor
-public class CommentService extends BaseRetryRecoverService {
+public class CommentCoordinateService extends BaseRetryRecoverService {
 
     private static final List<SortField> ALLOWED_SORT_FIELDS = List.of(SortField.CREATED_AT);
     private final CommentDataService commentDataService;

@@ -8,7 +8,6 @@ import star.common.exception.server.InternalServerException;
 import star.common.security.encryption.util.AESEncryptionUtil;
 import star.team.dto.request.TeamDTO;
 import star.team.exception.TeamNotFoundException;
-import star.team.exception.YouAreNotTeamLeaderException;
 import star.team.model.entity.Team;
 import star.team.model.vo.EncryptedPassword;
 import star.team.model.vo.Participant;
@@ -50,15 +49,9 @@ public class TeamDataService {
     }
 
     @Transactional
-    public Team overwriteTeam(Long memberId, Long teamId, TeamDTO teamDTO) {
+    public Team overwriteTeam(Team team, TeamDTO teamDTO) {
         EncryptedPassword encryptedPassword =
                 (teamDTO.plainPassword() == null) ? null : encryptPassword(teamDTO.plainPassword());
-
-        Team team = getTeamEntityById(teamId);
-
-        if (!team.getLeaderId().equals(memberId)) {
-            throw new YouAreNotTeamLeaderException();
-        }
 
         team.update(teamDTO.name(), teamDTO.description(), encryptedPassword, teamDTO.whenToMeet(),
                 teamDTO.maxParticipantCount(), teamDTO.location());
