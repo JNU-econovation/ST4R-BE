@@ -29,7 +29,7 @@ import star.home.board.model.entity.Board;
 import star.home.board.model.vo.Content;
 import star.home.board.repository.BoardRepository;
 import star.home.category.service.CategoryService;
-import star.home.comment.service.CommentService;
+import star.home.comment.service.CommentCoordinateService;
 import star.home.dto.BoardPeekDTO;
 import star.member.dto.MemberInfoDTO;
 import star.member.model.entity.Member;
@@ -46,7 +46,7 @@ public class BoardService extends BaseRetryRecoverService {
     private final BoardImageService boardImageService;
     private final BoardHeartService boardHeartService;
     private final BoardRepository boardRepository;
-    private final CommentService commentService;
+    private final CommentCoordinateService commentCoordinateService;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -147,7 +147,7 @@ public class BoardService extends BaseRetryRecoverService {
             throw new YouAreNotAuthorException();
         }
 
-        commentService.hardDeleteAllComments(boardId);
+        commentCoordinateService.hardDeleteAllComments(boardId);
         boardHeartService.deleteHeartsByBoardDelete(boardId);
         boardImageService.deleteBoardImageUrls(boardId);
         boardRepository.delete(board);

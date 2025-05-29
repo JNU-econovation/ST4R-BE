@@ -15,7 +15,7 @@ import star.home.board.service.BoardHeartMemberFacadeService;
 @RestController
 @RequestMapping("/home/boards/{boardId}/likes")
 @RequiredArgsConstructor
-public class HeartController {
+public class BoardHeartController {
 
     private final BoardHeartMemberFacadeService boardHeartMemberFacadeService;
 

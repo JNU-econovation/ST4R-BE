@@ -12,11 +12,11 @@ import star.member.dto.MemberInfoDTO;
 @RequiredArgsConstructor
 public class CreateCommentFacadeService { //순환참조 때매 만듦
     private final BoardService boardService;
-    private final CommentService commentService;
+    private final CommentCoordinateService commentCoordinateService;
 
     @Transactional
     public Long createComment(MemberInfoDTO memberInfoDTO, CommentRequest request, Long boardId) {
         Board board = boardService.getBoardEntity(boardId);
-        return commentService.createComment(memberInfoDTO, request, board);
+        return commentCoordinateService.createComment(memberInfoDTO, request, board);
     }
 }
