@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import star.common.exception.server.InternalServerException;
 import star.common.security.encryption.util.AESEncryptionUtil;
-import star.team.dto.request.TeamDTO;
+import star.team.dto.TeamDTO;
 import star.team.exception.TeamNotFoundException;
 import star.team.model.entity.Team;
 import star.team.model.vo.EncryptedPassword;

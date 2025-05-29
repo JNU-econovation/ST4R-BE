@@ -79,6 +79,10 @@ public class Team extends BaseEntity {
         this.location = location;
     }
 
+    public void delegateLeader(Long newLeaderId) {
+        this.leaderId = newLeaderId;
+    }
+
     public void increaseHeartCount() {
         this.heartCount++;
     }

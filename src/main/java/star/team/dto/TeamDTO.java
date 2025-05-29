@@ -1,4 +1,4 @@
-package star.team.dto.request;
+package star.team.dto;
 
 import jakarta.annotation.Nullable;
 import java.time.LocalDateTime;
