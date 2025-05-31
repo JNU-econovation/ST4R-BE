@@ -15,7 +15,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import star.common.entity.SoftDeletableEntity;
+import star.common.model.entity.SoftDeletableEntity;
 import star.home.board.model.entity.Board;
 import star.home.comment.model.vo.Content;
 import star.member.model.entity.Member;

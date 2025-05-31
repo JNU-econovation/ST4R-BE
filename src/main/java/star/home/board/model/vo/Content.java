@@ -2,6 +2,7 @@ package star.home.board.model.vo;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
+import star.common.model.vo.Jido;
 
 @Embeddable
 public record Content(

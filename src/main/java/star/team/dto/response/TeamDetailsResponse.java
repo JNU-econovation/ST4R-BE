@@ -3,8 +3,8 @@ package star.team.dto.response;
 import java.time.OffsetDateTime;
 import java.util.List;
 import lombok.Builder;
-import star.common.dto.response.internal.Author;
-import star.home.board.model.vo.Jido;
+import star.common.dto.internal.Author;
+import star.common.model.vo.Jido;
 
 @Builder
 public record TeamDetailsResponse(

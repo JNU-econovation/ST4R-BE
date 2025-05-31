@@ -13,7 +13,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import star.common.entity.SoftDeletableEntity;
+import star.common.model.entity.SoftDeletableEntity;
 import star.member.model.vo.Email;
 
 @Entity

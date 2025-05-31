@@ -4,6 +4,8 @@ import jakarta.annotation.Nullable;
 import jakarta.validation.Valid;
 import java.net.URI;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -14,11 +16,14 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import star.common.annotation.ResolvePageable;
+import star.common.constants.SortField;
 import star.common.dto.response.CommonResponse;
 import star.common.security.dto.StarUserDetails;
 import star.member.dto.MemberInfoDTO;
 import star.team.dto.request.TeamRequest;
 import star.team.dto.response.TeamDetailsResponse;
+import star.team.dto.response.GetTeamsResponse;
 import star.team.service.TeamCoordinateService;
 
 @RestController
@@ -37,6 +42,18 @@ public class TeamController {
         URI location = URI.create("/groups/" + teamId);
 
         return ResponseEntity.created(location).body(CommonResponse.success());
+    }
+
+    @GetMapping
+    public ResponseEntity<Page<GetTeamsResponse>> getTeams(
+            @Nullable @AuthenticationPrincipal StarUserDetails userDetails,
+            @ResolvePageable(allowed = {SortField.CREATED_AT, SortField.WHEN_TO_MEET,
+                    SortField.HEART_COUNT})
+            Pageable pageable
+    ) {
+        MemberInfoDTO memberInfoDTO = (userDetails != null) ? userDetails.getMemberInfoDTO() : null;
+
+        return ResponseEntity.ok(service.getTeams(memberInfoDTO, pageable));
     }
 
     @GetMapping("/{teamId}")

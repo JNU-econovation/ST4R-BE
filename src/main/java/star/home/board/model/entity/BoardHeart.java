@@ -10,7 +10,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import star.common.entity.BaseEntity;
+import star.common.model.entity.BaseEntity;
 import star.member.model.entity.Member;
 
 @Entity

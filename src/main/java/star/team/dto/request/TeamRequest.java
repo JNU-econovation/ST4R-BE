@@ -4,6 +4,7 @@ import static star.common.constants.CommonConstants.MAX_IMAGE_COUNT;
 import static star.team.constants.TeamConstants.*;
 
 import jakarta.annotation.Nullable;
+import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -11,7 +12,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.time.OffsetDateTime;
 import java.util.List;
-import star.home.board.model.vo.Jido;
+import star.common.model.vo.Jido;
 
 public record TeamRequest(
 
@@ -24,6 +25,8 @@ public record TeamRequest(
         String name,
 
         @NotNull(message = "모임 시간을 입력해주세요")
+        @Future(message = "모임 시간은 미래여야 합니다")
+        // ux적인 우려사항 : 모임 시간이 지남 -> 사용자가 모임 수정하려다가 취소할 때
         OffsetDateTime whenToMeet,
 
         @Min(PARTICIPANT_MIN_CAPACITY) @Max(PARTICIPANT_MAX_CAPACITY)

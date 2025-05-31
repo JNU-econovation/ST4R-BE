@@ -1,4 +1,4 @@
-package star.common.dto.response.internal;
+package star.common.dto.internal;
 
 import lombok.Builder;
 
