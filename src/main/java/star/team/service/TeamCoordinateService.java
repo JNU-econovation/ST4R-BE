@@ -7,7 +7,7 @@ import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import star.common.dto.response.internal.Author;
+import star.common.dto.internal.Author;
 import star.common.util.CommonUtils;
 import star.member.dto.MemberInfoDTO;
 import star.member.model.entity.Member;

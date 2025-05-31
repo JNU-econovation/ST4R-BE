@@ -11,7 +11,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.time.OffsetDateTime;
 import java.util.List;
-import star.home.board.model.vo.Jido;
+import star.common.model.vo.Jido;
 
 public record TeamRequest(
 

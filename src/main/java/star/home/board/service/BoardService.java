@@ -24,7 +24,7 @@ import star.common.util.CommonUtils;
 import star.home.board.dto.BoardImageDTO;
 import star.home.board.dto.request.BoardRequest;
 import star.home.board.dto.response.BoardResponse;
-import star.common.dto.response.internal.Author;
+import star.common.dto.internal.Author;
 import star.home.board.exception.NoSuchBoardException;
 import star.home.board.model.entity.Board;
 import star.home.board.model.vo.Content;
@@ -46,8 +46,8 @@ public class BoardService extends BaseRetryRecoverService {
     private final CategoryService categoryService;
     private final BoardImageService boardImageService;
     private final BoardHeartService boardHeartService;
-    private final BoardRepository boardRepository;
     private final CommentCoordinateService commentCoordinateService;
+    private final BoardRepository boardRepository;
 
     @PersistenceContext
     private EntityManager entityManager;

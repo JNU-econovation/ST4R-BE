@@ -3,7 +3,7 @@ package star.home.comment.dto.response;
 import java.time.OffsetDateTime;
 import java.util.List;
 import lombok.Builder;
-import star.common.dto.response.internal.Author;
+import star.common.dto.internal.Author;
 
 @Builder
 public record CommentResponse (

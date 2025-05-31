@@ -1,4 +1,4 @@
-package star.common.entity;
+package star.common.model.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;

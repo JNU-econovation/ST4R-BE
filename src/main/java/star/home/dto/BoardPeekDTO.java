@@ -4,7 +4,7 @@ import java.time.OffsetDateTime;
 import lombok.Builder;
 import star.common.util.CommonUtils;
 import star.home.board.model.entity.Board;
-import star.home.board.model.vo.Jido;
+import star.common.model.vo.Jido;
 import star.home.board.model.vo.Marker;
 
 @Builder

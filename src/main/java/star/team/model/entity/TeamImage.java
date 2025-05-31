@@ -10,7 +10,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import star.common.entity.BaseImageEntity;
+import star.common.model.entity.BaseImageEntity;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
