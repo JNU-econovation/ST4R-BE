@@ -20,7 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import star.common.constants.CommonConstants;
 import star.common.exception.client.YouAreNotAuthorException;
 import star.common.service.BaseRetryRecoverService;
-import star.common.util.CommonUtils;
+import star.common.util.CommonTimeUtils;
 import star.home.board.dto.BoardImageDTO;
 import star.home.board.dto.request.BoardRequest;
 import star.home.board.dto.response.BoardResponse;
@@ -119,7 +119,7 @@ public class BoardService extends BaseRetryRecoverService {
                 .content(Content.copyOf(board.getContent())) //안전하게 깊은 복사하기
                 .category(board.getCategory().getName().name())
                 .viewCount(board.getViewCount())
-                .createdAt(CommonUtils.convertLocalDateTimeToOffsetDateTime(board.getCreatedAt()))
+                .createdAt(CommonTimeUtils.convertLocalDateTimeToOffsetDateTime(board.getCreatedAt()))
                 .likeCount(board.getHeartCount())
                 .commentCount(board.getCommentCount())
                 .build();

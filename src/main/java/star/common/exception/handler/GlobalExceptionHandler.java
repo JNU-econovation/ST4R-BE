@@ -93,17 +93,29 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         if (cause instanceof JsonProcessingException jsonEx) {
             log.error("JSON parsing error: {}", jsonEx.getMessage());
 
-            if (jsonEx instanceof InvalidFormatException invalidFormatEx) {
-                String fieldName = invalidFormatEx.getPath().isEmpty() ? "unknown" :
-                        invalidFormatEx.getPath().get(0).getFieldName();
-                message = String.format("필드 '%s'의 값이 올바르지 않습니다: %s",
-                        fieldName, invalidFormatEx.getValue());
-            } else if (jsonEx instanceof MismatchedInputException mismatchedEx) {
-                String fieldName = mismatchedEx.getPath().isEmpty() ? "unknown" :
-                        mismatchedEx.getPath().get(0).getFieldName();
-                message = String.format("필드 '%s'의 타입이 맞지 않습니다.", fieldName);
-            } else if (jsonEx instanceof JsonMappingException) {
-                message = "JSON 매핑 오류가 발생했습니다: " + jsonEx.getOriginalMessage();
+            switch (jsonEx) {
+                case InvalidFormatException invalidFormatEx -> {
+                    String fieldName = invalidFormatEx.getPath().isEmpty() ? "unknown" :
+                            invalidFormatEx.getPath().getFirst().getFieldName();
+                    message = String.format("필드 '%s'의 값이 올바르지 않습니다: %s",
+                            fieldName, invalidFormatEx.getValue());
+                }
+                case MismatchedInputException mismatchedEx -> {
+                    String fieldName = mismatchedEx.getPath().isEmpty() ? "unknown" :
+                            mismatchedEx.getPath().getFirst().getFieldName();
+                    message = String.format("필드 '%s'의 타입이 맞지 않습니다.", fieldName);
+                }
+                case JsonMappingException mappingEx -> {
+                    String fieldName = mappingEx.getPath().isEmpty() ? "unknown" :
+                            mappingEx.getPath().getFirst().getFieldName();
+
+                    String causeMessage =
+                            mappingEx.getCause() != null ? mappingEx.getCause().getMessage() : "";
+
+                    message = String.format("필드 '%s'에 문제가 있습니다: %s", fieldName, causeMessage);
+                }
+                default -> {
+                }
             }
         } else {
             log.error("HTTP message not readable: {}", ex.getMessage());
