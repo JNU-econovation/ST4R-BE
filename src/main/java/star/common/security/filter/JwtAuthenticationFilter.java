@@ -62,9 +62,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String path = request.getRequestURI();
             String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
             boolean isHomePath = pathMatcher.match("/home/**", path);
+            boolean isGroupsPath = pathMatcher.match("/groups/**", path);
 
             if (authHeader == null || !authHeader.startsWith(BEARER_TYPE)) {
-                if (isHomePath) {
+                if (isHomePath || isGroupsPath) {
                     filterChain.doFilter(request, response);
                     return;
                 }
