@@ -6,7 +6,8 @@ import lombok.Getter;
 public enum SortField {
     CREATED_AT("createdAt", "createdAt"),
     VIEW_COUNT("viewCount", "viewCount"),
-    HEART_COUNT("likeCount", "heartCount");
+    HEART_COUNT("likeCount", "heartCount"),
+    WHEN_TO_MEET("whenToMeet", "whenToMeet");
 
     private final String requestField;
     private final String dbField;

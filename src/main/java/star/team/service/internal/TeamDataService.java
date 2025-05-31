@@ -4,11 +4,13 @@ import static star.team.constants.TeamConstants.PARTICIPANT_MIN_CAPACITY;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import star.common.exception.server.InternalServerException;
 import star.common.security.encryption.util.AESEncryptionUtil;
-import star.common.util.CommonUtils;
+import star.common.util.CommonTimeUtils;
 import star.team.dto.TeamDTO;
 import star.team.exception.TeamNotFoundException;
 import star.team.model.entity.Team;
@@ -39,11 +41,16 @@ public class TeamDataService {
                         .current(PARTICIPANT_MIN_CAPACITY + 1)
                         .capacity(teamDTO.maxParticipantCount())
                         .build())
-                .whenToMeet(CommonUtils.convertOffsetDateTimeToLocalDateTime(teamDTO.whenToMeet()))
+                .whenToMeet(CommonTimeUtils.convertOffsetDateTimeToLocalDateTime(teamDTO.whenToMeet()))
                 .location(teamDTO.location())
                 .build();
 
         return teamRepository.save(team);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<Team> getTeams(Pageable pageable) {
+        return teamRepository.findAll(pageable);
     }
 
     @Transactional(readOnly = true)
@@ -57,7 +64,7 @@ public class TeamDataService {
                 (teamDTO.plainPassword() == null) ? null : encryptPassword(teamDTO.plainPassword());
 
         team.update(teamDTO.name(), teamDTO.description(), encryptedPassword,
-                CommonUtils.convertOffsetDateTimeToLocalDateTime(teamDTO.whenToMeet()),
+                CommonTimeUtils.convertOffsetDateTimeToLocalDateTime(teamDTO.whenToMeet()),
                 teamDTO.maxParticipantCount(), teamDTO.location());
 
         return team;
