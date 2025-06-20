@@ -6,7 +6,7 @@ import star.home.category.model.entity.Category;
 import star.home.category.model.vo.CategoryName;
 
 @Repository
-public interface CategoryRepository extends JpaRepository<Category, String> {
+public interface CategoryRepository extends JpaRepository<Category, Integer> {
 
     Category getCategoryByName(CategoryName name);
 

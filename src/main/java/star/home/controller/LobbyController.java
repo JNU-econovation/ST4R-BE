@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RestController;
 import star.common.annotation.ResolvePageable;
 import star.common.constants.SortField;
 import star.common.security.dto.StarUserDetails;
-import star.home.constants.Period;
 import star.home.dto.request.LobbyRequest;
 import star.home.dto.response.LobbyBoardResponse;
 import star.home.service.LobbyService;
@@ -37,8 +36,7 @@ public class LobbyController {
         MemberInfoDTO memberInfoDTO = (userDetails != null) ? userDetails.getMemberInfoDTO() : null;
 
         return ResponseEntity.ok(
-                lobbyService.getLobbyBoards(memberInfoDTO, Period.from(request.period()),
-                        pageable));
+                lobbyService.getLobbyBoards(memberInfoDTO, request, pageable));
 
     }
 }

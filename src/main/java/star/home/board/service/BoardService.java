@@ -29,6 +29,7 @@ import star.home.board.exception.NoSuchBoardException;
 import star.home.board.model.entity.Board;
 import star.home.board.model.vo.Content;
 import star.home.board.repository.BoardRepository;
+import star.home.category.model.vo.CategoryName;
 import star.home.category.service.CategoryService;
 import star.home.comment.service.CommentCoordinateService;
 import star.home.dto.BoardPeekDTO;
@@ -69,13 +70,14 @@ public class BoardService extends BaseRetryRecoverService {
     }
 
     public Page<BoardPeekDTO> getBoardPeeks(
-            @Nullable MemberInfoDTO memberInfoDTO,
+            @Nullable MemberInfoDTO memberInfoDTO, List<CategoryName> categories,
             LocalDateTime start, LocalDateTime end,
             Pageable pageable) {
 
         Long viewerId = (memberInfoDTO != null) ? memberInfoDTO.id() : ANONYMOUS_MEMBER_ID;
 
-        Page<Board> boardsPage = boardRepository.getBoardsByCreatedAtBetween(start, end, pageable);
+        Page<Board> boardsPage = boardRepository.getBoardsByCategoryNameInAndCreatedAtBetween(
+                categories, start, end, pageable);
 
         List<BoardPeekDTO> boardPeekDTOs = boardsPage.getContent().stream()
                 .map(board -> BoardPeekDTO.from(
@@ -107,7 +109,7 @@ public class BoardService extends BaseRetryRecoverService {
                 .stream()
                 .map(BoardImageDTO::imageUrl)
                 .toList();
-        
+
         //todo: 추후에 boardResponse from 으로 더 간결하게 리팩터링하기
         return BoardResponse.builder()
                 .id(boardId)

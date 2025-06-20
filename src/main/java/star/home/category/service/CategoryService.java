@@ -1,6 +1,5 @@
 package star.home.category.service;
 
-import java.util.Locale;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import star.home.category.exception.NoSuchCategoryException;
@@ -14,13 +13,7 @@ public class CategoryService {
     private final CategoryRepository categoryRepository;
 
     public Category getCategory(String name) {
-        CategoryName categoryName;
-
-        try {
-            categoryName = CategoryName.valueOf(name.toUpperCase(Locale.ROOT));
-        } catch (IllegalArgumentException e) {
-            throw new NoSuchCategoryException(name);
-        }
+        CategoryName categoryName = CategoryName.from(name);
 
         if (!categoryRepository.existsByName(categoryName))
             throw new NoSuchCategoryException(name);
