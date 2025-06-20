@@ -4,23 +4,14 @@ import lombok.Getter;
 
 @Getter
 public enum Period {
-    DAILY("daily"),
-    WEEKLY("weekly"),
-    MONTHLY("monthly"),
-    YEARLY("yearly");
+    DAILY, WEEKLY, MONTHLY, YEARLY;
 
-    private final String value;
-
-    Period(String value) {
-        this.value = value;
-    }
-
-    public static Period from(String value) {
-        for (Period period : Period.values()) {
-            if (period.value.equalsIgnoreCase(value)) {
-                return period;
+    public static Period from(String text) {
+        for (Period b : Period.values()) {
+            if (b.name().equalsIgnoreCase(text)) {
+                return b;
             }
         }
-        throw new IllegalArgumentException("유효하지 않은 주기 값입니다: " + value);
+        throw new IllegalArgumentException("%s는 유효하지 않은 period 입니다.".formatted(text));
     }
 }
