@@ -1,15 +1,12 @@
 package star.home.service;
 
 import jakarta.annotation.Nullable;
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import star.common.exception.server.InternalServerException;
+import star.common.dto.LocalDateTimesDTO;
+import star.common.util.CommonTimeUtils;
 import star.home.board.service.BoardService;
 import star.home.category.model.vo.CategoryName;
 import star.home.constants.Period;
@@ -24,50 +21,18 @@ public class LobbyService {
     private final BoardService boardService;
 
     public LobbyBoardResponse getLobbyBoards(@Nullable MemberInfoDTO memberInfoDTO,
-            LobbyRequest request, Pageable pageable) {
+            LobbyRequest request,
+            Pageable pageable) {
 
         Period period = setPeriodIfNull(request.period());
         List<CategoryName> categories = setCategoriesIfNullOrEmpty(request.categories());
 
-        LocalDateTime start, end;
-
-        switch (period) {
-            case DAILY -> {
-                start = LocalDate.now().atStartOfDay();
-                end = start.plusDays(1);
-            }
-
-            case WEEKLY -> {
-                LocalDate today = LocalDate.now();
-                LocalDate monday = today.with(DayOfWeek.MONDAY);
-                start = monday.atStartOfDay();
-                end = start.plusWeeks(1);
-            }
-
-            case MONTHLY -> {
-                LocalDate today = LocalDate.now();
-                LocalDate firstDayOfMonth = today.withDayOfMonth(1);
-                start = firstDayOfMonth.atStartOfDay();
-                end = start.plusMonths(1);
-            }
-
-            case YEARLY -> {
-                LocalDate today = LocalDate.now();
-                LocalDate firstDayOfYear = today.withDayOfYear(1);
-                start = firstDayOfYear.atStartOfDay();
-                end = start.plusYears(1);
-            }
-
-            default -> {
-                throw new InternalServerException("period 값이 예상치 못한 값입니다 -> %s".formatted(
-                        Objects.requireNonNull(period, "null").toString()));
-            }
-        }
+        LocalDateTimesDTO localDateTimesDTO = CommonTimeUtils.getLocalDateTimesByPeriod(period);
 
         return LobbyBoardResponse.builder()
-                .boardPeeks(
-                        boardService.getBoardPeeks(memberInfoDTO, categories, start, end, pageable)
-                ).build();
+                .boardPeeks(boardService.getBoardPeeks(memberInfoDTO, categories,
+                        localDateTimesDTO.start(), localDateTimesDTO.end(), pageable))
+                .build();
     }
 
     private Period setPeriodIfNull(Period period) {

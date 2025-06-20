@@ -1,7 +1,8 @@
 package star.home.board.mapper;
 
 import java.util.List;
-import star.home.board.dto.response.BoardResponse.Author;
+import star.common.dto.internal.Author;
+import star.common.util.CommonTimeUtils;
 import star.home.comment.dto.CommentDTO;
 import star.home.comment.dto.response.CommentResponse;
 
@@ -25,7 +26,7 @@ public class BoardCommentMapper {
                 .isViewerAuthor(viewerId.equals(dto.getMemberInfoDTO().id()))
                 .isCommenterAuthor(authorId.equals(dto.getMemberInfoDTO().id()))
                 .content(dto.getContent())
-                .createdAt(dto.getCreatedAt())
+                .createdAt(CommonTimeUtils.convertLocalDateTimeToOffsetDateTime(dto.getCreatedAt()))
                 .depth(dto.getDepth())
                 .childComments(toCommentVOs(dto.getChildCommentDTOs(), viewerId, authorId))
                 .build();

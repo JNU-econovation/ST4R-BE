@@ -8,7 +8,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import lombok.Getter;
-import star.common.entity.BaseEntity;
+import star.common.model.entity.BaseEntity;
 import star.home.category.model.vo.CategoryName;
 
 @Entity

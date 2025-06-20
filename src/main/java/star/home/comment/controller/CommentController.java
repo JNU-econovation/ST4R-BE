@@ -21,7 +21,7 @@ import star.common.security.dto.StarUserDetails;
 import star.home.comment.dto.request.CommentRequest;
 import star.home.comment.dto.response.CommentResponse;
 import star.home.comment.service.CreateCommentFacadeService;
-import star.home.comment.service.CommentService;
+import star.home.comment.service.CommentCoordinateService;
 
 @RestController
 @RequiredArgsConstructor
@@ -29,7 +29,7 @@ import star.home.comment.service.CommentService;
 public class CommentController {
 
     private final CreateCommentFacadeService createCommentFacadeService;
-    private final CommentService commentService;
+    private final CommentCoordinateService commentCoordinateService;
 
     @PostMapping
     public ResponseEntity<CommonResponse> createComment(
@@ -52,7 +52,7 @@ public class CommentController {
             ) {
 
         return ResponseEntity.ok(
-                commentService.getCommentsPage(userDetails.getMemberInfoDTO(), boardId, pageable));
+                commentCoordinateService.getCommentsPage(userDetails.getMemberInfoDTO(), boardId, pageable));
     }
 
     @PutMapping("/{commentId}")
@@ -62,7 +62,7 @@ public class CommentController {
             @AuthenticationPrincipal StarUserDetails userDetails,
             @RequestBody CommentRequest request
     ) {
-        commentService.updateComment(boardId, commentId, userDetails.getMemberInfoDTO(), request);
+        commentCoordinateService.updateComment(boardId, commentId, userDetails.getMemberInfoDTO(), request);
         return ResponseEntity.ok(CommonResponse.success());
     }
 
@@ -72,7 +72,7 @@ public class CommentController {
             @PathVariable Long commentId,
             @AuthenticationPrincipal StarUserDetails userDetails
     ) {
-        commentService.softDeleteComment(boardId, commentId, userDetails.getMemberInfoDTO());
+        commentCoordinateService.softDeleteComment(boardId, commentId, userDetails.getMemberInfoDTO());
         return ResponseEntity.noContent().build();
     }
 

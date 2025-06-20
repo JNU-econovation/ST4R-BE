@@ -10,13 +10,13 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import star.common.entity.BaseEntity;
+import star.common.model.entity.BaseEntity;
 import star.member.model.entity.Member;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Heart extends BaseEntity {
+public class BoardHeart extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,7 +30,7 @@ public class Heart extends BaseEntity {
 
 
     @Builder
-    public Heart(Member member, Board board) {
+    public BoardHeart(Member member, Board board) {
         this.member = member;
         this.board = board;
     }

@@ -1,4 +1,4 @@
-package star.home.board.controller;
+package star.team.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -10,30 +10,31 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import star.common.dto.response.CommonResponse;
 import star.common.security.dto.StarUserDetails;
-import star.home.board.service.BoardHeartMemberFacadeService;
+import star.team.service.TeamCoordinateService;
 
 @RestController
-@RequestMapping("/home/boards/{boardId}/likes")
+@RequestMapping("groups/{teamId}/likes")
 @RequiredArgsConstructor
-public class HeartController {
+public class TeamHeartController {
 
-    private final BoardHeartMemberFacadeService boardHeartMemberFacadeService;
+    public final TeamCoordinateService service;
 
     @PostMapping
     public ResponseEntity<CommonResponse> createHeart(
-            @PathVariable Long boardId,
+            @PathVariable Long teamId,
             @AuthenticationPrincipal StarUserDetails userDetails
     ) {
-        boardHeartMemberFacadeService.createHeart(userDetails.getMemberInfoDTO(), boardId);
+        service.createHeart(userDetails.getMemberInfoDTO(), teamId);
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping
     public ResponseEntity<CommonResponse> deleteHeart(
-            @PathVariable Long boardId,
+            @PathVariable Long teamId,
             @AuthenticationPrincipal StarUserDetails userDetails
     ) {
-        boardHeartMemberFacadeService.deleteHeart(userDetails.getMemberInfoDTO(), boardId);
+        service.deleteHeart(userDetails.getMemberInfoDTO(), teamId);
         return ResponseEntity.noContent().build();
     }
+
 }

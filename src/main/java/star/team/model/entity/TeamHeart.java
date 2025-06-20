@@ -10,23 +10,28 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import star.common.model.entity.BaseImageEntity;
+import star.common.model.entity.BaseEntity;
+import star.member.model.entity.Member;
 
 @Entity
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-public class TeamImage extends BaseImageEntity {
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class TeamHeart extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    private Member member;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     private Team team;
 
+
     @Builder
-    public TeamImage(Team team, String imageUrl, Integer sortOrder) {
-        super(imageUrl, sortOrder);
+    public TeamHeart(Member member, Team team) {
+        this.member = member;
         this.team = team;
     }
 }

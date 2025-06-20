@@ -1,9 +1,9 @@
 package star.home.comment.dto.response;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 import lombok.Builder;
-import star.home.board.dto.response.BoardResponse.Author;
+import star.common.dto.internal.Author;
 
 @Builder
 public record CommentResponse (
@@ -12,7 +12,7 @@ public record CommentResponse (
         Boolean isViewerAuthor,
         Boolean isCommenterAuthor,
         String content,
-        LocalDateTime createdAt,
+        OffsetDateTime createdAt,
         List<CommentResponse> childComments,
         Integer depth
 ) { }

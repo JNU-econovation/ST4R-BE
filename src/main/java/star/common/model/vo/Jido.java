@@ -1,6 +1,7 @@
-package star.home.board.model.vo;
+package star.common.model.vo;
 
 import jakarta.persistence.Embeddable;
+import star.home.board.model.vo.Marker;
 
 @Embeddable
 public record Jido(

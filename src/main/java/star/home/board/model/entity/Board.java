@@ -15,7 +15,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import star.common.entity.BaseEntity;
+import star.common.model.entity.BaseEntity;
 import star.home.board.model.vo.Content;
 import star.home.board.model.vo.Title;
 import star.home.category.model.entity.Category;
@@ -30,7 +30,7 @@ public class Board extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    //optimistic lock
+    //For optimistic lock
     @Version
     private Long version;
 
@@ -77,7 +77,6 @@ public class Board extends BaseEntity {
     public void increaseViewCount() {
         this.viewCount++;
     }
-
 
     public void increaseCommentCount() {
         this.commentCount++;

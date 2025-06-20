@@ -20,17 +20,18 @@ import org.springframework.transaction.annotation.Transactional;
 import star.common.constants.CommonConstants;
 import star.common.exception.client.YouAreNotAuthorException;
 import star.common.service.BaseRetryRecoverService;
+import star.common.util.CommonTimeUtils;
 import star.home.board.dto.BoardImageDTO;
 import star.home.board.dto.request.BoardRequest;
 import star.home.board.dto.response.BoardResponse;
-import star.home.board.dto.response.BoardResponse.Author;
+import star.common.dto.internal.Author;
 import star.home.board.exception.NoSuchBoardException;
 import star.home.board.model.entity.Board;
 import star.home.board.model.vo.Content;
 import star.home.board.repository.BoardRepository;
 import star.home.category.model.vo.CategoryName;
 import star.home.category.service.CategoryService;
-import star.home.comment.service.CommentService;
+import star.home.comment.service.CommentCoordinateService;
 import star.home.dto.BoardPeekDTO;
 import star.member.dto.MemberInfoDTO;
 import star.member.model.entity.Member;
@@ -45,9 +46,9 @@ public class BoardService extends BaseRetryRecoverService {
     private final MemberService memberService;
     private final CategoryService categoryService;
     private final BoardImageService boardImageService;
-    private final HeartService heartService;
+    private final BoardHeartService boardHeartService;
+    private final CommentCoordinateService commentCoordinateService;
     private final BoardRepository boardRepository;
-    private final CommentService commentService;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -82,7 +83,7 @@ public class BoardService extends BaseRetryRecoverService {
                 .map(board -> BoardPeekDTO.from(
                         board,
                         boardImageService.getImageUrls(board.getId()).getFirst().imageUrl(),
-                        heartService.hasHearted(viewerId, board.getId())
+                        boardHeartService.hasHearted(viewerId, board.getId())
                 )).toList();
 
         return new PageImpl<>(boardPeekDTOs, pageable, boardsPage.getTotalElements());
@@ -114,13 +115,13 @@ public class BoardService extends BaseRetryRecoverService {
                 .id(boardId)
                 .author(author)
                 .isViewerAuthor(viewerId.equals(authorId))
-                .liked(heartService.hasHearted(viewerId, boardId))
+                .liked(boardHeartService.hasHearted(viewerId, boardId))
                 .title(board.getTitle().value())
                 .imageUrls(imageUrlStrings)
                 .content(Content.copyOf(board.getContent())) //안전하게 깊은 복사하기
                 .category(board.getCategory().getName().name())
                 .viewCount(board.getViewCount())
-                .createdAt(board.getCreatedAt())
+                .createdAt(CommonTimeUtils.convertLocalDateTimeToOffsetDateTime(board.getCreatedAt()))
                 .likeCount(board.getHeartCount())
                 .commentCount(board.getCommentCount())
                 .build();
@@ -149,8 +150,8 @@ public class BoardService extends BaseRetryRecoverService {
             throw new YouAreNotAuthorException();
         }
 
-        commentService.hardDeleteAllComments(boardId);
-        heartService.deleteHeartsByBoardDelete(boardId);
+        commentCoordinateService.hardDeleteAllComments(boardId);
+        boardHeartService.deleteHeartsByBoardDelete(boardId);
         boardImageService.deleteBoardImageUrls(boardId);
         boardRepository.delete(board);
     }
