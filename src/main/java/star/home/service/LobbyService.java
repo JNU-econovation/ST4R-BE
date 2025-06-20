@@ -4,23 +4,30 @@ import jakarta.annotation.Nullable;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import star.common.exception.server.InternalServerException;
 import star.home.board.service.BoardService;
+import star.home.category.model.vo.CategoryName;
 import star.home.constants.Period;
+import star.home.dto.request.LobbyRequest;
 import star.home.dto.response.LobbyBoardResponse;
 import star.member.dto.MemberInfoDTO;
 
 @Service
 @RequiredArgsConstructor
 public class LobbyService {
+
     private final BoardService boardService;
 
-    public LobbyBoardResponse getLobbyBoards(@Nullable MemberInfoDTO memberInfoDTO, Period period,
-            Pageable pageable) {
+    public LobbyBoardResponse getLobbyBoards(@Nullable MemberInfoDTO memberInfoDTO,
+            LobbyRequest request, Pageable pageable) {
+
+        Period period = setPeriodIfNull(request.period());
+        List<CategoryName> categories = setCategoriesIfNullOrEmpty(request.categories());
 
         LocalDateTime start, end;
 
@@ -58,7 +65,17 @@ public class LobbyService {
         }
 
         return LobbyBoardResponse.builder()
-                .boardPeeks(boardService.getBoardPeeks(memberInfoDTO, start, end, pageable))
-                .build();
+                .boardPeeks(
+                        boardService.getBoardPeeks(memberInfoDTO, categories, start, end, pageable)
+                ).build();
+    }
+
+    private Period setPeriodIfNull(Period period) {
+        return (period == null) ? Period.WEEKLY : period;
+    }
+
+    private List<CategoryName> setCategoriesIfNullOrEmpty(List<CategoryName> categories) {
+        return (categories == null || categories.isEmpty())
+                ? List.of(CategoryName.values()) : categories;
     }
 }
