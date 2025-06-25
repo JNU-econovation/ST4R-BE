@@ -1,16 +1,19 @@
 package star.common.security.filter;
 
 
+import static star.common.security.constants.SecurityConstants.BEARER_TYPE;
+import static star.common.security.constants.SecurityConstants.CRITICAL_AUTH_ERROR_MESSAGE;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationServiceException;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
@@ -19,38 +22,46 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
-import star.common.security.dto.StarUserDetails;
-import star.common.security.encryption.jwt.JwtManager;
 import star.common.security.exception.handler.Rest401Handler;
 import star.common.security.exception.handler.Rest500Handler;
-import star.member.dto.MemberInfoDTO;
-import star.member.service.MemberService;
+import star.common.security.helper.JwtAuthHelper;
+
 
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class JwtAuthenticationFilter extends OncePerRequestFilter {
+public class RestJwtAuthFilter extends OncePerRequestFilter {
 
-    private final static String BEARER_TYPE = "Bearer ";
-    private final static String CRITICAL_AUTH_ERROR_MESSAGE = "알 수 없는 예외로 인한 인증 실패";
+    private static final List<String> WHITELIST_PATHS = List.of("/h2-console/**", "/oauth/**", "/websocket/**");
+    private static final List<String> BLACKLIST_PATHS = List.of("/upload/**");
+    private static final List<String> GREYLIST_PATHS = List.of("/home/**", "/groups/**");
 
-    private static final String[] WHITELIST_PATHS = {
-            "/h2-console/**"
-    };
 
-    private static final String[] BLACKLIST_PATHS = {
-            "/upload/**"
-    };
-
-    private final JwtManager jwtManager;
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
-    private final MemberService memberService;
+    private final JwtAuthHelper jwtAuthHelper;
     private final Rest401Handler rest401Handler;
     private final Rest500Handler rest500Handler;
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        return requestIsMatch(request);
+        String path = request.getRequestURI();
+
+        // 화이트리스트 검사 (람다식 및 스트림 API 사용)
+        boolean isWhitelisted = WHITELIST_PATHS.stream()
+                .anyMatch(whitePattern -> pathMatcher.match(whitePattern, path));
+
+        boolean isBlacklisted = BLACKLIST_PATHS.stream()
+                .anyMatch(blackPattern -> pathMatcher.match(blackPattern, path));
+
+        if (isWhitelisted) {
+            return true;
+        }
+
+        if (isBlacklisted) {
+            return false;
+        }
+
+        return false;
     }
 
 
@@ -60,30 +71,24 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             FilterChain filterChain) throws IOException {
         try {
             String path = request.getRequestURI();
+            String method = request.getMethod();
             String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
-            boolean isHomePath = pathMatcher.match("/home/**", path);
-            boolean isGroupsPath = pathMatcher.match("/groups/**", path);
+
+            boolean isGreylisted = GREYLIST_PATHS.stream()
+                    .anyMatch(greyPattern -> pathMatcher.match(greyPattern, path));
 
             if (authHeader == null || !authHeader.startsWith(BEARER_TYPE)) {
-                if (isHomePath || isGroupsPath) {
+
+                if (isGreylisted && method.equals(HttpMethod.GET.name())) {
                     filterChain.doFilter(request, response);
                     return;
                 }
+
                 throw new InsufficientAuthenticationException("Auth 헤더가 유효하지 않습니다.");
             }
 
-            String token = authHeader.substring(BEARER_TYPE.length());
-            if (!jwtManager.validateToken(token)) {
-                throw new BadCredentialsException("토큰이 올바르지 않습니다.");
-            }
-
-            Long memberId = jwtManager.extractId(token);
-            MemberInfoDTO memberInfo = memberService.getMemberById(memberId);
-
-            StarUserDetails userDetails = new StarUserDetails(memberInfo);
             UsernamePasswordAuthenticationToken auth =
-                    new UsernamePasswordAuthenticationToken(userDetails, null,
-                            userDetails.getAuthorities());
+                    (UsernamePasswordAuthenticationToken) jwtAuthHelper.authenticate(authHeader);
 
             auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
@@ -101,30 +106,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     new AuthenticationServiceException(CRITICAL_AUTH_ERROR_MESSAGE, ex));
 
         }
-    }
-
-    private Boolean requestIsMatch(HttpServletRequest request) {
-        String path = request.getRequestURI();
-        String method = request.getMethod();
-
-        for (String whitePattern : WHITELIST_PATHS) {
-            if (pathMatcher.match(whitePattern, path)) {
-                return true;
-            }
-        }
-
-        for (String blackPattern : BLACKLIST_PATHS) {
-            if (pathMatcher.match(blackPattern, path)) {
-                return false;
-            }
-        }
-
-        if (HttpMethod.GET.matches(method) && !pathMatcher.match("/home/**", path)
-                && !pathMatcher.match("/groups/**", path)) {
-            return true;
-        }
-
-        return false;
     }
 
 }
