@@ -13,15 +13,18 @@ import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 import star.common.security.dto.StarUserDetails;
 import star.team.chat.dto.request.ChatRequest;
 import star.team.chat.dto.response.ChatResponse;
+import star.team.chat.service.ChatService;
 
 @Controller
 @Slf4j
 @RequiredArgsConstructor
 public class ChatWebSocketController {
 
+    private final ChatService service;
+
     @MessageMapping("/broadcast/{teamId}")
     @SendTo("/subscribe/{teamId}")
-    public void receiveMessage(
+    public ChatResponse receiveMessage(
             @AuthenticationPrincipal StarUserDetails userDetails,
             @DestinationVariable("teamId") Long teamId,
             ChatRequest request) {
@@ -29,8 +32,7 @@ public class ChatWebSocketController {
         //todo: for debugging
         log.info("receiveMessage: teamId={}, request={}", teamId, request);
 
-//        //db에 저장 & 저장한 채팅 메세지 DTO 클라이언트에게 보내기
-//        return chatService.saveChattingMessage(teamId, request, userDetails.getMemberInfoDTO());
+        return service.saveChat(teamId, request, userDetails.getMemberInfoDTO());
     }
 
     @EventListener
