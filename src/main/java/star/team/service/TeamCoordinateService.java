@@ -28,6 +28,7 @@ import star.team.exception.TeamMemberNotFoundException;
 import star.team.exception.YouAlreadyJoinedTeamException;
 import star.team.exception.YouAreNotTeamLeaderException;
 import star.team.model.entity.Team;
+import star.team.model.entity.TeamMember;
 import star.team.model.vo.Description;
 import star.team.model.vo.Name;
 import star.team.model.vo.PlainPassword;
@@ -127,6 +128,15 @@ public class TeamCoordinateService {
                 .isPublic(isPublic(team))
                 .isJoinable(isJoinable(team, viewerId))
                 .build();
+    }
+
+    @Transactional(readOnly = true)
+    public TeamMember getTeamMember(Long teamId, Long memberId) {
+        if (!teamMemberDataService.existsTeamMember(teamId, memberId)) {
+            throw new TeamMemberNotFoundException();
+        }
+
+        return teamMemberDataService.getTeamMemberEntityByIds(teamId, memberId);
     }
 
     @Transactional
