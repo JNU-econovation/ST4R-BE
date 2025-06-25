@@ -15,7 +15,7 @@ import org.springframework.messaging.support.ErrorMessage;
 import org.springframework.messaging.support.MessageHeaderAccessor;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
-import org.springframework.security.core.Authentication; // Authentication import
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Component;
 import star.common.security.helper.JwtAuthHelper;
@@ -25,7 +25,7 @@ import star.common.security.helper.JwtAuthHelper;
 @Slf4j
 public class WebSocketJwtAuthInterceptor implements ChannelInterceptor {
 
-    private final JwtAuthHelper jwtAuthHelper; // 헬퍼 클래스 주입
+    private final JwtAuthHelper jwtAuthHelper;
 
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
