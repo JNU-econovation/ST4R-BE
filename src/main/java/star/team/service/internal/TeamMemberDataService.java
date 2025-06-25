@@ -27,6 +27,11 @@ public class TeamMemberDataService {
     }
 
     @Transactional(readOnly = true)
+    public TeamMember getTeamMemberEntityByIds(Long teamId, Long memberId) {
+        return teamMemberRepository.getByTeamIdAndMemberId(teamId, memberId);
+    }
+
+    @Transactional(readOnly = true)
     public boolean existsTeamMember(Long teamId, Long memberId) {
         return teamMemberRepository.existsByTeamIdAndMemberId(teamId, memberId);
     }

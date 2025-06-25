@@ -6,25 +6,30 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.messaging.Message;
+import org.springframework.security.authorization.AuthorizationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer.FrameOptionsConfig;
+import org.springframework.security.config.annotation.web.socket.EnableWebSocketSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.messaging.access.intercept.MessageMatcherDelegatingAuthorizationManager.Builder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import star.common.security.exception.handler.Rest401Handler;
-import star.common.security.filter.JwtAuthenticationFilter;
+import star.common.security.filter.RestJwtAuthFilter;
 
 @Configuration
+@EnableWebSocketSecurity
 @RequiredArgsConstructor
 public class WebSecurityConfig {
     private static final Long CORS_MAX_AGE = 3600L;
 
     //todo: oauth2 나중에 시큐리티 고도화
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final RestJwtAuthFilter restJwtAuthFilter;
     private final Rest401Handler rest401Handler;
 
     @Bean
@@ -42,6 +47,17 @@ public class WebSecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
+    }
+
+    @Bean
+    public AuthorizationManager<Message<?>> messageAuthorizationManager(Builder messages) {
+        messages
+                .nullDestMatcher().permitAll()
+                .simpDestMatchers("/broadcast/**").authenticated()
+                .simpSubscribeDestMatchers("/subscribe/**").authenticated()
+                .anyMessage().authenticated();
+
+        return messages.build();
     }
 
 
@@ -67,7 +83,7 @@ public class WebSecurityConfig {
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-                .addFilterBefore(jwtAuthenticationFilter,
+                .addFilterBefore(restJwtAuthFilter,
                         UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
