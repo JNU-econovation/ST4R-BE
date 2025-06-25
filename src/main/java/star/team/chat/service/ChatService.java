@@ -8,8 +8,10 @@ import org.springframework.transaction.annotation.Transactional;
 import star.member.dto.MemberInfoDTO;
 import star.team.chat.dto.request.ChatRequest;
 import star.team.chat.dto.response.ChatResponse;
+import star.team.chat.exception.handler.YouAreNotChatRoomException;
 import star.team.chat.model.entity.Chat;
 import star.team.chat.repository.ChatRepository;
+import star.team.exception.TeamMemberNotFoundException;
 import star.team.model.entity.TeamMember;
 import star.team.service.TeamCoordinateService;
 
@@ -24,7 +26,8 @@ public class ChatService {
     public ChatResponse saveChat(Long teamId, ChatRequest request, MemberInfoDTO memberInfoDTO) {
         TeamMember teamMember;
 
-        teamMember = teamCoordinateService.getTeamMember(teamId, memberInfoDTO.id());
+
+        teamMember = getTeamMember(teamId, memberInfoDTO.id());
 
         Chat newChat = Chat.builder()
                 .teamMember(teamMember)
@@ -41,8 +44,16 @@ public class ChatService {
             Pageable pageable) {
 
         //잘못된 teamId 방지
-        teamCoordinateService.getTeamMember(teamId, memberDTO.id());
+        getTeamMember(teamId, memberDTO.id());
 
         return chatRepository.getChatsByTeamMemberTeamId(teamId, pageable).map(ChatResponse::from);
+    }
+
+    private TeamMember getTeamMember(Long teamId, Long memberId) {
+        try {
+            return teamCoordinateService.getTeamMember(teamId, memberId);
+        } catch (TeamMemberNotFoundException e) {
+            throw new YouAreNotChatRoomException();
+        }
     }
 }
