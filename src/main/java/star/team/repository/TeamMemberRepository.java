@@ -1,11 +1,14 @@
 package star.team.repository;
 
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import star.team.model.entity.TeamMember;
 
 @Repository
 public interface TeamMemberRepository extends JpaRepository<TeamMember, Long> {
+
+    TeamMember getByTeamIdAndMemberId(Long teamId, Long memberId);
 
     void deleteTeamMembersByTeamId(Long teamId);
 
