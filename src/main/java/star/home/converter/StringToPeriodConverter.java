@@ -1,4 +1,4 @@
-package star.home.config;
+package star.home.converter;
 
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
