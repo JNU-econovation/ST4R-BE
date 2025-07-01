@@ -46,9 +46,6 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
     //db
-    implementation 'org.hibernate.orm:hibernate-spatial:6.4.4.Final'
-    implementation 'org.locationtech.jts:jts-core:1.19.0'
-    implementation 'org.orbisgis:h2gis:2.2.3'
     runtimeOnly 'com.mysql:mysql-connector-j'
     runtimeOnly 'com.h2database:h2'
 
