@@ -35,9 +35,12 @@ public class CustomPageableArgumentResolver implements HandlerMethodArgumentReso
         String page = webRequest.getParameter("page");
         String size = webRequest.getParameter("size");
 
-        CustomPageRequest request = new CustomPageRequest(sort, dir,
-                page != null ? Integer.parseInt(page) : null,
-                size != null ? Integer.parseInt(size) : null);
+        CustomPageRequest request = CustomPageRequest.builder()
+                .sort(sort)
+                .direction(dir)
+                .size(size != null ? Integer.parseInt(size) : null)
+                .page(page != null ? Integer.parseInt(page) : null)
+                .build();
 
         return new CustomPageRequestToPageableConverter(allowedFields).convert(request);
     }
