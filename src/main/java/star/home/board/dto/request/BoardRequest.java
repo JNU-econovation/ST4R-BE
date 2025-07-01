@@ -4,9 +4,9 @@ import static star.common.constants.CommonConstants.MAX_IMAGE_COUNT;
 import static star.home.constants.HomeConstants.TITLE_MAX_LENGTH;
 import static star.home.constants.HomeConstants.TITLE_MIN_LENGTH;
 
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.util.List;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 import star.home.board.model.vo.Content;
 import jakarta.validation.constraints.NotBlank;
 
