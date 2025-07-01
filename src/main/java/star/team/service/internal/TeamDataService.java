@@ -38,7 +38,7 @@ public class TeamDataService {
                 .encryptedPassword(encryptedPassword)
                 .leaderId(memberId)
                 .participant(Participant.builder()
-                        .current(PARTICIPANT_MIN_CAPACITY + 1)
+                        .current(PARTICIPANT_MIN_CAPACITY)
                         .capacity(teamDTO.maxParticipantCount())
                         .build())
                 .whenToMeet(CommonTimeUtils.convertOffsetDateTimeToLocalDateTime(teamDTO.whenToMeet()))
