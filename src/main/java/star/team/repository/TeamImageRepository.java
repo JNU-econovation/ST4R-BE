@@ -12,5 +12,5 @@ public interface TeamImageRepository extends JpaRepository<TeamImage, Long> {
 
     void deleteTeamImagesByTeamId(Long teamId);
 
-    List<TeamImage> getTeamImagesById(Long teamId);
+    List<TeamImage> getTeamImagesByTeamIdOrderBySortOrderAsc(Long teamId);
 }
