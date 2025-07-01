@@ -25,7 +25,7 @@ public class TeamImageDataService {
 
     @Transactional(readOnly = true)
     public List<String> getImageUrls(Long teamId) {
-        return teamImageRepository.getTeamImagesById(teamId).stream()
+        return teamImageRepository.getTeamImagesByTeamId(teamId).stream()
                 .map(TeamImage::getImageUrl)
                 .toList();
     }
