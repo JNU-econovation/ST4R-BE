@@ -5,7 +5,7 @@ import lombok.Builder;
 import star.common.util.CommonTimeUtils;
 import star.home.board.model.entity.Board;
 import star.common.model.vo.Jido;
-import star.home.board.model.vo.Marker;
+import star.common.model.vo.Marker;
 
 @Builder
 public record BoardPeekDTO(

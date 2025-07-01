@@ -1,4 +1,4 @@
-package star.home.board.model.vo;
+package star.common.model.vo;
 
 import jakarta.annotation.Nullable;
 import jakarta.persistence.Embeddable;
