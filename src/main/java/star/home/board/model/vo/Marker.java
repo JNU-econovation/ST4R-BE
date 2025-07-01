@@ -1,12 +1,13 @@
 package star.home.board.model.vo;
 
+import jakarta.annotation.Nullable;
 import jakarta.persistence.Embeddable;
 
 @Embeddable
 public record Marker(
         Double latitude,
         Double longitude,
-        String locationName,
+        @Nullable String locationName,
         String roadAddress
 ) {
 
@@ -39,10 +40,6 @@ public record Marker(
         }
         if (longitude < -180 || longitude > 180) {
             throw new IllegalArgumentException("경도는 -180도 이상 180도 이하로 입력해주세요.");
-        }
-
-        if (locationName == null || locationName.isBlank()) {
-            throw new IllegalArgumentException("장소 이름을 입력해주세요.");
         }
         if (locationName.length() > LOCATION_NAME_MAX_LENGTH) {
             throw new IllegalArgumentException(
