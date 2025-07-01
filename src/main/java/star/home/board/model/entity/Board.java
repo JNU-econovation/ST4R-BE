@@ -1,16 +1,7 @@
 package star.home.board.model.entity;
 
-import jakarta.persistence.AttributeOverride;
-import jakarta.persistence.Column;
-import jakarta.persistence.Embedded;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Version;
+
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -20,6 +11,8 @@ import star.home.board.model.vo.Content;
 import star.home.board.model.vo.Title;
 import star.home.category.model.entity.Category;
 import star.member.model.entity.Member;
+import star.common.util.GeometryUtils;
+import org.locationtech.jts.geom.Point;
 
 @Entity
 @Getter
@@ -57,6 +50,9 @@ public class Board extends BaseEntity {
     @Column(nullable = false)
     private Integer commentCount;
 
+    @Column(columnDefinition = "geometry")
+    private Point location;
+
     @Builder
     public Board(Member member, String title, Content content, Category category) {
         this.member = member;
@@ -73,6 +69,22 @@ public class Board extends BaseEntity {
         this.content = content;
         this.category = category;
     }
+
+    //엔티티가 저장되거나 업데이트되기 직전에 호출
+    @PrePersist
+    @PreUpdate
+    public void updateLocation() {
+        if (content != null && content.map() != null && content.map().marker() != null) {
+            this.location = GeometryUtils.createPoint(
+                    content.map().marker().longitude(),
+                    content.map().marker().latitude()
+            );
+        } else {
+            // 지도 정보가 없으면 location 필드도 null로 설정
+            this.location = null;
+        }
+    }
+
 
     public void increaseViewCount() {
         this.viewCount++;
