@@ -26,7 +26,6 @@ repositories {
 dependencies {
 
     //Spring
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
@@ -36,6 +35,7 @@ dependencies {
     implementation 'org.springframework.security:spring-security-messaging'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 
 
     //lombok
@@ -46,6 +46,9 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
     //db
+    implementation 'org.hibernate.orm:hibernate-spatial:6.4.4.Final'
+    implementation 'org.locationtech.jts:jts-core:1.19.0'
+    implementation 'org.orbisgis:h2gis:2.2.3'
     runtimeOnly 'com.mysql:mysql-connector-j'
     runtimeOnly 'com.h2database:h2'
 
