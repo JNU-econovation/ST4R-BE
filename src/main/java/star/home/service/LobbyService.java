@@ -20,9 +20,11 @@ public class LobbyService {
 
     private final BoardService boardService;
 
-    public LobbyBoardResponse getLobbyBoards(@Nullable MemberInfoDTO memberInfoDTO,
+    public LobbyBoardResponse getLobbyBoards(
+            @Nullable MemberInfoDTO memberInfoDTO,
             LobbyRequest request,
-            Pageable pageable) {
+            Pageable pageable
+    ) {
 
         Period period = setPeriodIfNull(request.period());
         List<CategoryName> categories = setCategoriesIfNullOrEmpty(request.categories());
@@ -30,8 +32,15 @@ public class LobbyService {
         LocalDateTimesDTO localDateTimesDTO = CommonTimeUtils.getLocalDateTimesByPeriod(period);
 
         return LobbyBoardResponse.builder()
-                .boardPeeks(boardService.getBoardPeeks(memberInfoDTO, categories,
-                        localDateTimesDTO.start(), localDateTimesDTO.end(), pageable))
+                .boardPeeks(
+                        boardService.getBoardPeeks(
+                                memberInfoDTO,
+                                categories,
+                                localDateTimesDTO.start(),
+                                localDateTimesDTO.end(),
+                                request.circularArea(),
+                                pageable)
+                )
                 .build();
     }
 
