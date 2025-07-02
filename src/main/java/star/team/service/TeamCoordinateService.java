@@ -3,7 +3,6 @@ package star.team.service;
 import static star.common.constants.CommonConstants.ANONYMOUS_MEMBER_ID;
 
 import jakarta.annotation.Nullable;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
@@ -12,12 +11,15 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import star.common.dto.LocalDateTimesDTO;
 import star.common.dto.internal.Author;
 import star.common.util.CommonTimeUtils;
 import star.member.dto.MemberInfoDTO;
 import star.member.model.entity.Member;
 import star.member.service.MemberService;
 import star.team.dto.TeamDTO;
+import star.team.dto.TeamSearchDTO;
+import star.team.dto.request.GetTeamsRequest;
 import star.team.dto.request.TeamLeaderDelegateRequest;
 import star.team.dto.request.TeamRequest;
 import star.team.dto.response.GetTeamsResponse;
@@ -62,7 +64,8 @@ public class TeamCoordinateService {
                 .description(new Description(request.description()))
                 .build();
 
-        Team createdTeam = teamDataService.createTeam(memberId, teamDTO);
+        Team createdTeam =
+                teamDataService.createTeam(memberService.getMemberEntityById(memberId), teamDTO);
         teamImageDataService.addImageUrls(createdTeam, request.imageUrls());
         teamMemberDataService.addTeamMember(createdTeam, memberId);
 
@@ -71,13 +74,14 @@ public class TeamCoordinateService {
 
     @Transactional(readOnly = true)
     public Page<GetTeamsResponse> getTeams(@Nullable MemberInfoDTO memberInfoDTO,
-            Pageable pageable) {
+            GetTeamsRequest request, Pageable pageable) {
         Long viewerId = (memberInfoDTO != null) ? memberInfoDTO.id() : ANONYMOUS_MEMBER_ID;
-        Page<Team> teams = teamDataService.getTeams(pageable);
+
+        TeamSearchDTO searchDTO = buildTeamSearchDTO(request);
+
+        Page<Team> teams = teamDataService.getTeams(searchDTO, pageable);
 
         List<GetTeamsResponse> getTeamsResponseList = teams.getContent().stream()
-                .filter(team -> team.getWhenToMeet()
-                        .isAfter(LocalDateTime.now())) // 과거 시간 제외, 과거시간 보이려면 검색 기능 써야함 (추후 구현)
                 .map(
                         team -> GetTeamsResponse.builder()
                                 .id(team.getId())
@@ -97,12 +101,33 @@ public class TeamCoordinateService {
         return new PageImpl<>(getTeamsResponseList, pageable, getTeamsResponseList.size());
     }
 
+    private TeamSearchDTO buildTeamSearchDTO(GetTeamsRequest request) {
+        LocalDateTimesDTO meetBetWeen = null;
+
+        if (request.meetBetweenStart() != null && request.meetBetweenEnd() != null) {
+            meetBetWeen = LocalDateTimesDTO.builder()
+                    .start(CommonTimeUtils.convertOffsetDateTimeToLocalDateTime(
+                            request.meetBetweenStart()))
+                    .end(CommonTimeUtils.convertOffsetDateTimeToLocalDateTime(
+                            request.meetBetweenEnd()))
+                    .build();
+        }
+
+        return TeamSearchDTO.builder()
+                .circularArea(request.circularArea())
+                .meetBetween(meetBetWeen)
+                .leaderName(request.leaderName())
+                .name(request.name() == null ? null : new Name(request.name()))
+                .includePast(request.includePast() != null && request.includePast())
+                .build();
+    }
+
 
     @Transactional(readOnly = true)
     public TeamDetailsResponse getTeamDetails(Long teamId, @Nullable MemberInfoDTO memberInfoDTO) {
         Long viewerId = (memberInfoDTO != null) ? memberInfoDTO.id() : ANONYMOUS_MEMBER_ID;
         Team team = teamDataService.getTeamEntityById(teamId);
-        MemberInfoDTO authorInfo = memberService.getMemberById(team.getLeaderId());
+        MemberInfoDTO authorInfo = MemberInfoDTO.from(team.getLeader());
         Long authorId = authorInfo.id();
 
         return TeamDetailsResponse.builder()
@@ -211,15 +236,17 @@ public class TeamCoordinateService {
         Team team = teamDataService.getTeamEntityById(teamId);
         assertTeamLeader(memberInfoDTO, team);
 
-        if (team.getLeaderId().equals(request.targetMemberId())) {
+        Member target = memberService.getMemberEntityById(request.targetMemberId());
+
+        if (team.getLeader().equals(target)) {
             throw new TeamLeaderSelfDelegatingException();
         }
 
-        if (!teamMemberDataService.existsTeamMember(teamId, request.targetMemberId())) {
+        if (!teamMemberDataService.existsTeamMember(teamId, target.getId())) {
             throw new TeamMemberNotFoundException();
         }
 
-        team.delegateLeader(request.targetMemberId());
+        team.delegateLeader(target);
     }
 
     @Transactional
@@ -227,7 +254,7 @@ public class TeamCoordinateService {
 
         Team team = teamDataService.getTeamEntityById(teamId);
         assertTeamMember(memberInfoDTO, team);
-        if (Objects.equals(team.getLeaderId(), memberInfoDTO.id())) {
+        if (Objects.equals(team.getLeader().getId(), memberInfoDTO.id())) {
             //니 팀 버려? ㅋㅋㅋ
             throw new TeamLeaderCannotLeaveException();
         }
@@ -249,7 +276,7 @@ public class TeamCoordinateService {
     }
 
     private void assertTeamLeader(MemberInfoDTO memberInfoDTO, Team team) {
-        if (!team.getLeaderId().equals(memberInfoDTO.id())) {
+        if (!team.getLeader().getId().equals(memberInfoDTO.id())) {
             throw new YouAreNotTeamLeaderException();
         }
     }

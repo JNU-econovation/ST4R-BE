@@ -21,6 +21,7 @@ import star.common.constants.SortField;
 import star.common.dto.response.CommonResponse;
 import star.common.security.dto.StarUserDetails;
 import star.member.dto.MemberInfoDTO;
+import star.team.dto.request.GetTeamsRequest;
 import star.team.dto.request.TeamRequest;
 import star.team.dto.response.TeamDetailsResponse;
 import star.team.dto.response.GetTeamsResponse;
@@ -47,13 +48,14 @@ public class TeamController {
     @GetMapping
     public ResponseEntity<Page<GetTeamsResponse>> getTeams(
             @Nullable @AuthenticationPrincipal StarUserDetails userDetails,
+            @Valid GetTeamsRequest request,
             @ResolvePageable(allowed = {SortField.CREATED_AT, SortField.WHEN_TO_MEET,
                     SortField.HEART_COUNT, SortField.DISTANCE})
             Pageable pageable
     ) {
         MemberInfoDTO memberInfoDTO = (userDetails != null) ? userDetails.getMemberInfoDTO() : null;
 
-        return ResponseEntity.ok(service.getTeams(memberInfoDTO, pageable));
+        return ResponseEntity.ok(service.getTeams(memberInfoDTO, request, pageable));
     }
 
     @GetMapping("/{teamId}")
