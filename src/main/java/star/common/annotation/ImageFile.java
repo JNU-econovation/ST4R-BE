@@ -1,4 +1,4 @@
-package star.common.infra.aws.validation;
+package star.common.annotation;
 
 import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.ElementType.PARAMETER;
@@ -9,6 +9,7 @@ import jakarta.validation.Payload;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
+import star.common.infra.aws.validation.ImageFileValidator;
 
 @Documented
 @Constraint(validatedBy = ImageFileValidator.class)
