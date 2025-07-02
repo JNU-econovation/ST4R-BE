@@ -6,34 +6,28 @@ import jakarta.annotation.Nullable;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.OptimisticLockException;
 import jakarta.persistence.PersistenceContext;
-import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import star.common.constants.CommonConstants;
-import star.common.constants.SortField;
 import star.common.dto.internal.Author;
 import star.common.exception.client.YouAreNotAuthorException;
-import star.common.model.vo.CircularArea;
 import star.common.service.BaseRetryRecoverService;
 import star.common.util.CommonTimeUtils;
 import star.home.board.dto.BoardImageDTO;
+import star.home.board.dto.BoardSearchDTO;
 import star.home.board.dto.request.BoardRequest;
 import star.home.board.dto.response.BoardResponse;
 import star.home.board.exception.NoSuchBoardException;
 import star.home.board.model.entity.Board;
-import star.home.board.model.vo.Content;
 import star.home.board.repository.BoardRepository;
-import star.home.category.model.vo.CategoryName;
 import star.home.category.service.CategoryService;
 import star.home.comment.service.CommentCoordinateService;
 import star.home.dto.BoardPeekDTO;
@@ -45,7 +39,6 @@ import star.member.service.MemberService;
 @RequiredArgsConstructor
 @Slf4j
 public class BoardService extends BaseRetryRecoverService {
-
 
     private final MemberService memberService;
     private final CategoryService categoryService;
@@ -75,16 +68,13 @@ public class BoardService extends BaseRetryRecoverService {
 
     public Page<BoardPeekDTO> getBoardPeeks(
             @Nullable MemberInfoDTO memberInfoDTO,
-            List<CategoryName> categories,
-            LocalDateTime start,
-            LocalDateTime end,
-            @Nullable CircularArea circularArea,
+            BoardSearchDTO searchDTO,
             Pageable pageable
     ) {
 
         Long viewerId = (memberInfoDTO != null) ? memberInfoDTO.id() : ANONYMOUS_MEMBER_ID;
 
-        Page<Board> boardsPage = getBoardsPage(categories, start, end, circularArea, pageable);
+        Page<Board> boardsPage = boardRepository.searchBoards(searchDTO, pageable);
 
         List<BoardPeekDTO> boardPeekDTOs = boardsPage.getContent().stream()
                 .map(board -> BoardPeekDTO.from(
@@ -94,48 +84,6 @@ public class BoardService extends BaseRetryRecoverService {
                 )).toList();
 
         return new PageImpl<>(boardPeekDTOs, pageable, boardsPage.getTotalElements());
-    }
-
-    private Page<Board> getBoardsPage(
-            List<CategoryName> categories, LocalDateTime start,
-            LocalDateTime end, @Nullable CircularArea circularArea, Pageable pageable
-    ) {
-
-        if (circularArea == null) {
-            return boardRepository.getBoardsByCategoryNameInAndCreatedAtBetween(
-                    categories, start, end, pageable);
-        }
-
-        Sort.Order order = pageable.getSort().iterator().next();
-        List<String> categoriesString = categories.stream().map(Enum::toString).toList();
-        if (order.getProperty().equals(SortField.DISTANCE.getDbField())) {
-
-            switch (order.getDirection()) {
-
-                case ASC -> {
-                    return boardRepository.getBoardsByCategoryAndCreatedAtAndNearbyCircularAreaOrderByDistanceAsc(
-                            categoriesString, start, end, circularArea.marker().latitude(),
-                            circularArea.marker().longitude(), circularArea.distanceInMeters(),
-                            PageRequest.of(pageable.getPageNumber(), pageable.getPageSize())
-                    );
-                }
-
-                case DESC -> {
-                    return boardRepository.getBoardsByCategoryAndCreatedAtAndNearbyCircularAreaOrderByDistanceDesc(
-                            categoriesString, start, end, circularArea.marker().latitude(),
-                            circularArea.marker().longitude(), circularArea.distanceInMeters(),
-                            PageRequest.of(pageable.getPageNumber(), pageable.getPageSize())
-                    );
-                }
-
-            }
-
-        }
-
-        return boardRepository.getBoardsByCategoryAndCreatedAtAndNearbyCircularArea(
-                categoriesString, start, end, circularArea.marker().latitude(),
-                circularArea.marker().longitude(), circularArea.distanceInMeters(), pageable
-        );
     }
 
 
@@ -151,7 +99,7 @@ public class BoardService extends BaseRetryRecoverService {
         Author author = Author.builder()
                 .id(authorId)
                 .imageUrl(authorMember.profileImageUrl())
-                .nickname(authorMember.email().value())
+                .nickname(authorMember.email().getValue())
                 .build();
 
         List<String> imageUrlStrings = boardImageService.getImageUrls(boardId)
@@ -167,7 +115,7 @@ public class BoardService extends BaseRetryRecoverService {
                 .liked(boardHeartService.hasHearted(viewerId, boardId))
                 .title(board.getTitle().value())
                 .imageUrls(imageUrlStrings)
-                .content(Content.copyOf(board.getContent())) //안전하게 깊은 복사하기
+                .content(board.getContent())
                 .category(board.getCategory().getName().name())
                 .viewCount(board.getViewCount())
                 .createdAt(

@@ -1,6 +1,7 @@
 package star.home.board.model.entity;
 
 
+import com.querydsl.core.annotations.QueryInit;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -27,12 +28,14 @@ public class Board extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
+    @QueryInit("email.value") // todo: 닉네임으로 리팩터링 시 바꾸기
     private Member member;
 
     @AttributeOverride(name = "value", column = @Column(name = "title", nullable = false))
     private Title title;
 
     @Embedded
+    @QueryInit("map.marker")
     private Content content;
 
     @ManyToOne(fetch = FetchType.LAZY)

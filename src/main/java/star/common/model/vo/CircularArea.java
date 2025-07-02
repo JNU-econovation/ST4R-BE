@@ -14,7 +14,7 @@ public record CircularArea(
 
     private void validate(Marker marker, Double distanceInMeters) {
         if (marker == null || distanceInMeters == null) {
-            throw new IllegalArgumentException("marker 또는 distanceInMeters를 입력해주세요");
+            throw new IllegalArgumentException("위도 / 경도 또는 distanceInMeters를 입력해주세요");
         }
     }
 
