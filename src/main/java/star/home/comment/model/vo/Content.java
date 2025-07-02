@@ -4,16 +4,20 @@ import static star.home.comment.constants.CommentConstants.COMMENT_CONTENT_MAX_L
 import static star.home.comment.constants.CommentConstants.COMMENT_CONTENT_MIN_LENGTH;
 
 import jakarta.persistence.Embeddable;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Embeddable
-public record Content(
-        String value
-) {
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+public class Content {
+    private String value;
 
+    
 
-    public Content {
-        validate(value);
-    }
     private void validate(String value) {
         if (value == null || value.length() < COMMENT_CONTENT_MIN_LENGTH
                 || value.length() > COMMENT_CONTENT_MAX_LENGTH) {

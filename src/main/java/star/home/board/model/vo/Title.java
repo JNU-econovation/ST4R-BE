@@ -4,11 +4,13 @@ import static star.home.constants.HomeConstants.TITLE_MAX_LENGTH;
 import static star.home.constants.HomeConstants.TITLE_MIN_LENGTH;
 
 import jakarta.persistence.Embeddable;
+import star.common.exception.client.BadDataLengthException;
 
 @Embeddable
 public record Title(
         String value
 ) {
+
     public Title {
         validateTitle(value);
     }
@@ -16,8 +18,7 @@ public record Title(
     private void validateTitle(String value) {
         if (value == null || value.length() < TITLE_MIN_LENGTH
                 || value.length() > TITLE_MAX_LENGTH) {
-            throw new IllegalArgumentException(
-                    "제목의 길이는 최소 %d자, 최대 %d자여야 합니다.".formatted(TITLE_MIN_LENGTH, TITLE_MAX_LENGTH));
+            throw new BadDataLengthException("제목", TITLE_MIN_LENGTH, TITLE_MAX_LENGTH);
         }
     }
 }

@@ -5,7 +5,7 @@ import lombok.Builder;
 import star.common.util.CommonTimeUtils;
 import star.home.board.model.entity.Board;
 import star.common.model.vo.Jido;
-import star.home.board.model.vo.Marker;
+import star.common.model.vo.Marker;
 
 @Builder
 public record BoardPeekDTO(
@@ -25,9 +25,9 @@ public record BoardPeekDTO(
     private static final Integer CONTENT_PREVIEW_MAX_LENGTH = 100;
 
     public static BoardPeekDTO from(Board board, String imageUrl, Boolean liked) {
-        String contentText = board.getContent().text();
-        Jido map = board.getContent().map();
-        Marker marker = (map == null) ? null : map.marker();
+        String contentText = board.getContent().getText();
+        Jido map = board.getContent().getMap();
+        Marker marker = (map == null) ? null : map.getMarker();
 
         return BoardPeekDTO.builder()
                 .id(board.getId())

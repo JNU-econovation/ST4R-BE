@@ -48,7 +48,7 @@ public class TeamController {
     public ResponseEntity<Page<GetTeamsResponse>> getTeams(
             @Nullable @AuthenticationPrincipal StarUserDetails userDetails,
             @ResolvePageable(allowed = {SortField.CREATED_AT, SortField.WHEN_TO_MEET,
-                    SortField.HEART_COUNT})
+                    SortField.HEART_COUNT, SortField.DISTANCE})
             Pageable pageable
     ) {
         MemberInfoDTO memberInfoDTO = (userDetails != null) ? userDetails.getMemberInfoDTO() : null;

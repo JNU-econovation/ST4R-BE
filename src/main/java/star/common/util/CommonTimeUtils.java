@@ -10,7 +10,7 @@ import star.common.dto.LocalDateTimesDTO;
 import star.common.exception.server.InternalServerException;
 import star.home.constants.Period;
 
-public class CommonTimeUtils {
+public final class CommonTimeUtils {
     private static final ZoneId SERVER_ZONE = ZoneId.systemDefault();
 
     public static LocalDateTime convertOffsetDateTimeToLocalDateTime(OffsetDateTime offsetDateTime) {

@@ -1,12 +1,19 @@
 package star.team.chat.model.vo;
 
-public record Message(String value) {
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+public class Message {
+    private String value;
 
     private static final int MAX_MESSAGE_LENGTH = 10000;
 
-    public Message {
-        validateMessage(value);
-    }
+    
 
     private void validateMessage(String value) {
         if (value == null || value.isBlank()) {

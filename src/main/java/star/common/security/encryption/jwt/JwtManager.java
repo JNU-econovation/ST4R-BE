@@ -42,7 +42,7 @@ public class JwtManager {
         return Jwts.builder()
                 .subject(memberInfoDTO.id().toString())
                 .claim("id", memberInfoDTO.id())
-                .claim("email", memberInfoDTO.email().value())
+                .claim("email", memberInfoDTO.email().getValue())
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + EXPIRED_MILLISECOND))
                 .signWith(this.key)

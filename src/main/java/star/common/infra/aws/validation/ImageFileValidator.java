@@ -5,6 +5,7 @@ import jakarta.validation.ConstraintValidatorContext;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import star.common.annotation.ImageFile;
 
 public class ImageFileValidator implements ConstraintValidator<ImageFile, String> {
     private static final Set<String> ALLOWED_EXTENSIONS = Stream.of(
