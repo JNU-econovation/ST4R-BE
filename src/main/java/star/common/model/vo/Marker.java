@@ -16,9 +16,10 @@ import lombok.NoArgsConstructor;
 public class Marker {
     private Double latitude;
     private Double longitude;
+    private String roadAddress;
+
     @Nullable
     private String locationName;
-    private String roadAddress;
 
     private static final int LOCATION_NAME_MAX_LENGTH = 100;
     private static final int ROAD_ADDRESS_MAX_LENGTH = 200;
