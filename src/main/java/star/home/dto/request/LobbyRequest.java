@@ -7,11 +7,13 @@ import star.common.dto.LocationParamsDTO;
 import star.common.model.vo.CircularArea;
 import star.home.category.model.vo.CategoryName;
 import star.home.constants.Period;
+import star.home.dto.BoardSearchParamsDTO;
 
 
 public record LobbyRequest(
         @Nullable Period period,
         List<CategoryName> categories,
+        @Nullable BoardSearchParamsDTO boardSearchParams,
         @Nullable LocationParamsDTO location
 ) {
     public CircularArea circularArea() {

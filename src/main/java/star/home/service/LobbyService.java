@@ -35,11 +35,10 @@ public class LobbyService {
                 .boardPeeks(
                         boardService.getBoardPeeks(
                                 memberInfoDTO,
-                                categories,
-                                localDateTimesDTO.start(),
-                                localDateTimesDTO.end(),
-                                request.circularArea(),
-                                pageable)
+                                request,
+                                localDateTimesDTO.start(), localDateTimesDTO.end(),
+                                pageable
+                        )
                 )
                 .build();
     }
