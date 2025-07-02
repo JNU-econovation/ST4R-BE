@@ -9,15 +9,19 @@ import star.team.model.vo.Name;
 import star.team.model.vo.PlainPassword;
 
 @Builder
-public record TeamDTO(
+public record UpdateTeamDTO(
         Name name,
-        OffsetDateTime whenToMeet,
         Integer maxParticipantCount,
-        PlainPassword plainPassword,
         Jido location,
 
         @Nullable
+        OffsetDateTime newWhenToMeet,
+
+        @Nullable
+        PlainPassword plainPassword,
+
+        @Nullable
         Description description
-) {
+        ) {
 
 }

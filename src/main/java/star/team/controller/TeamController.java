@@ -22,7 +22,8 @@ import star.common.dto.response.CommonResponse;
 import star.common.security.dto.StarUserDetails;
 import star.member.dto.MemberInfoDTO;
 import star.team.dto.request.GetTeamsRequest;
-import star.team.dto.request.TeamRequest;
+import star.team.dto.request.CreateTeamRequest;
+import star.team.dto.request.UpdateTeamRequest;
 import star.team.dto.response.TeamDetailsResponse;
 import star.team.dto.response.GetTeamsResponse;
 import star.team.service.TeamCoordinateService;
@@ -37,7 +38,7 @@ public class TeamController {
     @PostMapping
     public ResponseEntity<CommonResponse> createTeam(
             @AuthenticationPrincipal StarUserDetails userDetails,
-            @Valid @RequestBody TeamRequest request
+            @Valid @RequestBody CreateTeamRequest request
     ) {
         Long teamId = service.createTeam(userDetails.getMemberInfoDTO(), request);
         URI location = URI.create("/groups/" + teamId);
@@ -72,7 +73,7 @@ public class TeamController {
     public ResponseEntity<CommonResponse> updateTeam(
             @AuthenticationPrincipal StarUserDetails userDetails,
             @PathVariable Long teamId,
-            @Valid @RequestBody TeamRequest request
+            @Valid @RequestBody UpdateTeamRequest request
     ) {
         service.updateTeam(userDetails.getMemberInfoDTO(), teamId, request);
 
