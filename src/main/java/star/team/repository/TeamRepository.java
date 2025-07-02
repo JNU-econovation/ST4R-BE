@@ -5,5 +5,5 @@ import org.springframework.stereotype.Repository;
 import star.team.model.entity.Team;
 
 @Repository
-public interface TeamRepository extends JpaRepository<Team, Long> {
+public interface TeamRepository extends JpaRepository<Team, Long>, TeamRepositoryCustom {
 }
