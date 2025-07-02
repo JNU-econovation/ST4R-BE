@@ -116,9 +116,6 @@ public class BoardRepositoryImpl implements BoardRepositoryCustom {
             QJido jido = board.content.map;
 
             builder.and(jido.isNotNull());
-            builder.and(jido.marker.isNotNull());
-            builder.and(jido.marker.latitude.isNotNull());
-            builder.and(jido.marker.longitude.isNotNull());
 
             distanceExpr = Expressions.numberTemplate(
                     Double.class,
