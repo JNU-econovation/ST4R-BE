@@ -17,11 +17,13 @@ import star.common.util.CommonTimeUtils;
 import star.member.dto.MemberInfoDTO;
 import star.member.model.entity.Member;
 import star.member.service.MemberService;
-import star.team.dto.TeamDTO;
+import star.team.dto.CreateTeamDTO;
 import star.team.dto.TeamSearchDTO;
+import star.team.dto.UpdateTeamDTO;
+import star.team.dto.request.CreateTeamRequest;
 import star.team.dto.request.GetTeamsRequest;
 import star.team.dto.request.TeamLeaderDelegateRequest;
-import star.team.dto.request.TeamRequest;
+import star.team.dto.request.UpdateTeamRequest;
 import star.team.dto.response.GetTeamsResponse;
 import star.team.dto.response.TeamDetailsResponse;
 import star.team.exception.TeamLeaderCannotLeaveException;
@@ -50,12 +52,12 @@ public class TeamCoordinateService {
     private final TeamMemberDataService teamMemberDataService;
 
     @Transactional
-    public Long createTeam(MemberInfoDTO memberInfoDTO, TeamRequest request) {
+    public Long createTeam(MemberInfoDTO memberInfoDTO, CreateTeamRequest request) {
 
         //todo: 인당 만들 수 있는 & 들어갈 수 있는 팀 개수 제한시키기
 
         Long memberId = memberInfoDTO.id();
-        TeamDTO teamDTO = TeamDTO.builder()
+        CreateTeamDTO createTeamDTO = CreateTeamDTO.builder()
                 .name(new Name(request.name()))
                 .location(request.location())
                 .whenToMeet(request.whenToMeet())
@@ -65,7 +67,8 @@ public class TeamCoordinateService {
                 .build();
 
         Team createdTeam =
-                teamDataService.createTeam(memberService.getMemberEntityById(memberId), teamDTO);
+                teamDataService.createTeam(memberService.getMemberEntityById(memberId),
+                        createTeamDTO);
         teamImageDataService.addImageUrls(createdTeam, request.imageUrls());
         teamMemberDataService.addTeamMember(createdTeam, memberId);
 
@@ -165,21 +168,23 @@ public class TeamCoordinateService {
     }
 
     @Transactional
-    public void updateTeam(MemberInfoDTO memberInfoDTO, Long teamId, TeamRequest request) {
+    public void updateTeam(MemberInfoDTO memberInfoDTO, Long teamId, UpdateTeamRequest request) {
         Team team = teamDataService.getTeamEntityById(teamId);
 
         assertTeamLeader(memberInfoDTO, team);
 
-        TeamDTO teamDTO = TeamDTO.builder()
+        UpdateTeamDTO updateTeamDTO = UpdateTeamDTO.builder()
                 .name(new Name(request.name()))
                 .location(request.location())
-                .whenToMeet(request.whenToMeet())
-                .plainPassword(new PlainPassword(request.password()))
+                .newWhenToMeet(request.changeWhenToMeet() ? request.newWhenToMeet() : null)
+                .plainPassword(
+                        request.changePassword() ? new PlainPassword(request.newPassword()) : null
+                )
                 .maxParticipantCount(request.maxParticipantCount())
                 .description(new Description(request.description()))
                 .build();
 
-        Team updatedTeam = teamDataService.overwriteTeam(team, teamDTO);
+        Team updatedTeam = teamDataService.updateTeam(team, updateTeamDTO);
         teamImageDataService.overwriteImageUrls(updatedTeam, request.imageUrls());
     }
 
