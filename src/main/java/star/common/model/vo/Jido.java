@@ -1,23 +1,23 @@
 package star.common.model.vo;
 
 import jakarta.persistence.Embeddable;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Embeddable
-public record Jido(
-        Marker marker,
-        Integer zoomLevel
-) {
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+public class Jido {
+    private Marker marker;
+    private Integer zoomLevel;
+
     private static final int MIN_ZOOM_LEVEL = 1;
     private static final int MAX_ZOOM_LEVEL = 14;
 
-    public Jido {
-        validate(zoomLevel);
-    }
-
-    public static Jido copyOf(Jido jido) {
-        if (jido == null) return null;
-        return new Jido(Marker.copyOf(jido.marker()), jido.zoomLevel());
-    }
+    
 
     private void validate(Integer zoomLevel) {
         if (zoomLevel == null || zoomLevel < MIN_ZOOM_LEVEL || zoomLevel > MAX_ZOOM_LEVEL) {

@@ -2,31 +2,28 @@ package star.common.model.vo;
 
 import jakarta.annotation.Nullable;
 import jakarta.persistence.Embeddable;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Embeddable
-public record Marker(
-        Double latitude,
-        Double longitude,
-        @Nullable String locationName,
-        String roadAddress
-) {
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder
+public class Marker {
+    private Double latitude;
+    private Double longitude;
+    @Nullable
+    private String locationName;
+    private String roadAddress;
 
     private static final int LOCATION_NAME_MAX_LENGTH = 100;
     private static final int ROAD_ADDRESS_MAX_LENGTH = 200;
 
-    @Builder
-    public Marker {
-        validate(latitude, longitude, locationName, roadAddress);
-    }
-
-    public static Marker copyOf(Marker marker) {
-        if (marker == null) {
-            return null;
-        }
-        return new Marker(marker.latitude(), marker.longitude(), marker.locationName(),
-                marker.roadAddress());
-    }
+    
 
     public static void validate(Double latitude, Double longitude, String locationName,
             String roadAddress) {
@@ -56,6 +53,5 @@ public record Marker(
                     "도로명 주소는 최대 %d자까지 입력할 수 있습니다.".formatted(ROAD_ADDRESS_MAX_LENGTH));
         }
     }
-
 }
 

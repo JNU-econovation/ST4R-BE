@@ -21,7 +21,7 @@ public class BoardCommentMapper {
                 .author(Author.builder()
                         .id(dto.getMemberInfoDTO().id())
                         .imageUrl(dto.getMemberInfoDTO().profileImageUrl())
-                        .nickname(dto.getMemberInfoDTO().email().value())
+                        .nickname(dto.getMemberInfoDTO().email().getValue())
                         .build())
                 .isViewerAuthor(viewerId.equals(dto.getMemberInfoDTO().id()))
                 .isCommenterAuthor(authorId.equals(dto.getMemberInfoDTO().id()))

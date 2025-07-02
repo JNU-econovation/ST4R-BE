@@ -13,9 +13,9 @@ public record ChatResponse(
         return ChatResponse.builder()
                 .chatId(chat.getId())
                 .memberId(chat.getTeamMember().getMember().getId())
-                .email(chat.getTeamMember().getMember().getEmail().value())
+                .email(chat.getTeamMember().getMember().getEmail().getValue())
                 .chattedAt(CommonTimeUtils.convertLocalDateTimeToOffsetDateTime(chat.getCreatedAt()))
-                .message(chat.getMessage().value())
+                .message(chat.getMessage().getValue())
                 .build();
 
     }
