@@ -1,5 +1,6 @@
 package star.common.dto;
 
+import org.springframework.lang.Nullable;
 import star.common.model.vo.CircularArea;
 import star.common.model.vo.Marker;
 
@@ -8,7 +9,7 @@ public record LocationParamsDTO(
         Double longitude,
         Double distanceInMeters,
         String roadAddress,
-        String locationName
+        @Nullable String locationName
 ) {
 
     public CircularArea toCircularArea() {
