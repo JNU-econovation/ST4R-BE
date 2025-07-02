@@ -1,11 +1,15 @@
 package star.team.model.entity;
 
+import com.querydsl.core.annotations.QueryInit;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Version;
 import java.time.LocalDateTime;
 import lombok.AccessLevel;
@@ -14,6 +18,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import star.common.model.entity.BaseEntity;
 import star.common.model.vo.Jido;
+import star.member.model.entity.Member;
 import star.team.model.vo.Description;
 import star.team.model.vo.Name;
 import star.team.model.vo.Participant;
@@ -38,8 +43,10 @@ public class Team extends BaseEntity {
     @Embedded
     private Description description;
 
-    @Column(nullable = false)
-    private Long leaderId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "leader_id", nullable = false)
+    @QueryInit("email.value") // todo: 닉네임으로 리팩터링 시 바꾸기
+    private Member leader;
 
     @Embedded
     private Participant participant;
@@ -51,17 +58,18 @@ public class Team extends BaseEntity {
     private LocalDateTime whenToMeet;
 
     @Column(nullable = false)
+    @QueryInit("marker")
     private Jido location;
 
     @Column(nullable = false)
     private Integer heartCount;
 
     @Builder
-    public Team(Name name, Description description, Long leaderId, Participant participant,
+    public Team(Name name, Description description, Member leader, Participant participant,
             EncryptedPassword encryptedPassword, LocalDateTime whenToMeet, Jido location) {
         this.name = name;
         this.description = description;
-        this.leaderId = leaderId;
+        this.leader = leader;
         this.participant = participant;
         this.encryptedPassword = encryptedPassword;
         this.whenToMeet = whenToMeet;
@@ -79,8 +87,8 @@ public class Team extends BaseEntity {
         this.location = location;
     }
 
-    public void delegateLeader(Long newLeaderId) {
-        this.leaderId = newLeaderId;
+    public void delegateLeader(Member newLeader) {
+        this.leader = newLeader;
     }
 
     public void increaseHeartCount() {

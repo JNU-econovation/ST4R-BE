@@ -11,7 +11,9 @@ import org.springframework.transaction.annotation.Transactional;
 import star.common.exception.server.InternalServerException;
 import star.common.security.encryption.util.AESEncryptionUtil;
 import star.common.util.CommonTimeUtils;
+import star.member.model.entity.Member;
 import star.team.dto.TeamDTO;
+import star.team.dto.TeamSearchDTO;
 import star.team.exception.TeamNotFoundException;
 import star.team.model.entity.Team;
 import star.team.model.vo.EncryptedPassword;
@@ -28,7 +30,7 @@ public class TeamDataService {
     private final AESEncryptionUtil aesEncryptionUtil;
 
     @Transactional
-    public Team createTeam(Long memberId, TeamDTO teamDTO) {
+    public Team createTeam(Member leader, TeamDTO teamDTO) {
         EncryptedPassword encryptedPassword =
                 (teamDTO.plainPassword() == null) ? null : encryptPassword(teamDTO.plainPassword());
 
@@ -36,7 +38,7 @@ public class TeamDataService {
                 .name(teamDTO.name())
                 .description(teamDTO.description())
                 .encryptedPassword(encryptedPassword)
-                .leaderId(memberId)
+                .leader(leader)
                 .participant(Participant.builder()
                         .current(PARTICIPANT_MIN_CAPACITY)
                         .capacity(teamDTO.maxParticipantCount())
@@ -49,8 +51,8 @@ public class TeamDataService {
     }
 
     @Transactional(readOnly = true)
-    public Page<Team> getTeams(Pageable pageable) {
-        return teamRepository.findAll(pageable);
+    public Page<Team> getTeams(TeamSearchDTO searchDTO, Pageable pageable) {
+        return teamRepository.searchTeams(searchDTO, pageable);
     }
 
     @Transactional(readOnly = true)
