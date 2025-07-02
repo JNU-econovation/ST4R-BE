@@ -1,6 +1,7 @@
 package star.common.resolver;
 
 import java.util.List;
+import java.util.Objects;
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
@@ -35,9 +36,22 @@ public class CustomPageableArgumentResolver implements HandlerMethodArgumentReso
         String page = webRequest.getParameter("page");
         String size = webRequest.getParameter("size");
 
-        CustomPageRequest request = new CustomPageRequest(sort, dir,
-                page != null ? Integer.parseInt(page) : null,
-                size != null ? Integer.parseInt(size) : null);
+        String latitudeStr = webRequest.getParameter("location.latitude");
+        String longitudeStr = webRequest.getParameter("location.longitude");
+        String distanceStr = webRequest.getParameter("location.distanceInMeters");
+
+        if (Objects.equals(sort, SortField.DISTANCE.getRequestField())
+                && (latitudeStr == null || longitudeStr == null && distanceStr == null)) {
+            throw new IllegalArgumentException("정렬 기준이 거리순이므로 위치 정보를 전부 입력해야 합니다.");
+        }
+
+
+        CustomPageRequest request = CustomPageRequest.builder()
+                .sort(sort)
+                .direction(dir)
+                .size(size != null ? Integer.parseInt(size) : null)
+                .page(page != null ? Integer.parseInt(page) : null)
+                .build();
 
         return new CustomPageRequestToPageableConverter(allowedFields).convert(request);
     }

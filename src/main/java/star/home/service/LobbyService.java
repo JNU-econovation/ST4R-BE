@@ -6,7 +6,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import star.common.dto.LocalDateTimesDTO;
+import star.common.exception.client.BadDataLengthException;
 import star.common.util.CommonTimeUtils;
+import star.home.board.dto.BoardSearchDTO;
+import star.home.board.model.vo.Content;
+import star.home.board.model.vo.Title;
 import star.home.board.service.BoardService;
 import star.home.category.model.vo.CategoryName;
 import star.home.constants.Period;
@@ -20,18 +24,20 @@ public class LobbyService {
 
     private final BoardService boardService;
 
-    public LobbyBoardResponse getLobbyBoards(@Nullable MemberInfoDTO memberInfoDTO,
+    public LobbyBoardResponse getLobbyBoards(
+            @Nullable MemberInfoDTO memberInfoDTO,
             LobbyRequest request,
-            Pageable pageable) {
+            Pageable pageable
+    ) {
 
         Period period = setPeriodIfNull(request.period());
         List<CategoryName> categories = setCategoriesIfNullOrEmpty(request.categories());
 
         LocalDateTimesDTO localDateTimesDTO = CommonTimeUtils.getLocalDateTimesByPeriod(period);
+        BoardSearchDTO searchDTO = buildBoardSearchDTO(request, localDateTimesDTO);
 
         return LobbyBoardResponse.builder()
-                .boardPeeks(boardService.getBoardPeeks(memberInfoDTO, categories,
-                        localDateTimesDTO.start(), localDateTimesDTO.end(), pageable))
+                .boardPeeks(boardService.getBoardPeeks(memberInfoDTO, searchDTO, pageable))
                 .build();
     }
 
@@ -42,5 +48,24 @@ public class LobbyService {
     private List<CategoryName> setCategoriesIfNullOrEmpty(List<CategoryName> categories) {
         return (categories == null || categories.isEmpty())
                 ? List.of(CategoryName.values()) : categories;
+    }
+
+    private BoardSearchDTO buildBoardSearchDTO(LobbyRequest request,
+            LocalDateTimesDTO localDateTimesDTO) {
+        try {
+            return BoardSearchDTO.builder()
+                    .circularArea(request.circularArea())
+                    .title(request.title() == null ? null : new Title(request.title()))
+                    .content(
+                            request.content() == null ? null : new Content(request.content(), null))
+                    .categories(request.categories())
+                    .localDateTimesForSearch(localDateTimesDTO)
+                    .authorName(request.authorName())
+                    .build();
+        } catch (BadDataLengthException e) {
+            throw new BadDataLengthException(e.getFieldName() + " 검색", e.getMinLength(),
+                    e.getMaxLength());
+        }
+
     }
 }

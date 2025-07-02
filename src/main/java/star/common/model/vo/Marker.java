@@ -1,32 +1,32 @@
-package star.home.board.model.vo;
+package star.common.model.vo;
 
 import jakarta.annotation.Nullable;
 import jakarta.persistence.Embeddable;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Embeddable
-public record Marker(
-        Double latitude,
-        Double longitude,
-        @Nullable String locationName,
-        String roadAddress
-) {
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder
+public class Marker {
+    private Double latitude;
+    private Double longitude;
+    private String roadAddress;
+
+    @Nullable
+    private String locationName;
 
     private static final int LOCATION_NAME_MAX_LENGTH = 100;
     private static final int ROAD_ADDRESS_MAX_LENGTH = 200;
 
-    public Marker {
-        validate(latitude, longitude, locationName, roadAddress);
-    }
+    
 
-    public static Marker copyOf(Marker marker) {
-        if (marker == null) {
-            return null;
-        }
-        return new Marker(marker.latitude(), marker.longitude(), marker.locationName(),
-                marker.roadAddress());
-    }
-
-    private void validate(Double latitude, Double longitude, String locationName,
+    public static void validate(Double latitude, Double longitude, String locationName,
             String roadAddress) {
         if (latitude == null) {
             throw new IllegalArgumentException("위도(latitude)를 입력해주세요.");
@@ -41,7 +41,7 @@ public record Marker(
         if (longitude < -180 || longitude > 180) {
             throw new IllegalArgumentException("경도는 -180도 이상 180도 이하로 입력해주세요.");
         }
-        if (locationName.length() > LOCATION_NAME_MAX_LENGTH) {
+        if (locationName != null && locationName.length() > LOCATION_NAME_MAX_LENGTH) {
             throw new IllegalArgumentException(
                     "장소 이름은 최대 %d자까지 입력할 수 있습니다.".formatted(LOCATION_NAME_MAX_LENGTH));
         }
@@ -54,6 +54,5 @@ public record Marker(
                     "도로명 주소는 최대 %d자까지 입력할 수 있습니다.".formatted(ROAD_ADDRESS_MAX_LENGTH));
         }
     }
-
 }
 

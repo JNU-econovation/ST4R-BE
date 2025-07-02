@@ -44,7 +44,7 @@ public class CustomPageRequestToPageableConverter implements Converter<CustomPag
             throw new InvalidPageableFieldException(requestFieldString);
         }
         SortField sortField = SortField.fromRequestKey(requestFieldString);
-        Order order = new Sort.Order(direction, sortField.getDbField()).ignoreCase();
+        Order order = new Sort.Order(direction, sortField.getDbField());
         return PageRequest.of(page, size, Sort.by(order));
     }
 }

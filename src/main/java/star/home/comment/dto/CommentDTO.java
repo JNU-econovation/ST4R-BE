@@ -33,7 +33,7 @@ public class CommentDTO {
                 .boardId(comment.getBoard().getId())
                 .depth(comment.getDepth())
                 .content(comment.isDeprecated() ?
-                        SOFT_DELETED_COMMENT_CONTENT : comment.getContent().value())
+                        SOFT_DELETED_COMMENT_CONTENT : comment.getContent().getValue())
                 .createdAt(comment.getCreatedAt())
                 .childCommentDTOs(new ArrayList<>())
                 .build();

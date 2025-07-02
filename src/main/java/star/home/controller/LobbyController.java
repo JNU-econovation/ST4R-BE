@@ -30,13 +30,11 @@ public class LobbyController {
             @Nullable @AuthenticationPrincipal StarUserDetails userDetails,
             @Valid LobbyRequest request,
             @ResolvePageable(allowed = {SortField.CREATED_AT, SortField.HEART_COUNT,
-                    SortField.VIEW_COUNT}) Pageable pageable
+                    SortField.VIEW_COUNT, SortField.DISTANCE}) Pageable pageable
     ) {
-
         MemberInfoDTO memberInfoDTO = (userDetails != null) ? userDetails.getMemberInfoDTO() : null;
 
         return ResponseEntity.ok(
                 lobbyService.getLobbyBoards(memberInfoDTO, request, pageable));
-
     }
 }

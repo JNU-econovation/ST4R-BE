@@ -5,15 +5,20 @@ import static star.team.constants.TeamConstants.NAME_MIN_LENGTH;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Embeddable
-public record Name(
-        @Column(name = "name", nullable = false)
-        String value
-) {
-    public Name {
-        validate(value);
-    }
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+public class Name {
+    @Column(name = "name", nullable = false)
+    private String value;
+
+    
 
     private void validate(String value) {
         if (value == null) {

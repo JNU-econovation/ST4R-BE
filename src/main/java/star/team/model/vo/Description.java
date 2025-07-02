@@ -4,15 +4,20 @@ import static star.team.constants.TeamConstants.DESCRIPTION_MAX_LENGTH;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Embeddable
-public record Description(
-        @Column(name = "description", nullable = true)
-        String value
-) {
-    public Description {
-        validate(value);
-    }
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+public class Description {
+    @Column(name = "description", nullable = true)
+    private String value;
+
+    
 
     private void validate(String value) {
         if (value == null) {
