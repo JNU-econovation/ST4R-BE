@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.Nullable;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,6 +23,7 @@ import star.home.comment.dto.request.CommentRequest;
 import star.home.comment.dto.response.CommentResponse;
 import star.home.comment.service.CreateCommentFacadeService;
 import star.home.comment.service.CommentCoordinateService;
+import star.member.dto.MemberInfoDTO;
 
 @RestController
 @RequiredArgsConstructor
@@ -46,13 +48,13 @@ public class CommentController {
 
     @GetMapping
     public ResponseEntity<Page<CommentResponse>> getComments(
-            @AuthenticationPrincipal StarUserDetails userDetails,
+            @Nullable @AuthenticationPrincipal StarUserDetails userDetails,
             @PathVariable Long boardId,
             @ResolvePageable(allowed = {SortField.CREATED_AT}) Pageable pageable
             ) {
-
+        MemberInfoDTO memberInfo = (userDetails != null) ? userDetails.getMemberInfoDTO() : null;
         return ResponseEntity.ok(
-                commentCoordinateService.getCommentsPage(userDetails.getMemberInfoDTO(), boardId, pageable));
+                commentCoordinateService.getCommentsPage(memberInfo, boardId, pageable));
     }
 
     @PutMapping("/{commentId}")
