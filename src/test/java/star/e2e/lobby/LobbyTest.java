@@ -1,6 +1,7 @@
 package star.e2e.lobby;
 
-import static io.restassured.RestAssured.given;
+import static io.restassured.RestAssured.*;
+import static org.hamcrest.Matchers.*;
 import static star.e2e.util.GeoGridUtil.generateRange;
 import static star.e2e.util.RestAssuredUtil.sendRequest;
 
@@ -28,7 +29,7 @@ import star.member.service.MemberService;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class LobbyTest {
 
-    private static final int COUNT = 100;
+    private static final int COUNT = 1000;
 
     private static final double MIN_LAT = -90;
     private static final double MAX_LAT = 90;
@@ -120,6 +121,9 @@ public class LobbyTest {
     @DisplayName("로비 검색 테스트")
     void getLobbySearchTest() {
 
+        int size = 20;
+        int page = 0;
+
         given()
                 .log().all()
                 .queryParam("period", "daily")
@@ -132,11 +136,25 @@ public class LobbyTest {
                 .queryParam("title", "행운의 편지 3")
                 .queryParam("direction", "asc")
                 .queryParam("authorName", "ad")
+                .queryParam("size", size)
+                .queryParam("page", page)
+                .header("Authorization", "Bearer " + accessToken)
                 .when()
                 .get("/home")
                 .then()
                 .log().all()
-                .statusCode(200);
+                .statusCode(200)
+                // 1. content 배열의 크기가 예상한대로 여야 한다.
+                .body("boardPeeks.content.size()", equalTo(size))
+
+                // 2. 모든 category가 "spot" 또는 "general"이여야 한다.
+                .body("boardPeeks.content.category", everyItem(anyOf(equalTo("SPOT"), equalTo("GENERAL"))))
+
+                // 3. "PROMOTION" 카테고리가 포함되면 안된다.
+                .body("boardPeeks.content.category", not(hasItem("PROMOTION")))
+
+                // 4. 제목이 모두 "행운의 편지 3"을 포함해야 한다.
+                .body("boardPeeks.content.title", everyItem(containsString("행운의 편지 3")));
 
 
     }
