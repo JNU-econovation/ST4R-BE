@@ -1,4 +1,4 @@
-package star.e2e;
+package star.e2e.board;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
