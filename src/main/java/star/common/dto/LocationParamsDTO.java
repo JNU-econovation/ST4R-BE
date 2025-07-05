@@ -1,9 +1,11 @@
 package star.common.dto;
 
+import lombok.Builder;
 import org.springframework.lang.Nullable;
 import star.common.model.vo.CircularArea;
 import star.common.model.vo.Marker;
 
+@Builder
 public record LocationParamsDTO(
         Double latitude,
         Double longitude,
