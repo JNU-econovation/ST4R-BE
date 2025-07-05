@@ -7,9 +7,11 @@ import static star.home.constants.HomeConstants.TITLE_MIN_LENGTH;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.util.List;
+import lombok.Builder;
 import star.home.board.model.vo.Content;
 import jakarta.validation.constraints.NotBlank;
 
+@Builder
 public record BoardRequest(
 
         @NotBlank(message = "제목을 입력해주세요")
