@@ -1,4 +1,4 @@
-package star.e2e;
+package star.e2e.board;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
@@ -47,7 +47,7 @@ public class BoardTest {
 
     @Test
     @DisplayName("게시글 생성 테스트")
-    void createAndDeleteBoardTest() {
+    void createBoardTest() {
         BoardRequest requestBody = BoardRequest.builder()
                 .title("행운의 편지")
                 .imageUrls(
@@ -237,8 +237,6 @@ public class BoardTest {
 
         String location = response.getHeader("Location");
 
-
-
         //삭제
         E2ERequest deleteRequest = E2ERequest.builder()
                 .url(location)
@@ -248,6 +246,16 @@ public class BoardTest {
                 .build();
 
         sendRequest(deleteRequest);
+
+        //유효하지 않는 게시글 삭제
+        E2ERequest deleteRequestExpect4XX = E2ERequest.builder()
+                .url("/home/boards/-1")
+                .method(Method.DELETE)
+                .accessToken(accessToken)
+                .expectedStatusCode(400)
+                .build();
+
+        sendRequest(deleteRequestExpect4XX);
 
     }
 
