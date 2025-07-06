@@ -12,8 +12,10 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.time.OffsetDateTime;
 import java.util.List;
+import lombok.Builder;
 import star.common.model.vo.Jido;
 
+@Builder
 public record CreateTeamRequest(
 
         @NotNull(message = "이미지 url 필드를 입력해주세요")
