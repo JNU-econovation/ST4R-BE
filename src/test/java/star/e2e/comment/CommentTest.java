@@ -35,8 +35,6 @@ public class CommentTest {
 
     private String accessToken;
 
-    private String recentLocation;
-
     private Long recentCommentId;
 
     @BeforeEach
@@ -59,7 +57,7 @@ public class CommentTest {
                     .post("/home/boards/1/comments");
 
             if (i == 99) {
-                recentLocation = response.getHeader("Location");
+                String recentLocation = response.getHeader("Location");
                 recentCommentId = Long.valueOf(
                         recentLocation.substring(recentLocation.lastIndexOf("/") + 1));
             }
