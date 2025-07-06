@@ -5,12 +5,13 @@ VALUES (NOW(), NOW(), 'SPOT'),
 
 INSERT INTO member (IS_DEPRECATED, CREATED_AT, UPDATED_AT, EMAIL, ENCRYPTED_KAKAO_ACCESS_TOKEN,
                     PROFILE_IMAGE_URL, ROLE)
-VALUES (0, NOW(), NOW(), 'admin@admin.com', 'ASDFASDF', null, 'USER');
+VALUES (0, NOW(), NOW(), 'admin@admin.com', 'ASDFASDF', null, 'USER'),
+       (0, NOW(), NOW(), 'user@user.com', 'ASDFASDF', null, 'USER');
 
 INSERT INTO TEAM (HEART_COUNT, LATITUDE, LONGITUDE, PARTICIPANT_CAPACITY, PARTICIPANT_CURRENT,
                   ZOOM_LEVEL, CREATED_AT, LEADER_ID, UPDATED_AT, VERSION, WHEN_TO_MEET, DESCRIPTION,
                   ENCRYPTED_PASSWORD, LOCATION_NAME, NAME, ROAD_ADDRESS)
-VALUES (0, 37.5665, 126.9780, 10, 1, 13, NOW(), 1, NOW(), 0, '2026-05-20 12:00:00', 'test', 'test',
+VALUES (0, 37.5665, 126.9780, 10, 1, 13, NOW(), 1, NOW(), 0, '2026-05-20 12:00:00', 'test', '$2a$10$abcdefghijklmnopqrstuvABCDEFGHijklmnopqrstuvABCD',
         'test', 'test', 'test');
 
 INSERT INTO TEAM_MEMBER (MEMBER_ID, TEAM_ID)
