@@ -24,98 +24,98 @@ import star.team.dto.request.CreateTeamRequest;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class TeamHeartTest {
 
-  @LocalServerPort
-  private int port;
+    @LocalServerPort
+    private int port;
 
-  @Autowired
-  private MemberService memberService;
+    @Autowired
+    private MemberService memberService;
 
-  @Autowired
-  private JwtManager jwtManager;
+    @Autowired
+    private JwtManager jwtManager;
 
-  private String accessToken;
-  private Long teamId;
+    private String accessToken;
+    private Long teamId;
 
-  @BeforeEach
-  void setUp() {
-    RestAssured.port = port;
-    MemberInfoDTO memberInfo = memberService.getMemberById(1L);
-    accessToken = jwtManager.generateToken(memberInfo);
+    @BeforeEach
+    void setUp() {
+        RestAssured.port = port;
+        MemberInfoDTO memberInfo = memberService.getMemberById(1L);
+        accessToken = jwtManager.generateToken(memberInfo);
 
-    Marker marker = new Marker(37.0, 127.0, "테스트 주소", "테스트 장소");
-    Jido jido = new Jido(marker, 10);
-    CreateTeamRequest createTeamRequestBody = CreateTeamRequest.builder()
-        .name("하트 테스트 팀")
-        .description("하트 테스트 팀 설명")
-        .whenToMeet(OffsetDateTime.now().plusDays(1))
-        .location(jido)
-        .maxParticipantCount(10)
-        .imageUrls(Collections.singletonList("heart_test_image_url"))
-        .build();
-    teamId = createTeamAndGetId(createTeamRequestBody);
-  }
+        Marker marker = new Marker(37.0, 127.0, "테스트 주소", "테스트 장소");
+        Jido jido = new Jido(marker, 10);
+        CreateTeamRequest createTeamRequestBody = CreateTeamRequest.builder()
+                .name("하트 테스트 팀")
+                .description("하트 테스트 팀 설명")
+                .whenToMeet(OffsetDateTime.now().plusDays(1))
+                .location(jido)
+                .maxParticipantCount(10)
+                .imageUrls(Collections.singletonList("heart_test_image_url"))
+                .build();
+        teamId = createTeamAndGetId(createTeamRequestBody);
+    }
 
-  private Long createTeamAndGetId(CreateTeamRequest request) {
-    Response response = given()
-        .header("Authorization", "Bearer " + accessToken)
-        .contentType(ContentType.JSON)
-        .body(request)
-        .when()
-        .post("/groups");
+    private Long createTeamAndGetId(CreateTeamRequest request) {
+        Response response = given()
+                .header("Authorization", "Bearer " + accessToken)
+                .contentType(ContentType.JSON)
+                .body(request)
+                .when()
+                .post("/groups");
 
-    response.then().statusCode(201);
+        response.then().statusCode(201);
 
-    String location = response.getHeader("Location");
-    return Long.valueOf(location.substring(location.lastIndexOf("/") + 1));
-  }
+        String location = response.getHeader("Location");
+        return Long.valueOf(location.substring(location.lastIndexOf("/") + 1));
+    }
 
-  @Test
-  @DisplayName("팀 좋아요 및 좋아요 취소 테스트")
-  void toggleTeamHeartTest() {
-    // 좋아요
-    given()
-        .log().all()
-        .header("Authorization", "Bearer " + accessToken)
-        .contentType(ContentType.JSON)
-        .when()
-        .post("/groups/" + teamId + "/likes")
-        .then()
-        .log().all()
-        .statusCode(204);
+    @Test
+    @DisplayName("팀 좋아요 및 좋아요 취소 테스트")
+    void toggleTeamHeartTest() {
+        // 좋아요
+        given()
+                .log().all()
+                .header("Authorization", "Bearer " + accessToken)
+                .contentType(ContentType.JSON)
+                .when()
+                .post("/groups/" + teamId + "/likes")
+                .then()
+                .log().all()
+                .statusCode(204);
 
-    given()
-        .log().all()
-        .header("Authorization", "Bearer " + accessToken)
-        .contentType(ContentType.JSON)
-        .when()
-        .get("/groups/" + teamId)
-        .then()
-        .log().all()
-        .statusCode(200)
-        .body("likeCount", equalTo(1))
-        .body("liked", equalTo(true));
+        given()
+                .log().all()
+                .header("Authorization", "Bearer " + accessToken)
+                .contentType(ContentType.JSON)
+                .when()
+                .get("/groups/" + teamId)
+                .then()
+                .log().all()
+                .statusCode(200)
+                .body("likeCount", equalTo(1))
+                .body("liked", equalTo(true));
 
-    // 좋아요 취소
-    given()
-        .log().all()
-        .header("Authorization", "Bearer " + accessToken)
-        .contentType(ContentType.JSON)
-        .when()
-        .delete("/groups/" + teamId + "/likes")
-        .then()
-        .log().all()
-        .statusCode(204);
+        // 좋아요 취소
+        given()
+                .log().all()
+                .header("Authorization", "Bearer " + accessToken)
+                .contentType(ContentType.JSON)
+                .when()
+                .delete("/groups/" + teamId + "/likes")
+                .then()
+                .log().all()
+                .statusCode(204);
 
-    given()
-        .log().all()
-        .header("Authorization", "Bearer " + accessToken)
-        .contentType(ContentType.JSON)
-        .when()
-        .get("/groups/" + teamId)
-        .then()
-        .log().all()
-        .statusCode(200)
-        .body("likeCount", equalTo(0))
-        .body("liked", equalTo(false));
-  }
+        given()
+                .log().all()
+                .header("Authorization", "Bearer " + accessToken)
+                .contentType(ContentType.JSON)
+                .when()
+                .get("/groups/" + teamId)
+                .then()
+                .log().all()
+                .statusCode(200)
+                .body("likeCount", equalTo(0))
+                .body("liked", equalTo(false));
+    }
 }

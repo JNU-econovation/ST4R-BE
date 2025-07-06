@@ -1,7 +1,10 @@
 package star.e2e.team;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.everyItem;
+import static org.hamcrest.Matchers.notNullValue;
 import static star.e2e.util.GeoGridUtil.generateRange;
 
 import io.restassured.RestAssured;

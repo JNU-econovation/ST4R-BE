@@ -1,7 +1,12 @@
 package star.e2e.lobby;
 
-import static io.restassured.RestAssured.*;
-import static org.hamcrest.Matchers.*;
+import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.anyOf;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.everyItem;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.not;
 import static star.e2e.util.GeoGridUtil.generateRange;
 import static star.e2e.util.RestAssuredUtil.sendRequest;
 
@@ -61,7 +66,6 @@ public class LobbyTest {
         List<Double> longitudes = generateRange(MIN_LON, MAX_LON, COUNT);
         List<String> categories = List.of("spot", "general", "promotion");
 
-
         for (int i = 0; i < COUNT; i++) {
 
             BoardRequest createRequestBody = BoardRequest.builder()
@@ -82,8 +86,11 @@ public class LobbyTest {
                                                             Marker.builder()
                                                                     .longitude(longitudes.get(i))
                                                                     .latitude(latitudes.get(i))
-                                                                    .locationName("location name test" + i)
-                                                                    .roadAddress("road address test" + i)
+                                                                    .locationName(
+                                                                            "location name test"
+                                                                                    + i)
+                                                                    .roadAddress(
+                                                                            "road address test" + i)
                                                                     .build()
                                                     ).zoomLevel(i % 13 + 1)
                                                     .build()
@@ -150,7 +157,8 @@ public class LobbyTest {
                 .body("boardPeeks.content.size()", equalTo(size))
 
                 // 2. 모든 category가 "spot" 또는 "general"이여야 한다.
-                .body("boardPeeks.content.category", everyItem(anyOf(equalTo("SPOT"), equalTo("GENERAL"))))
+                .body("boardPeeks.content.category",
+                        everyItem(anyOf(equalTo("SPOT"), equalTo("GENERAL"))))
 
                 // 3. "PROMOTION" 카테고리가 포함되면 안된다.
                 .body("boardPeeks.content.category", not(hasItem("PROMOTION")))
