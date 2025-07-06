@@ -345,7 +345,7 @@ public class TeamCoordinateService {
     public void leaveTeam(MemberInfoDTO memberInfoDTO, Long teamId) {
 
         Team team = teamDataService.getTeamEntityById(teamId);
-        assertTeamMember(memberInfoDTO, team);
+        assertTeamMember(memberInfoDTO, team.getId());
         if (Objects.equals(team.getLeader().getId(), memberInfoDTO.id())) {
             //니 팀 버려? ㅋㅋㅋ
             throw new TeamLeaderCannotLeaveException();
@@ -399,8 +399,8 @@ public class TeamCoordinateService {
         }
     }
 
-    private void assertTeamMember(MemberInfoDTO memberInfoDTO, Team team) {
-        if (!teamMemberDataService.existsTeamMember(team.getId(), memberInfoDTO.id())) {
+    public void assertTeamMember(MemberInfoDTO memberInfoDTO, Long teamId) {
+        if (!teamMemberDataService.existsTeamMember(teamId, memberInfoDTO.id())) {
             throw new TeamMemberNotFoundException();
         }
     }
