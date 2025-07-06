@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import star.common.security.dto.StarUserDetails;
+import star.team.dto.request.JoinTeamRequest;
 import star.team.dto.request.TeamLeaderDelegateRequest;
 import star.team.service.TeamCoordinateService;
 
@@ -24,9 +25,10 @@ public class TeamMemberController {
     @PostMapping
     public ResponseEntity<Void> joinTeam(
             @PathVariable Long teamId,
-            @AuthenticationPrincipal StarUserDetails userDetails
+            @AuthenticationPrincipal StarUserDetails userDetails,
+            JoinTeamRequest request
     ) {
-        service.joinTeam(userDetails.getMemberInfoDTO(), teamId);
+        service.joinTeam(userDetails.getMemberInfoDTO(), teamId, request);
 
         return ResponseEntity.noContent().build();
     }
