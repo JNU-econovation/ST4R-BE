@@ -21,6 +21,7 @@ import star.common.security.encryption.jwt.JwtManager;
 import star.member.dto.MemberInfoDTO;
 import star.member.service.MemberService;
 import star.team.dto.request.CreateTeamRequest;
+import star.team.dto.request.TeamLeaderDelegateRequest;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class TeamMemberTest {
@@ -155,5 +156,65 @@ public class TeamMemberTest {
                 .then()
                 .log().all()
                 .statusCode(401);
+    }
+
+    @Test
+    @DisplayName("모임장 위임 테스트")
+    void delegateTeamLeaderTest() {
+        // given
+        // 멤버 추가
+        given()
+                .header("Authorization", "Bearer " + memberAccessToken)
+                .contentType(ContentType.JSON)
+                .when()
+                .post("/groups/" + teamId + "/members")
+                .then()
+                .statusCode(204);
+
+        // when
+        // 모임장 위임
+        given()
+                .log().all()
+                .header("Authorization", "Bearer " + leaderAccessToken)
+                .contentType(ContentType.JSON)
+                .body(
+                        TeamLeaderDelegateRequest.builder()
+                                .targetMemberId(2L)
+                                .build()
+                )
+                .when()
+                .patch("/groups/" + teamId + "/members/leader")
+                .then()
+                .log().all()
+                .statusCode(204);
+
+        // then
+        // 모임장 정보 확인
+        given()
+                .log().all()
+                .header("Authorization", "Bearer " + memberAccessToken)
+                .contentType(ContentType.JSON)
+                .when()
+                .get("/groups/" + teamId)
+                .then()
+                .log().all()
+                .statusCode(200)
+                .body("author.id", equalTo(2));
+
+        // 이전 모임장이 위임 시도
+        given()
+                .log().all()
+                .header("Authorization", "Bearer " + leaderAccessToken)
+                .contentType(ContentType.JSON)
+                .body(
+                        TeamLeaderDelegateRequest.builder()
+                                .targetMemberId(1L)
+                                .build()
+                )
+                .when()
+                .patch("/groups/" + teamId + "/members/leader")
+                .then()
+                .log().all()
+                .statusCode(403);
     }
 }
