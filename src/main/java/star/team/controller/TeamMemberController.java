@@ -54,6 +54,17 @@ public class TeamMemberController {
         return ResponseEntity.noContent().build();
     }
 
+    @DeleteMapping("/{memberId}")
+    public ResponseEntity<Void> banTeamMember(
+            @PathVariable Long teamId,
+            @PathVariable Long memberId,
+            @AuthenticationPrincipal StarUserDetails userDetails
+    ) {
+        service.banTeamMember(userDetails.getMemberInfoDTO(), teamId, memberId);
+
+        return ResponseEntity.noContent().build();
+    }
+
     @PatchMapping("/leader")
     public ResponseEntity<Void> delegateTeamLeader(
             @PathVariable Long teamId,

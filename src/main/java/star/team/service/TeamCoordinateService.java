@@ -18,6 +18,7 @@ import star.common.util.CommonTimeUtils;
 import star.member.dto.MemberInfoDTO;
 import star.member.model.entity.Member;
 import star.member.service.MemberService;
+import star.team.chat.service.ChatService;
 import star.team.dto.CreateTeamDTO;
 import star.team.dto.TeamSearchDTO;
 import star.team.dto.UpdateTeamDTO;
@@ -29,6 +30,7 @@ import star.team.dto.request.UpdateTeamRequest;
 import star.team.dto.response.GetTeamsResponse;
 import star.team.dto.response.TeamDetailsResponse;
 import star.team.dto.response.TeamMembersResponse;
+import star.team.exception.CanNotBanSelfException;
 import star.team.exception.InvalidTeamPasswordException;
 import star.team.exception.TeamLeaderCannotLeaveException;
 import star.team.exception.TeamLeaderSelfDelegatingException;
@@ -56,6 +58,7 @@ public class TeamCoordinateService {
     private final TeamImageDataService teamImageDataService;
     private final TeamMemberDataService teamMemberDataService;
     private final PasswordEncoder passwordEncoder;
+    private final ChatService chatService;
 
     @Transactional
     public Long createTeam(MemberInfoDTO memberInfoDTO, CreateTeamRequest request) {
@@ -204,10 +207,10 @@ public class TeamCoordinateService {
         assertTeamLeader(memberInfoDTO, team);
 
         teamImageDataService.deleteBoardImageUrls(teamId);
+        chatService.deleteChats(teamId);
         teamMemberDataService.deleteAllTeamMemberForTeamDelete(teamId);
         teamHeartDataService.deleteHeartsByTeamDelete(teamId);
         teamDataService.deleteTeam(teamId);
-        //todo: 채팅 구현하면 채팅 삭제 호출 구현하기
     }
 
     /*
@@ -255,7 +258,9 @@ public class TeamCoordinateService {
 
         Long leaderId = teamMembers.getFirst().getTeam().getLeader().getId();
 
-        return teamMembers.stream().map(
+        return teamMembers.stream()
+                .filter(teamMember -> !teamMember.isDeprecated())
+                .map(
                         teamMember -> {
                             Member member = teamMember.getMember();
                             Long memberId = member.getId();
@@ -301,7 +306,19 @@ public class TeamCoordinateService {
         }
 
         team.getParticipant().decrementCurrent();
-        teamMemberDataService.deleteTeamMember(teamId, memberInfoDTO.id());
+        teamMemberDataService.softDeleteTeamMember(teamId, memberInfoDTO.id());
+    }
+
+    @Transactional
+    public void banTeamMember(MemberInfoDTO memberInfoDTO, Long teamId, Long memberId) {
+        if(Objects.equals(memberId, memberInfoDTO.id())) {
+            throw new CanNotBanSelfException();
+        }
+
+        Team team = teamDataService.getTeamEntityById(teamId);
+        assertTeamLeader(memberInfoDTO, team);
+
+        teamMemberDataService.softDeleteTeamMember(teamId, memberId);
     }
 
     private Boolean isPublic(Team team) {

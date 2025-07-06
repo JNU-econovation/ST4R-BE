@@ -43,8 +43,9 @@ public class TeamMemberDataService {
     }
 
     @Transactional
-    public void deleteTeamMember(Long teamId, Long memberId) {
-        teamMemberRepository.deleteTeamMembersByTeamIdAndMemberId(teamId, memberId);
+    public void softDeleteTeamMember(Long teamId, Long memberId) {
+        TeamMember teamMember = getTeamMemberEntityByIds(teamId, memberId);
+        teamMember.markAsDeprecated();
     }
 
     @Transactional
