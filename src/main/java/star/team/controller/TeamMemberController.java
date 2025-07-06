@@ -1,9 +1,11 @@
 package star.team.controller;
 
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import star.common.security.dto.StarUserDetails;
 import star.team.dto.request.JoinTeamRequest;
 import star.team.dto.request.TeamLeaderDelegateRequest;
+import star.team.dto.response.TeamMembersResponse;
 import star.team.service.TeamCoordinateService;
 
 @RestController
@@ -31,6 +34,14 @@ public class TeamMemberController {
         service.joinTeam(userDetails.getMemberInfoDTO(), teamId, request);
 
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping
+    public ResponseEntity<List<TeamMembersResponse>> getTeamMembers(
+            @PathVariable Long teamId,
+            @AuthenticationPrincipal StarUserDetails userDetails
+    ) {
+        return ResponseEntity.ok(service.getTeamMembers(teamId, userDetails.getMemberInfoDTO()));
     }
 
     @DeleteMapping
