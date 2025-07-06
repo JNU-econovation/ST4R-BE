@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import star.common.dto.LocalDateTimesDTO;
@@ -22,10 +23,12 @@ import star.team.dto.TeamSearchDTO;
 import star.team.dto.UpdateTeamDTO;
 import star.team.dto.request.CreateTeamRequest;
 import star.team.dto.request.GetTeamsRequest;
+import star.team.dto.request.JoinTeamRequest;
 import star.team.dto.request.TeamLeaderDelegateRequest;
 import star.team.dto.request.UpdateTeamRequest;
 import star.team.dto.response.GetTeamsResponse;
 import star.team.dto.response.TeamDetailsResponse;
+import star.team.exception.InvalidTeamPasswordException;
 import star.team.exception.TeamLeaderCannotLeaveException;
 import star.team.exception.TeamLeaderSelfDelegatingException;
 import star.team.exception.TeamMemberNotFoundException;
@@ -50,6 +53,7 @@ public class TeamCoordinateService {
     private final TeamDataService teamDataService;
     private final TeamImageDataService teamImageDataService;
     private final TeamMemberDataService teamMemberDataService;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional
     public Long createTeam(MemberInfoDTO memberInfoDTO, CreateTeamRequest request) {
@@ -227,12 +231,14 @@ public class TeamCoordinateService {
     }
 
     @Transactional
-    public void joinTeam(MemberInfoDTO memberInfoDTO, Long teamId) {
+    public void joinTeam(MemberInfoDTO memberInfoDTO, Long teamId, JoinTeamRequest request) {
         if (teamMemberDataService.existsTeamMember(teamId, memberInfoDTO.id())) {
             throw new YouAlreadyJoinedTeamException();
         }
 
         Team team = teamDataService.getTeamEntityById(teamId);
+        matchPassword(team, request.password());
+
         team.getParticipant().incrementCurrent();
         teamMemberDataService.addTeamMember(team, memberInfoDTO.id());
     }
@@ -292,6 +298,14 @@ public class TeamCoordinateService {
     private void assertTeamMember(MemberInfoDTO memberInfoDTO, Team team) {
         if (!teamMemberDataService.existsTeamMember(team.getId(), memberInfoDTO.id())) {
             throw new TeamMemberNotFoundException();
+        }
+    }
+
+    private void matchPassword(Team team, String password) {
+        if (team.getEncryptedPassword() != null) {
+            if (!passwordEncoder.matches(password, team.getEncryptedPassword().getValue())) {
+                throw new InvalidTeamPasswordException();
+            }
         }
     }
 }

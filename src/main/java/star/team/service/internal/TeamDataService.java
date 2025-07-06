@@ -7,10 +7,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import star.common.exception.server.InternalServerException;
-import star.common.security.encryption.util.AESEncryptionUtil;
 import star.common.util.CommonTimeUtils;
 import star.member.model.entity.Member;
 import star.team.dto.CreateTeamDTO;
@@ -30,12 +30,13 @@ import star.team.repository.TeamRepository;
 public class TeamDataService {
 
     private final TeamRepository teamRepository;
-    private final AESEncryptionUtil aesEncryptionUtil;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional
     public Team createTeam(Member leader, CreateTeamDTO createTeamDTO) {
         EncryptedPassword encryptedPassword =
-                (createTeamDTO.plainPassword() == null) ? null : encryptPassword(createTeamDTO.plainPassword());
+                (createTeamDTO.plainPassword() == null) ? null
+                        : encryptPassword(createTeamDTO.plainPassword());
 
         Team team = Team.builder()
                 .name(createTeamDTO.name())
@@ -47,7 +48,8 @@ public class TeamDataService {
                         .capacity(createTeamDTO.maxParticipantCount())
                         .build())
                 .whenToMeet(
-                        CommonTimeUtils.convertOffsetDateTimeToLocalDateTime(createTeamDTO.whenToMeet()))
+                        CommonTimeUtils.convertOffsetDateTimeToLocalDateTime(
+                                createTeamDTO.whenToMeet()))
                 .location(createTeamDTO.location())
                 .build();
 
@@ -70,13 +72,15 @@ public class TeamDataService {
                 (updateTeamDTO.plainPassword() == null) ? null
                         : encryptPassword(updateTeamDTO.plainPassword());
 
-        if(team.getEncryptedPassword() == encryptedPassword) {
+        if (team.getEncryptedPassword() != null
+                && team.getEncryptedPassword() == encryptedPassword) {
             throw new NewPasswordSameAsOldException();
         }
 
-        LocalDateTime overwrittenWhenToMeet = updateTeamDTO.newWhenToMeet() == null ? team.getWhenToMeet()
-                : CommonTimeUtils.convertOffsetDateTimeToLocalDateTime(
-                        updateTeamDTO.newWhenToMeet());
+        LocalDateTime overwrittenWhenToMeet =
+                updateTeamDTO.newWhenToMeet() == null ? team.getWhenToMeet()
+                        : CommonTimeUtils.convertOffsetDateTimeToLocalDateTime(
+                                updateTeamDTO.newWhenToMeet());
 
         team.update(updateTeamDTO.name(), updateTeamDTO.description(), encryptedPassword,
                 overwrittenWhenToMeet,
@@ -93,7 +97,7 @@ public class TeamDataService {
     private EncryptedPassword encryptPassword(PlainPassword plainPassword) {
         final String CRITICAL_ENCRYPT_ERROR_MESSAGE = "팀 비밀번호 암호화 중 예상치 못한 에러 발생";
         try {
-            return new EncryptedPassword(aesEncryptionUtil.encrypt(plainPassword.value()));
+            return new EncryptedPassword(passwordEncoder.encode(plainPassword.value()));
         } catch (Exception e) {
             log.error(CRITICAL_ENCRYPT_ERROR_MESSAGE, e);
             throw new InternalServerException(CRITICAL_ENCRYPT_ERROR_MESSAGE);
