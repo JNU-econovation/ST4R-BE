@@ -45,7 +45,6 @@ public class BoardHeartTest {
         MemberInfoDTO memberInfo = memberService.getMemberById(1L);
         accessToken = jwtManager.generateToken(memberInfo);
 
-
         BoardRequest createRequestBody = BoardRequest.builder()
                 .title("행운의 편지")
                 .imageUrls(
