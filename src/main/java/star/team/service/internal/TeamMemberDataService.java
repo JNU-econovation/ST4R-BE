@@ -1,5 +1,6 @@
 package star.team.service.internal;
 
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +30,11 @@ public class TeamMemberDataService {
     @Transactional(readOnly = true)
     public TeamMember getTeamMemberEntityByIds(Long teamId, Long memberId) {
         return teamMemberRepository.getByTeamIdAndMemberId(teamId, memberId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<TeamMember> getTeamMembersEntityByTeamId(Long teamId) {
+        return teamMemberRepository.getByTeamId(teamId);
     }
 
     @Transactional(readOnly = true)

@@ -17,6 +17,9 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import star.common.model.vo.Jido;
 
+import lombok.Builder;
+
+@Builder
 public record UpdateTeamRequest(
 
         @NotNull(message = "이미지 url 필드를 입력해주세요")

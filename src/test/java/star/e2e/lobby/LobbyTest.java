@@ -11,9 +11,10 @@ import io.restassured.http.Method;
 import io.restassured.response.Response;
 import java.util.ArrayList;
 import java.util.List;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -27,6 +28,7 @@ import star.member.dto.MemberInfoDTO;
 import star.member.service.MemberService;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS) // -> 테스트 클래스당 한 번만 인스턴스를 생성
 public class LobbyTest {
 
     private static final int COUNT = 1000;
@@ -49,7 +51,7 @@ public class LobbyTest {
 
     private List<String> locations = new ArrayList<>();
 
-    @BeforeEach
+    @BeforeAll
     void setUp() {
         RestAssured.port = port;
         MemberInfoDTO memberInfo = memberService.getMemberById(1L);

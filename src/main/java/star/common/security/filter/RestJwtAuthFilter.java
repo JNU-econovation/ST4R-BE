@@ -33,7 +33,7 @@ import star.common.security.helper.JwtAuthHelper;
 public class RestJwtAuthFilter extends OncePerRequestFilter {
 
     private static final List<String> WHITELIST_PATHS = List.of("/h2-console/**", "/oauth/**", "/websocket/**");
-    private static final List<String> BLACKLIST_PATHS = List.of("/upload/**");
+    private static final List<String> BLACKLIST_PATHS = List.of("/upload/**", "/groups/*/members/**");
     private static final List<String> GREYLIST_PATHS = List.of("/home/**", "/groups/**");
 
 
@@ -46,7 +46,6 @@ public class RestJwtAuthFilter extends OncePerRequestFilter {
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
 
-        // 화이트리스트 검사 (람다식 및 스트림 API 사용)
         boolean isWhitelisted = WHITELIST_PATHS.stream()
                 .anyMatch(whitePattern -> pathMatcher.match(whitePattern, path));
 
@@ -74,12 +73,15 @@ public class RestJwtAuthFilter extends OncePerRequestFilter {
             String method = request.getMethod();
             String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
 
+            boolean isBlacklisted = BLACKLIST_PATHS.stream()
+                    .anyMatch(blackPattern -> pathMatcher.match(blackPattern, path));
+
             boolean isGreylisted = GREYLIST_PATHS.stream()
                     .anyMatch(greyPattern -> pathMatcher.match(greyPattern, path));
 
             if (authHeader == null || !authHeader.startsWith(BEARER_TYPE)) {
 
-                if (isGreylisted && method.equals(HttpMethod.GET.name())) {
+                if (!isBlacklisted && isGreylisted && method.equals(HttpMethod.GET.name())) {
                     filterChain.doFilter(request, response);
                     return;
                 }
