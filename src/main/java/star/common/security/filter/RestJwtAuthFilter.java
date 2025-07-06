@@ -33,7 +33,7 @@ import star.common.security.helper.JwtAuthHelper;
 public class RestJwtAuthFilter extends OncePerRequestFilter {
 
     private static final List<String> WHITELIST_PATHS = List.of("/h2-console/**", "/oauth/**", "/websocket/**");
-    private static final List<String> BLACKLIST_PATHS = List.of("/upload/**");
+    private static final List<String> BLACKLIST_PATHS = List.of("/upload/**", "/groups/*/members/**");
     private static final List<String> GREYLIST_PATHS = List.of("/home/**", "/groups/**");
 
 
