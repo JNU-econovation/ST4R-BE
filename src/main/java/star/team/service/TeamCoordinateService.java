@@ -61,7 +61,10 @@ public class TeamCoordinateService {
                 .name(new Name(request.name()))
                 .location(request.location())
                 .whenToMeet(request.whenToMeet())
-                .plainPassword(new PlainPassword(request.password()))
+                .plainPassword(
+                        request.password() == null
+                                ? null : PlainPassword.builder().value(request.password()).build()
+                )
                 .maxParticipantCount(request.maxParticipantCount())
                 .description(new Description(request.description()))
                 .build();
