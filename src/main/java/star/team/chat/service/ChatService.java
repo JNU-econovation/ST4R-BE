@@ -13,19 +13,18 @@ import star.team.chat.model.entity.Chat;
 import star.team.chat.repository.ChatRepository;
 import star.team.exception.TeamMemberNotFoundException;
 import star.team.model.entity.TeamMember;
-import star.team.service.TeamCoordinateService;
+import star.team.service.internal.TeamMemberDataService;
 
 @Service
 @RequiredArgsConstructor
 public class ChatService {
 
-    private final TeamCoordinateService teamCoordinateService;
+    private final TeamMemberDataService teamMemberDataService;
     private final ChatRepository chatRepository;
 
     @Transactional
     public ChatResponse saveChat(Long teamId, ChatRequest request, MemberInfoDTO memberInfoDTO) {
         TeamMember teamMember;
-
 
         teamMember = getTeamMember(teamId, memberInfoDTO.id());
 
@@ -34,9 +33,7 @@ public class ChatService {
                 .message(request.message())
                 .build();
 
-        chatRepository.save(newChat);
-
-        return ChatResponse.from(newChat);
+        return ChatResponse.from(chatRepository.save(newChat));
     }
 
     @Transactional(readOnly = true)
@@ -49,9 +46,14 @@ public class ChatService {
         return chatRepository.getChatsByTeamMemberTeamId(teamId, pageable).map(ChatResponse::from);
     }
 
+    @Transactional
+    public void deleteChats(Long teamId) {
+        chatRepository.deleteChatsByTeamMemberTeamId(teamId);
+    }
+
     private TeamMember getTeamMember(Long teamId, Long memberId) {
         try {
-            return teamCoordinateService.getTeamMember(teamId, memberId);
+            return teamMemberDataService.getTeamMemberEntityByIds(teamId, memberId);
         } catch (TeamMemberNotFoundException e) {
             throw new YouAreNotChatRoomException();
         }

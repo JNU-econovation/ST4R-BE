@@ -18,6 +18,7 @@ import star.common.util.CommonTimeUtils;
 import star.member.dto.MemberInfoDTO;
 import star.member.model.entity.Member;
 import star.member.service.MemberService;
+import star.team.chat.service.ChatService;
 import star.team.dto.CreateTeamDTO;
 import star.team.dto.TeamSearchDTO;
 import star.team.dto.UpdateTeamDTO;
@@ -25,16 +26,20 @@ import star.team.dto.request.CreateTeamRequest;
 import star.team.dto.request.GetTeamsRequest;
 import star.team.dto.request.JoinTeamRequest;
 import star.team.dto.request.TeamLeaderDelegateRequest;
+import star.team.dto.request.TeamMemberUnbanRequest;
 import star.team.dto.request.UpdateTeamRequest;
 import star.team.dto.response.GetTeamsResponse;
 import star.team.dto.response.TeamDetailsResponse;
 import star.team.dto.response.TeamMembersResponse;
+import star.team.exception.CanNotBanSelfException;
 import star.team.exception.InvalidTeamPasswordException;
+import star.team.exception.TargetIsNotBannedException;
 import star.team.exception.TeamLeaderCannotLeaveException;
 import star.team.exception.TeamLeaderSelfDelegatingException;
 import star.team.exception.TeamMemberNotFoundException;
 import star.team.exception.TeamNotFoundException;
 import star.team.exception.YouAlreadyJoinedTeamException;
+import star.team.exception.YouAreBannedException;
 import star.team.exception.YouAreNotTeamLeaderException;
 import star.team.model.entity.Team;
 import star.team.model.entity.TeamMember;
@@ -56,6 +61,7 @@ public class TeamCoordinateService {
     private final TeamImageDataService teamImageDataService;
     private final TeamMemberDataService teamMemberDataService;
     private final PasswordEncoder passwordEncoder;
+    private final ChatService chatService;
 
     @Transactional
     public Long createTeam(MemberInfoDTO memberInfoDTO, CreateTeamRequest request) {
@@ -204,10 +210,10 @@ public class TeamCoordinateService {
         assertTeamLeader(memberInfoDTO, team);
 
         teamImageDataService.deleteBoardImageUrls(teamId);
+        chatService.deleteChats(teamId);
         teamMemberDataService.deleteAllTeamMemberForTeamDelete(teamId);
         teamHeartDataService.deleteHeartsByTeamDelete(teamId);
         teamDataService.deleteTeam(teamId);
-        //todo: 채팅 구현하면 채팅 삭제 호출 구현하기
     }
 
     /*
@@ -234,11 +240,22 @@ public class TeamCoordinateService {
 
     @Transactional
     public void joinTeam(MemberInfoDTO memberInfoDTO, Long teamId, JoinTeamRequest request) {
-        if (teamMemberDataService.existsTeamMember(teamId, memberInfoDTO.id())) {
-            throw new YouAlreadyJoinedTeamException();
+
+        TeamMember teamMember = teamMemberDataService.getTeamMemberEntityByIds(teamId,
+                memberInfoDTO.id());
+
+        if (teamMember != null) {
+            if (teamMember.getIsBanned()) {
+                throw new YouAreBannedException();
+            }
+
+            if (!teamMember.isDeprecated()) {
+                throw new YouAlreadyJoinedTeamException();
+            }
         }
 
         Team team = teamDataService.getTeamEntityById(teamId);
+
         matchPassword(team, request.password());
 
         team.getParticipant().incrementCurrent();
@@ -247,7 +264,7 @@ public class TeamCoordinateService {
 
     @Transactional(readOnly = true)
     public List<TeamMembersResponse> getTeamMembers(Long teamId, MemberInfoDTO memberInfoDTO) {
-        List<TeamMember> teamMembers = teamMemberDataService.getTeamMembersEntityByTeamId(teamId);
+        List<TeamMember> teamMembers = teamMemberDataService.getTeamMemberEntitiesByTeamId(teamId);
 
         if (teamMembers.isEmpty()) {
             throw new TeamNotFoundException();
@@ -255,7 +272,10 @@ public class TeamCoordinateService {
 
         Long leaderId = teamMembers.getFirst().getTeam().getLeader().getId();
 
-        return teamMembers.stream().map(
+        return teamMembers.stream()
+                .filter(teamMember -> !teamMember.isDeprecated())
+                .filter(teamMember -> !teamMember.getIsBanned())
+                .map(
                         teamMember -> {
                             Member member = teamMember.getMember();
                             Long memberId = member.getId();
@@ -269,6 +289,37 @@ public class TeamCoordinateService {
                 )
                 .toList();
     }
+
+    @Transactional(readOnly = true)
+    public List<TeamMembersResponse> getBannedTeamMembers(Long teamId,
+            MemberInfoDTO memberInfoDTO) {
+
+        Team team = teamDataService.getTeamEntityById(teamId);
+
+        assertTeamLeader(memberInfoDTO, team);
+
+        List<TeamMember> bannedTeamMembers = teamMemberDataService.getBannedTeamMemberEntitiesByTeamId(
+                teamId);
+
+
+        Long leaderId = team.getLeader().getId();
+
+        return bannedTeamMembers.stream()
+                .map(
+                        teamMember -> {
+                            Member member = teamMember.getMember();
+                            Long memberId = member.getId();
+
+                            return TeamMembersResponse.from(
+                                    MemberInfoDTO.from(member),
+                                    false,
+                                    false
+                            );
+                        }
+                )
+                .toList();
+    }
+
 
     @Transactional
     public void delegateTeamLeader(MemberInfoDTO memberInfoDTO, Long teamId,
@@ -301,7 +352,33 @@ public class TeamCoordinateService {
         }
 
         team.getParticipant().decrementCurrent();
-        teamMemberDataService.deleteTeamMember(teamId, memberInfoDTO.id());
+        teamMemberDataService.softDeleteTeamMember(teamId, memberInfoDTO.id());
+    }
+
+    @Transactional
+    public void banTeamMember(MemberInfoDTO memberInfoDTO, Long teamId, Long memberId) {
+        if (Objects.equals(memberId, memberInfoDTO.id())) {
+            throw new CanNotBanSelfException();
+        }
+
+        Team team = teamDataService.getTeamEntityById(teamId);
+        assertTeamLeader(memberInfoDTO, team);
+
+        teamMemberDataService.banTeamMember(teamId, memberId);
+        team.getParticipant().decrementCurrent();
+    }
+
+    @Transactional
+    public void unbanTeamMember(MemberInfoDTO memberInfoDTO, Long teamId,
+            TeamMemberUnbanRequest request) {
+        assertTeamLeader(memberInfoDTO, teamDataService.getTeamEntityById(teamId));
+
+        MemberInfoDTO bannedMemberInfo = memberService.getMemberById(request.targetMemberId());
+
+        Team team = teamDataService.getTeamEntityById(teamId);
+        assertBanned(bannedMemberInfo, team);
+
+        teamMemberDataService.unbanTeamMember(teamId, request.targetMemberId());
     }
 
     private Boolean isPublic(Team team) {
@@ -326,6 +403,21 @@ public class TeamCoordinateService {
         if (!teamMemberDataService.existsTeamMember(team.getId(), memberInfoDTO.id())) {
             throw new TeamMemberNotFoundException();
         }
+    }
+
+    private void assertBanned(MemberInfoDTO targetMemberInfo, Team team) {
+        if (teamMemberDataService.existsTeamMember(team.getId(), targetMemberInfo.id())) {
+            TeamMember teamMember = teamMemberDataService.getTeamMemberEntityByIds(team.getId(),
+                    targetMemberInfo.id());
+
+            if (!teamMember.getIsBanned()) {
+                throw new TargetIsNotBannedException();
+            }
+
+            return;
+        }
+
+        throw new TeamMemberNotFoundException();
     }
 
     private void matchPassword(Team team, String password) {
