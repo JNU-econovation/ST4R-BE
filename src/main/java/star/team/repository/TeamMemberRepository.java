@@ -17,4 +17,6 @@ public interface TeamMemberRepository extends JpaRepository<TeamMember, Long> {
     void deleteTeamMembersByTeamIdAndMemberId(Long teamId, Long memberId);
 
     boolean existsByTeamIdAndMemberId(Long teamId, Long memberId);
+
+    List<TeamMember> getByTeamIdAndIsBanned(Long teamId, boolean b);
 }

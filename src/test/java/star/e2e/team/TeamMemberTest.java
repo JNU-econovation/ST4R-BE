@@ -22,6 +22,7 @@ import star.member.dto.MemberInfoDTO;
 import star.member.service.MemberService;
 import star.team.dto.request.CreateTeamRequest;
 import star.team.dto.request.TeamLeaderDelegateRequest;
+import star.team.dto.request.TeamMemberUnbanRequest;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class TeamMemberTest {
@@ -216,5 +217,127 @@ public class TeamMemberTest {
                 .then()
                 .log().all()
                 .statusCode(403);
+    }
+
+    @Test
+    @DisplayName("팀 멤버 강퇴 및 강퇴 해제 테스트")
+    void banAndUnbanTeamMemberTest() {
+        // given
+        // 멤버 추가
+        given()
+                .header("Authorization", "Bearer " + memberAccessToken)
+                .contentType(ContentType.JSON)
+                .when()
+                .post("/groups/" + teamId + "/members")
+                .then()
+                .statusCode(204);
+
+        // when
+        // 멤버 강퇴
+        given()
+                .log().all()
+                .header("Authorization", "Bearer " + leaderAccessToken)
+                .contentType(ContentType.JSON)
+                .when()
+                .delete("/groups/" + teamId + "/members/2")
+                .then()
+                .log().all()
+                .statusCode(204);
+
+        // then
+        // 강퇴 후 멤버 목록 확인
+        given()
+                .log().all()
+                .header("Authorization", "Bearer " + leaderAccessToken)
+                .contentType(ContentType.JSON)
+                .when()
+                .get("/groups/" + teamId + "/members")
+                .then()
+                .log().all()
+                .statusCode(200)
+                .body("teamMembers", hasSize(1));
+
+        // 강퇴된 멤버 목록 확인
+        given()
+                .log().all()
+                .header("Authorization", "Bearer " + leaderAccessToken)
+                .contentType(ContentType.JSON)
+                .when()
+                .get("/groups/" + teamId + "/members/bannedMembers")
+                .then()
+                .log().all()
+                .statusCode(200)
+                .body("", hasSize(1));
+
+        // 강퇴된 멤버가 재 참여 시도
+        given()
+                .log().all()
+                .header("Authorization", "Bearer " + memberAccessToken)
+                .contentType(ContentType.JSON)
+                .when()
+                .post("/groups/" + teamId + "/members")
+                .then()
+                .log().all()
+                .statusCode(403);
+
+        // 리더가 자신을 강퇴 시도
+        given()
+                .log().all()
+                .header("Authorization", "Bearer " + leaderAccessToken)
+                .contentType(ContentType.JSON)
+                .when()
+                .delete("/groups/" + teamId + "/members/1")
+                .then().log().all()
+                .statusCode(400);
+
+        // when
+        // 강퇴 해제
+        given()
+                .log().all()
+                .header("Authorization", "Bearer " + leaderAccessToken)
+                .contentType(ContentType.JSON)
+                .body(new TeamMemberUnbanRequest(2L))
+                .when()
+                .patch("/groups/" + teamId + "/members/bannedMembers")
+                .then()
+                .log().all()
+                .statusCode(204);
+
+        // then
+        // 강퇴 해제 후 강퇴된 멤버 목록 확인
+
+        given()
+                .log().all()
+                .header("Authorization", "Bearer " + leaderAccessToken)
+                .contentType(ContentType.JSON)
+                .when()
+                .get("/groups/" + teamId + "/members/bannedMembers")
+                .then()
+                .log().all()
+                .statusCode(200)
+                .body("", hasSize(0));
+
+        // 강퇴 해제된 멤버가 재 참여 시도
+        given()
+                .log().all()
+                .header("Authorization", "Bearer " + memberAccessToken)
+                .contentType(ContentType.JSON)
+                .when()
+                .post("/groups/" + teamId + "/members")
+                .then()
+                .log().all()
+                .statusCode(204);
+
+        // 재 참여 후 멤버 목록 확인
+        given()
+                .log().all()
+                .header("Authorization", "Bearer " + leaderAccessToken)
+                .contentType(ContentType.JSON)
+                .when()
+                .get("/groups/" + teamId + "/members")
+                .then()
+                .log().all()
+                .statusCode(200)
+                .body("teamMembers", hasSize(2));
     }
 }

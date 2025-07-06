@@ -19,6 +19,14 @@ public class TeamMemberDataService {
     @Transactional
     public void addTeamMember(Team team, Long memberId) {
 
+        if (teamMemberRepository.existsByTeamIdAndMemberId(team.getId(), memberId)) {
+            TeamMember teamMember = getTeamMemberEntityByIds(team.getId(), memberId);
+
+            teamMember.markAsActivated();
+
+            return;
+        }
+
         TeamMember teamMember = TeamMember.builder()
                 .team(team)
                 .member(memberService.getMemberEntityById(memberId))
@@ -33,7 +41,12 @@ public class TeamMemberDataService {
     }
 
     @Transactional(readOnly = true)
-    public List<TeamMember> getTeamMembersEntityByTeamId(Long teamId) {
+    public List<TeamMember> getBannedTeamMemberEntitiesByTeamId(Long teamId) {
+        return teamMemberRepository.getByTeamIdAndIsBanned(teamId, true);
+    }
+
+    @Transactional(readOnly = true)
+    public List<TeamMember> getTeamMemberEntitiesByTeamId(Long teamId) {
         return teamMemberRepository.getByTeamId(teamId);
     }
 
@@ -43,8 +56,21 @@ public class TeamMemberDataService {
     }
 
     @Transactional
-    public void deleteTeamMember(Long teamId, Long memberId) {
-        teamMemberRepository.deleteTeamMembersByTeamIdAndMemberId(teamId, memberId);
+    public void banTeamMember(Long teamId, Long memberId) {
+        TeamMember teamMember = getTeamMemberEntityByIds(teamId, memberId);
+        teamMember.ban();
+    }
+
+    @Transactional
+    public void unbanTeamMember(Long teamId, Long memberId) {
+        TeamMember teamMember = getTeamMemberEntityByIds(teamId, memberId);
+        teamMember.unban();
+    }
+
+    @Transactional
+    public void softDeleteTeamMember(Long teamId, Long memberId) {
+        TeamMember teamMember = getTeamMemberEntityByIds(teamId, memberId);
+        teamMember.markAsDeprecated();
     }
 
     @Transactional
