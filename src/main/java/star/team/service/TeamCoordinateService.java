@@ -28,10 +28,12 @@ import star.team.dto.request.TeamLeaderDelegateRequest;
 import star.team.dto.request.UpdateTeamRequest;
 import star.team.dto.response.GetTeamsResponse;
 import star.team.dto.response.TeamDetailsResponse;
+import star.team.dto.response.TeamMembersResponse;
 import star.team.exception.InvalidTeamPasswordException;
 import star.team.exception.TeamLeaderCannotLeaveException;
 import star.team.exception.TeamLeaderSelfDelegatingException;
 import star.team.exception.TeamMemberNotFoundException;
+import star.team.exception.TeamNotFoundException;
 import star.team.exception.YouAlreadyJoinedTeamException;
 import star.team.exception.YouAreNotTeamLeaderException;
 import star.team.model.entity.Team;
@@ -241,6 +243,31 @@ public class TeamCoordinateService {
 
         team.getParticipant().incrementCurrent();
         teamMemberDataService.addTeamMember(team, memberInfoDTO.id());
+    }
+
+    @Transactional(readOnly = true)
+    public List<TeamMembersResponse> getTeamMembers(Long teamId, MemberInfoDTO memberInfoDTO) {
+        List<TeamMember> teamMembers = teamMemberDataService.getTeamMembersEntityByTeamId(teamId);
+
+        if (teamMembers.isEmpty()) {
+            throw new TeamNotFoundException();
+        }
+
+        Long leaderId = teamMembers.getFirst().getTeam().getLeader().getId();
+
+        return teamMembers.stream().map(
+                        teamMember -> {
+                            Member member = teamMember.getMember();
+                            Long memberId = member.getId();
+
+                            return TeamMembersResponse.from(
+                                    MemberInfoDTO.from(member),
+                                    memberId.equals(leaderId),
+                                    memberId.equals(memberInfoDTO.id())
+                            );
+                        }
+                )
+                .toList();
     }
 
     @Transactional
