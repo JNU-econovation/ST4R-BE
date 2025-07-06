@@ -1,4 +1,4 @@
-package star.e2e.boardHeart;
+package star.e2e.board;
 
 import static io.restassured.RestAssured.given;
 import static star.e2e.util.RestAssuredUtil.sendRequest;
