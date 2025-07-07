@@ -3,6 +3,7 @@ package star.team.service.internal;
 import static star.team.constants.TeamConstants.PARTICIPANT_MIN_CAPACITY;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -61,9 +62,16 @@ public class TeamDataService {
         return teamRepository.searchTeams(searchDTO, pageable);
     }
 
+
+
     @Transactional(readOnly = true)
     public Team getTeamEntityById(Long teamId) {
         return teamRepository.findById(teamId).orElseThrow(TeamNotFoundException::new);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Long> getAllTeamIds() {
+        return teamRepository.getAllTeamIds();
     }
 
     @Transactional
