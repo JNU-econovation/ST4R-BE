@@ -1,4 +1,4 @@
-package star.team.chat.exception.handler;
+package star.team.chat.exception;
 
 import star.common.exception.client.Client403Exception;
 
