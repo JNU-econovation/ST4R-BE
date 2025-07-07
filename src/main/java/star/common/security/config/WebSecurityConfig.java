@@ -57,7 +57,7 @@ public class WebSecurityConfig {
     public AuthorizationManager<Message<?>> messageAuthorizationManager(Builder messages) {
         messages
                 .nullDestMatcher().permitAll()
-                .simpDestMatchers("/websocket/broadcast/**").authenticated()
+                .simpDestMatchers("/broadcast/**").authenticated()
                 .simpSubscribeDestMatchers("/subscribe/**").authenticated()
                 .anyMessage().authenticated();
 
