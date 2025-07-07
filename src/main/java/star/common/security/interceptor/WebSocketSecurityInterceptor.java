@@ -21,10 +21,10 @@ import star.team.service.TeamCoordinateService;
 public class WebSocketSecurityInterceptor implements ChannelInterceptor {
 
     private static final Pattern ALLOWED_SUBSCRIBE_PATTERN =
-            Pattern.compile("^/websocket/subscribe/\\d+(/preview)?$");
+            Pattern.compile("^/subscribe/\\d+(/preview)?$");
 
     private static final Pattern ALLOWED_SEND_PATTERN =
-            Pattern.compile("^/websocket/broadcast/chat/\\d+$");
+            Pattern.compile("^/broadcast/\\d+$");
     private final TeamCoordinateService teamCoordinateService;
 
     public WebSocketSecurityInterceptor(TeamCoordinateService teamCoordinateService) {
@@ -79,8 +79,8 @@ public class WebSocketSecurityInterceptor implements ChannelInterceptor {
         /* /websocket/subscribe/123 or /websocket/broadcast/123  */
         String[] tokens = destination.split("/");
         try {
-            return Long.parseLong(tokens[3]);
-        } catch (NumberFormatException ex) {
+            return Long.parseLong(tokens[2]);
+        } catch (RuntimeException ex) {
             throw new MessagingException("올바르지 않은 url 입니다 -> " + destination);
         }
     }
