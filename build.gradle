@@ -62,7 +62,7 @@ dependencies {
     //logging
     implementation 'org.slf4j:slf4j-api:2.0.17'
 
-    //json
+    //jackson
     implementation 'com.fasterxml.jackson.module:jackson-module-jsonSchema:2.18.3'
 
     //QueryDSL
