@@ -70,10 +70,10 @@ public class ChatRedisService {
         return chatDTORedisTemplate.opsForList().range(key, start, end);
     }
 
-    public Integer countReaders(Long teamId, ChatDTO chat, List<Long> allMemberIds) {
+    public Integer countReaders(ChatDTO chat, List<Long> allMemberIds) {
         int count = 0;
         for (Long memberId : allMemberIds) {
-            LocalDateTime readTime = getLastReadTime(teamId, memberId);
+            LocalDateTime readTime = getLastReadTime(chat.teamId(), memberId);
             if (readTime.isAfter(chat.chattedAt()) || readTime.isEqual(chat.chattedAt())) {
                 count++;
             }
