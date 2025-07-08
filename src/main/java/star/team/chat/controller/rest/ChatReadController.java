@@ -15,7 +15,7 @@ import star.common.annotation.ResolvePageable;
 import star.common.constants.SortField;
 import star.common.security.dto.StarUserDetails;
 import star.team.chat.dto.response.ChatReadResponse;
-import star.team.chat.dto.response.UnreadChatCountsResponse;
+import star.team.chat.dto.response.ChatPreviewResponse;
 import star.team.chat.service.ChatCoordinateService;
 
 @RestController
@@ -25,11 +25,11 @@ public class ChatReadController {
 
     private final ChatCoordinateService service;
 
-    @GetMapping("/chats/unreadCounts")
-    public ResponseEntity<List<UnreadChatCountsResponse>> getUnreadCounts(
+    @GetMapping("/chats/preview")
+    public ResponseEntity<List<ChatPreviewResponse>> getPreview(
             @AuthenticationPrincipal StarUserDetails userDetails
     ) {
-        return ResponseEntity.ok(service.getUnreadChatCounts(userDetails.getMemberInfoDTO()));
+        return ResponseEntity.ok(service.getPreview(userDetails.getMemberInfoDTO()));
     }
 
     @GetMapping("/{teamId}/chats/readCounts")

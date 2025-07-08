@@ -50,7 +50,8 @@ public class TeamMemberController {
             @PathVariable Long teamId,
             @AuthenticationPrincipal StarUserDetails userDetails
     ) {
-        return ResponseEntity.ok(service.getBannedTeamMembers(teamId, userDetails.getMemberInfoDTO()));
+        return ResponseEntity.ok(
+                service.getBannedTeamMembers(teamId, userDetails.getMemberInfoDTO()));
     }
 
     @DeleteMapping

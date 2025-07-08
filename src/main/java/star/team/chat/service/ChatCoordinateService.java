@@ -10,9 +10,11 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
+import org.springframework.data.domain.Sort;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,7 +24,7 @@ import star.team.chat.dto.ChatDTO;
 import star.team.chat.dto.request.ChatRequest;
 import star.team.chat.dto.response.ChatReadResponse;
 import star.team.chat.dto.response.ChatResponse;
-import star.team.chat.dto.response.UnreadChatCountsResponse;
+import star.team.chat.dto.response.ChatPreviewResponse;
 import star.team.chat.exception.RedisRangeExceededException;
 import star.team.chat.model.vo.Message;
 import star.team.chat.service.internal.ChatDataService;
@@ -44,7 +46,6 @@ public class ChatCoordinateService {
     public ChatResponse saveChatRedis(Long teamId, ChatRequest request,
             MemberInfoDTO memberInfoDTO) {
         LocalDateTime chattedAt = LocalDateTime.now();
-
 
         ChatDTO chat = ChatDTO.builder()
                 .teamId(teamId)
@@ -94,7 +95,7 @@ public class ChatCoordinateService {
         redisService.markAsRead(teamId, memberInfoDTO.id(), LocalDateTime.now());
     }
 
-    public List<UnreadChatCountsResponse> getUnreadChatCounts(MemberInfoDTO memberInfoDTO) {
+    public List<ChatPreviewResponse> getPreview(MemberInfoDTO memberInfoDTO) {
         List<Long> teamIds = teamMemberDataService.getAllTeamIdByMemberId(memberInfoDTO.id());
 
         return teamIds.stream().map(
@@ -102,8 +103,14 @@ public class ChatCoordinateService {
                     LocalDateTime lastReadAt = redisService.getLastReadTime(teamId,
                             memberInfoDTO.id());
 
+                    String recentMessage;
+
                     // 1. Redis에서 모든 채팅을 가져오기
                     List<ChatDTO> redisChats = redisService.getChats(teamId, 0, -1, true);
+
+                    // 1-1 가장 최근 채팅 가져오기
+                    recentMessage = redisChats.isEmpty() ? null
+                            : redisChats.getFirst().message().getValue();
 
                     // 2. Redis에서 안 읽은 채팅 수를 계산하기
                     Long unreadInRedis = redisChats.stream()
@@ -119,8 +126,25 @@ public class ChatCoordinateService {
                     Long unreadInDb = chatDataService.getUnreadChatCount(teamId, lastReadAt,
                             redisIdsToExclude);
 
-                    return UnreadChatCountsResponse.builder()
+                    if (recentMessage == null) {
+                        // 4-1. 만약 redis recent chat이 null이면 db에서 가장 최근 채팅 가져오기
+                        Page<ChatDTO> recentChatPage = chatDataService.getChatHistory(
+                                teamId, memberInfoDTO,
+                                PageRequest.of(
+                                        0, 1, Sort.by(Sort.Direction.DESC, "chattedAt"
+                                        )
+                                )
+                        );
+
+                        if (!recentChatPage.getContent().isEmpty()) {
+                            recentMessage = recentChatPage.getContent().getFirst()
+                                    .message().getValue();
+                        }
+                    }
+
+                    return ChatPreviewResponse.builder()
                             .teamId(teamId)
+                            .recentMessage(recentMessage)
                             .unreadCount(unreadInRedis + unreadInDb)
                             .build();
                 }
@@ -206,7 +230,7 @@ public class ChatCoordinateService {
     }
 
     @Transactional
-    @Scheduled(fixedRate = 100000)
+    @Scheduled(fixedRate = 600000)
     public void syncChatsFromRedisToDb() {
         List<Long> teamIds = teamDataService.getAllTeamIds();
         List<ChatDTO> redisChatsToSync = new ArrayList<>();

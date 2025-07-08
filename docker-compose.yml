@@ -8,11 +8,41 @@ services:
     ports:
       - "8080:8080"
     container_name: star-app
+    depends_on:
+      - redis
+      - mysql
+    networks:
+      - my-network
     environment:
       - SPRING_PROFILES_ACTIVE=prod
+
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "6379:6379"
     networks:
       - my-network
 
+  mysql:
+    image: mysql:8.4.5
+    container_name: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - my-network
+
+volumes:
+  mysql_data:
+    name: mysql_data
+
 networks:
   my-network:
+    name: my-network
     driver: bridge
