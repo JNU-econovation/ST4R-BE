@@ -36,7 +36,7 @@ public class ChatReadController {
     public ResponseEntity<Slice<ChatReadResponse>> getReadCounts(
             @PathVariable Long teamId,
             @AuthenticationPrincipal StarUserDetails userDetails,
-            @ResolvePageable(allowed = {SortField.CREATED_AT}) Pageable pageable
+            @ResolvePageable(allowed = {SortField.CHATTED_AT}) Pageable pageable
     ) {
         return ResponseEntity.ok(
                 service.getReadCountsByRedisOrDb(teamId, userDetails.getMemberInfoDTO(), pageable)
