@@ -1,11 +1,14 @@
 package star.team.chat.service.internal;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.Cursor;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ScanOptions;
 import org.springframework.stereotype.Service;
 import star.team.chat.config.ChatRedisProperties;
 import star.team.chat.dto.ChatDTO;
@@ -29,7 +32,7 @@ public class ChatRedisService {
     //마지막으로 읽은 time 조회
     public LocalDateTime getLastReadTime(Long teamId, Long memberId) {
         String key = buildReadKey(teamId, memberId);
-        LocalDateTime value = (LocalDateTime) localDateTimeRedisTemplate.opsForValue().get(key);
+        LocalDateTime value = localDateTimeRedisTemplate.opsForValue().get(key);
 
         return value != null ? value : LocalDateTime.MIN;
     }
@@ -122,11 +125,16 @@ public class ChatRedisService {
         longRedisTemplate.delete(messageIdKey);
 
         String pattern = "read:chat:" + teamId + ":*";
+        List<String> keysToDelete = new ArrayList<>();
 
-        // keys()로 패턴에 맞는 키 모두 조회
-        var keys = longRedisTemplate.keys(pattern);
-        if (!keys.isEmpty()) {
-            localDateTimeRedisTemplate.delete(keys);
+        // SCAN을 사용하여 안전하게 키 조회
+        try (Cursor<byte[]> cursor = longRedisTemplate.getConnectionFactory().getConnection()
+                .scan(ScanOptions.scanOptions().match(pattern).count(1000).build())) {
+            cursor.forEachRemaining(key -> keysToDelete.add(new String(key)));
+        }
+
+        if (!keysToDelete.isEmpty()) {
+            localDateTimeRedisTemplate.delete(keysToDelete);
         }
     }
 
