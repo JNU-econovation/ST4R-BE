@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -110,6 +111,16 @@ public class ChatDataService {
     @Transactional
     public void deleteChats(Long teamId) {
         chatRepository.deleteChatsByTeamMemberTeamId(teamId);
+    }
+
+    @Transactional(readOnly = true)
+    public Long getUnreadChatCount(Long teamId, LocalDateTime lastReadAt,
+            Set<Long> redisIdsToExclude) {
+        if (redisIdsToExclude == null || redisIdsToExclude.isEmpty()) {
+            return chatRepository.countByTeamMemberTeamIdAndChattedAtAfter(teamId, lastReadAt);
+        }
+        return chatRepository.countByTeamMemberTeamIdAndChattedAtAfterAndRedisIdNotIn(teamId,
+                lastReadAt, redisIdsToExclude);
     }
 
     private TeamMember getTeamMember(Long teamId, Long memberId) {
