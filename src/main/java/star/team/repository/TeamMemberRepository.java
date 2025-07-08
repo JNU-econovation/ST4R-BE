@@ -15,7 +15,6 @@ public interface TeamMemberRepository extends JpaRepository<TeamMember, Long> {
 
     void deleteTeamMembersByTeamId(Long teamId);
 
-    void deleteTeamMembersByTeamIdAndMemberId(Long teamId, Long memberId);
 
     boolean existsByTeamIdAndMemberId(Long teamId, Long memberId);
 
@@ -23,4 +22,7 @@ public interface TeamMemberRepository extends JpaRepository<TeamMember, Long> {
 
     @Query("SELECT tm.member.id FROM TeamMember tm WHERE tm.team.id = :teamId")
     List<Long> getAllMemberIdInTeam(Long teamId);
+
+    @Query("SELECT tm.team.id FROM TeamMember tm WHERE tm.member.id = :memberId")
+    List<Long> getTeamIdsByMemberId(Long memberId);
 }
