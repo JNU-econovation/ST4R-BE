@@ -11,13 +11,13 @@ public record ChatReadResponse(
         Long chatDbId,
 
         Long chatRedisId,
-        Integer count
+        Integer readCount
 ) {
         public static ChatReadResponse from(ChatDTO chatDTO, Integer count) {
                 return ChatReadResponse.builder()
                         .chatDbId(chatDTO.chatDbId())
                         .chatRedisId(chatDTO.chatRedisId())
-                        .count(count)
+                        .readCount(count)
                         .build();
         }
 }

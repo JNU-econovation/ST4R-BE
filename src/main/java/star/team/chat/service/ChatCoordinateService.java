@@ -86,6 +86,10 @@ public class ChatCoordinateService {
         }
     }
 
+    public void markAsRead(Long teamId, MemberInfoDTO memberInfoDTO) {
+        redisService.markAsRead(teamId, memberInfoDTO.id(), LocalDateTime.now());
+    }
+
 
     public Slice<ChatReadResponse> getReadCountsByRedisOrDb(Long teamId,
             MemberInfoDTO memberInfoDTO,

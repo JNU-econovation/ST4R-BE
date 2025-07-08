@@ -126,9 +126,10 @@ public class ChatRedisService {
 
         String pattern = "read:chat:" + teamId + ":*";
         List<String> keysToDelete = new ArrayList<>();
-        ScanOptions scanOptions = ScanOptions.scanOptions().match(pattern).count(1000).build();
+        ScanOptions scanOptions = ScanOptions.scanOptions()
+                .match(pattern).count(1000).build();
 
-        try (Cursor<String> cursor = longRedisTemplate.scan(scanOptions)) {
+        try (Cursor<String> cursor = localDateTimeRedisTemplate.scan(scanOptions)) {
             cursor.forEachRemaining(keysToDelete::add);
         }
 

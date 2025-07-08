@@ -24,7 +24,7 @@ public class WebSocketSecurityInterceptor implements ChannelInterceptor {
             Pattern.compile("^/subscribe/\\d+(/preview)?$");
 
     private static final Pattern ALLOWED_SEND_PATTERN =
-            Pattern.compile("^/broadcast/\\d+$");
+            Pattern.compile("^(/broadcast/\\d+|/read/\\d+)$");
     private final TeamCoordinateService teamCoordinateService;
 
     public WebSocketSecurityInterceptor(TeamCoordinateService teamCoordinateService) {
