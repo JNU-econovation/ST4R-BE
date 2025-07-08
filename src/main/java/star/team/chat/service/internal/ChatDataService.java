@@ -1,5 +1,6 @@
 package star.team.chat.service.internal;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,7 +28,9 @@ public class ChatDataService {
 
     @Transactional
     public Map<Long, Map<Long, ChatDTO>> saveChatForSyncToDb(List<ChatDTO> redisChats) {
-        if (redisChats == null || redisChats.isEmpty()) return Map.of();
+        if (redisChats == null || redisChats.isEmpty()) {
+            return Map.of();
+        }
 
         // teamId → redisId → original ChatDTO
         Map<Long, Map<Long, ChatDTO>> teamRedisChatMap = new HashMap<>();
@@ -85,6 +88,23 @@ public class ChatDataService {
         getTeamMember(teamId, memberDTO.id());
 
         return chatRepository.getChatsByTeamMemberTeamId(teamId, pageable).map(ChatDTO::from);
+    }
+
+    @Transactional(readOnly = true)
+    public Integer countReaders(ChatDTO chatDTO, Map<Long, LocalDateTime> lastReadTimeMap) {
+        int count = 0;
+
+        for (Map.Entry<Long, LocalDateTime> entry : lastReadTimeMap.entrySet()) {
+
+            Long memberId = entry.getKey();
+            LocalDateTime lastReadTime = entry.getValue();
+
+            if (chatRepository.existsByIdAndChattedAtBefore(chatDTO.chatDbId(), lastReadTime)) {
+                count++;
+            }
+        }
+
+        return count;
     }
 
     @Transactional
