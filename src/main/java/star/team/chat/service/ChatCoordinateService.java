@@ -22,6 +22,7 @@ import star.team.chat.dto.ChatDTO;
 import star.team.chat.dto.request.ChatRequest;
 import star.team.chat.dto.response.ChatReadResponse;
 import star.team.chat.dto.response.ChatResponse;
+import star.team.chat.dto.response.UnreadChatCountsResponse;
 import star.team.chat.exception.RedisRangeExceededException;
 import star.team.chat.model.vo.Message;
 import star.team.chat.service.internal.ChatDataService;
@@ -90,6 +91,38 @@ public class ChatCoordinateService {
         redisService.markAsRead(teamId, memberInfoDTO.id(), LocalDateTime.now());
     }
 
+    public List<UnreadChatCountsResponse> getUnreadChatCounts(MemberInfoDTO memberInfoDTO) {
+        List<Long> teamIds = teamMemberDataService.getAllTeamIdByMemberId(memberInfoDTO.id());
+
+        return teamIds.stream().map(
+                teamId -> {
+                    LocalDateTime lastReadAt = redisService.getLastReadTime(teamId,
+                            memberInfoDTO.id());
+
+                    // 1. Redis에서 모든 채팅을 가져오기
+                    List<ChatDTO> redisChats = redisService.getChats(teamId, 0, -1, true);
+
+                    // 2. Redis에서 안 읽은 채팅 수를 계산하기
+                    Long unreadInRedis = redisChats.stream()
+                            .filter(chat -> chat.chattedAt().isAfter(lastReadAt))
+                            .count();
+
+                    // 3. Redis에 있는 모든 채팅의 redisId를 추출하기
+                    Set<Long> redisIdsToExclude = redisChats.stream()
+                            .map(ChatDTO::chatRedisId)
+                            .collect(Collectors.toSet());
+
+                    // 4. DB에서 Redis에 없는 안 읽은 채팅만 계산하기
+                    Long unreadInDb = chatDataService.getUnreadChatCount(teamId, lastReadAt,
+                            redisIdsToExclude);
+
+                    return UnreadChatCountsResponse.builder()
+                            .teamId(teamId)
+                            .unreadCount(unreadInRedis + unreadInDb)
+                            .build();
+                }
+        ).toList();
+    }
 
     public Slice<ChatReadResponse> getReadCountsByRedisOrDb(Long teamId,
             MemberInfoDTO memberInfoDTO,
