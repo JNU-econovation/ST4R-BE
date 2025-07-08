@@ -18,7 +18,7 @@ import star.common.util.CommonTimeUtils;
 import star.member.dto.MemberInfoDTO;
 import star.member.model.entity.Member;
 import star.member.service.MemberService;
-import star.team.chat.service.ChatService;
+import star.team.chat.service.ChatCoordinateService;
 import star.team.dto.CreateTeamDTO;
 import star.team.dto.TeamSearchDTO;
 import star.team.dto.UpdateTeamDTO;
@@ -61,7 +61,7 @@ public class TeamCoordinateService {
     private final TeamImageDataService teamImageDataService;
     private final TeamMemberDataService teamMemberDataService;
     private final PasswordEncoder passwordEncoder;
-    private final ChatService chatService;
+    private final ChatCoordinateService chatCoordinateService;
 
     @Transactional
     public Long createTeam(MemberInfoDTO memberInfoDTO, CreateTeamRequest request) {
@@ -210,7 +210,7 @@ public class TeamCoordinateService {
         assertTeamLeader(memberInfoDTO, team);
 
         teamImageDataService.deleteBoardImageUrls(teamId);
-        chatService.deleteChats(teamId);
+        chatCoordinateService.deleteChats(teamId);
         teamMemberDataService.deleteAllTeamMemberForTeamDelete(teamId);
         teamHeartDataService.deleteHeartsByTeamDelete(teamId);
         teamDataService.deleteTeam(teamId);
@@ -301,7 +301,6 @@ public class TeamCoordinateService {
         List<TeamMember> bannedTeamMembers = teamMemberDataService.getBannedTeamMemberEntitiesByTeamId(
                 teamId);
 
-
         Long leaderId = team.getLeader().getId();
 
         return bannedTeamMembers.stream()
@@ -345,7 +344,7 @@ public class TeamCoordinateService {
     public void leaveTeam(MemberInfoDTO memberInfoDTO, Long teamId) {
 
         Team team = teamDataService.getTeamEntityById(teamId);
-        assertTeamMember(memberInfoDTO, team);
+        assertTeamMember(memberInfoDTO, team.getId());
         if (Objects.equals(team.getLeader().getId(), memberInfoDTO.id())) {
             //니 팀 버려? ㅋㅋㅋ
             throw new TeamLeaderCannotLeaveException();
@@ -399,8 +398,8 @@ public class TeamCoordinateService {
         }
     }
 
-    private void assertTeamMember(MemberInfoDTO memberInfoDTO, Team team) {
-        if (!teamMemberDataService.existsTeamMember(team.getId(), memberInfoDTO.id())) {
+    public void assertTeamMember(MemberInfoDTO memberInfoDTO, Long teamId) {
+        if (!teamMemberDataService.existsTeamMember(teamId, memberInfoDTO.id())) {
             throw new TeamMemberNotFoundException();
         }
     }
@@ -422,7 +421,8 @@ public class TeamCoordinateService {
 
     private void matchPassword(Team team, String password) {
         if (team.getEncryptedPassword() != null) {
-            if (!passwordEncoder.matches(password, team.getEncryptedPassword().getValue())) {
+            if (password == null ||
+                    !passwordEncoder.matches(password, team.getEncryptedPassword().getValue())) {
                 throw new InvalidTeamPasswordException();
             }
         }

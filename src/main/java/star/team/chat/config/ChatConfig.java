@@ -8,6 +8,7 @@ import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBr
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 import star.common.security.interceptor.WebSocketJwtAuthInterceptor;
+import star.common.security.interceptor.WebSocketSecurityInterceptor;
 
 @Configuration
 @EnableWebSocketMessageBroker
@@ -15,6 +16,7 @@ import star.common.security.interceptor.WebSocketJwtAuthInterceptor;
 public class ChatConfig implements WebSocketMessageBrokerConfigurer {
 
     private final WebSocketJwtAuthInterceptor jwtAuthInterceptor;
+    private final WebSocketSecurityInterceptor securityInterceptor;
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
@@ -25,13 +27,12 @@ public class ChatConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
-        registry.setApplicationDestinationPrefixes("/websocket");
         registry.enableSimpleBroker("/subscribe", "/queue");
     }
 
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
-        registration.interceptors(jwtAuthInterceptor);
+        registration.interceptors(jwtAuthInterceptor).interceptors(securityInterceptor);
     }
 
 }

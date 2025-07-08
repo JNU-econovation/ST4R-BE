@@ -13,26 +13,28 @@ import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 import star.common.security.dto.StarUserDetails;
 import star.team.chat.dto.request.ChatRequest;
 import star.team.chat.dto.response.ChatResponse;
-import star.team.chat.service.ChatService;
+import star.team.chat.service.ChatCoordinateService;
+
 
 @Controller
 @Slf4j
 @RequiredArgsConstructor
 public class ChatWebSocketController {
 
-    private final ChatService service;
+    private final ChatCoordinateService service;
 
     @MessageMapping("/broadcast/{teamId}")
     @SendTo("/subscribe/{teamId}")
     public ChatResponse receiveMessage(
             @AuthenticationPrincipal StarUserDetails userDetails,
-            @DestinationVariable("teamId") Long teamId,
-            ChatRequest request) {
+            @DestinationVariable Long teamId,
+            ChatRequest request
+    ) {
 
         //todo: for debugging
         log.info("receiveMessage: teamId={}, request={}", teamId, request);
 
-        return service.saveChat(teamId, request, userDetails.getMemberInfoDTO());
+        return service.saveChatRedis(teamId, request, userDetails.getMemberInfoDTO());
     }
 
     @EventListener

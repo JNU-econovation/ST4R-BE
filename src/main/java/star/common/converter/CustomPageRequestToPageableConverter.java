@@ -24,7 +24,7 @@ public class CustomPageRequestToPageableConverter implements Converter<CustomPag
     public Pageable convert(CustomPageRequest request) {
         Integer page = Optional.ofNullable(request.page()).orElse(0);
         Integer size = Optional.ofNullable(request.size()).orElse(10);
-        String directionString = Optional.ofNullable(request.direction()).orElse("desc");
+        String directionString = Optional.ofNullable(request.direction()).orElse("asc");
         String requestFieldString = Optional.ofNullable(request.sort())
                 .orElse(SortField.CREATED_AT.getRequestField());
 
