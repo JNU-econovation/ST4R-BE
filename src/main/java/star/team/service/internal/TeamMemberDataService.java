@@ -51,6 +51,16 @@ public class TeamMemberDataService {
     }
 
     @Transactional(readOnly = true)
+    public List<Long> getAllMemberIdInTeam(Long teamId) {
+        return teamMemberRepository.getAllMemberIdInTeam(teamId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Long> getAllTeamIdByMemberId(Long memberId) {
+        return teamMemberRepository.getTeamIdsByMemberId(memberId);
+    }
+
+    @Transactional(readOnly = true)
     public boolean existsTeamMember(Long teamId, Long memberId) {
         return teamMemberRepository.existsByTeamIdAndMemberId(teamId, memberId);
     }

@@ -2,6 +2,7 @@ package star.team.repository;
 
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import star.team.model.entity.TeamMember;
 
@@ -14,9 +15,14 @@ public interface TeamMemberRepository extends JpaRepository<TeamMember, Long> {
 
     void deleteTeamMembersByTeamId(Long teamId);
 
-    void deleteTeamMembersByTeamIdAndMemberId(Long teamId, Long memberId);
 
     boolean existsByTeamIdAndMemberId(Long teamId, Long memberId);
 
     List<TeamMember> getByTeamIdAndIsBanned(Long teamId, boolean b);
+
+    @Query("SELECT tm.member.id FROM TeamMember tm WHERE tm.team.id = :teamId")
+    List<Long> getAllMemberIdInTeam(Long teamId);
+
+    @Query("SELECT tm.team.id FROM TeamMember tm WHERE tm.member.id = :memberId")
+    List<Long> getTeamIdsByMemberId(Long memberId);
 }

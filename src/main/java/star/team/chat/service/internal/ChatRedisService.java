@@ -1,11 +1,14 @@
 package star.team.chat.service.internal;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.Cursor;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ScanOptions;
 import org.springframework.stereotype.Service;
 import star.team.chat.config.ChatRedisProperties;
 import star.team.chat.dto.ChatDTO;
@@ -29,7 +32,7 @@ public class ChatRedisService {
     //마지막으로 읽은 time 조회
     public LocalDateTime getLastReadTime(Long teamId, Long memberId) {
         String key = buildReadKey(teamId, memberId);
-        LocalDateTime value = (LocalDateTime) localDateTimeRedisTemplate.opsForValue().get(key);
+        LocalDateTime value = localDateTimeRedisTemplate.opsForValue().get(key);
 
         return value != null ? value : LocalDateTime.MIN;
     }
@@ -70,15 +73,28 @@ public class ChatRedisService {
         return chatDTORedisTemplate.opsForList().range(key, start, end);
     }
 
-    public Integer countReaders(Long teamId, ChatDTO chat, List<Long> allMemberIds) {
+    public Integer countReaders(ChatDTO chat, List<Long> allMemberIds) {
         int count = 0;
         for (Long memberId : allMemberIds) {
-            LocalDateTime readTime = getLastReadTime(teamId, memberId);
+            LocalDateTime readTime = getLastReadTime(chat.teamId(), memberId);
             if (readTime.isAfter(chat.chattedAt()) || readTime.isEqual(chat.chattedAt())) {
                 count++;
             }
         }
         return count;
+    }
+
+    public Long countUnreadMessages(Long teamId, LocalDateTime lastReadAt) {
+        String key = buildChatKey(teamId);
+        List<ChatDTO> chats = chatDTORedisTemplate.opsForList().range(key, 0, -1);
+
+        if (chats == null) {
+            return 0L;
+        }
+
+        return chats.stream()
+                .filter(chat -> chat.chattedAt().isAfter(lastReadAt))
+                .count();
     }
 
     public Long updateChatWithDbIdMap(Map<Long, Map<Long, ChatDTO>> teamRedisChatMap) {
@@ -122,11 +138,16 @@ public class ChatRedisService {
         longRedisTemplate.delete(messageIdKey);
 
         String pattern = "read:chat:" + teamId + ":*";
+        List<String> keysToDelete = new ArrayList<>();
+        ScanOptions scanOptions = ScanOptions.scanOptions()
+                .match(pattern).count(1000).build();
 
-        // keys()로 패턴에 맞는 키 모두 조회
-        var keys = longRedisTemplate.keys(pattern);
-        if (!keys.isEmpty()) {
-            localDateTimeRedisTemplate.delete(keys);
+        try (Cursor<String> cursor = localDateTimeRedisTemplate.scan(scanOptions)) {
+            cursor.forEachRemaining(keysToDelete::add);
+        }
+
+        if (!keysToDelete.isEmpty()) {
+            localDateTimeRedisTemplate.delete(keysToDelete);
         }
     }
 

@@ -77,11 +77,15 @@ public class BoardService extends BaseRetryRecoverService {
         Page<Board> boardsPage = boardRepository.searchBoards(searchDTO, pageable);
 
         List<BoardPeekDTO> boardPeekDTOs = boardsPage.getContent().stream()
-                .map(board -> BoardPeekDTO.from(
-                        board,
-                        boardImageService.getImageUrls(board.getId()).getFirst().imageUrl(),
-                        boardHeartService.hasHearted(viewerId, board.getId())
-                )).toList();
+                .map(board -> {
+                    List<BoardImageDTO> images = boardImageService.getImageUrls(board.getId());
+                    String thumbnailUrl = images.isEmpty() ? null : images.getFirst().imageUrl();
+                    return BoardPeekDTO.from(
+                            board,
+                            thumbnailUrl,
+                            boardHeartService.hasHearted(viewerId, board.getId())
+                    );
+                }).toList();
 
         return new PageImpl<>(boardPeekDTOs, pageable, boardsPage.getTotalElements());
     }
