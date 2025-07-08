@@ -27,8 +27,9 @@ public class ChatWebSocketController {
     @SendTo("/subscribe/{teamId}")
     public ChatResponse receiveMessage(
             @AuthenticationPrincipal StarUserDetails userDetails,
-            @DestinationVariable("teamId") Long teamId,
-            ChatRequest request) {
+            @DestinationVariable Long teamId,
+            ChatRequest request
+    ) {
 
         //todo: for debugging
         log.info("receiveMessage: teamId={}, request={}", teamId, request);
