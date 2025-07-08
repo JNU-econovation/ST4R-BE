@@ -45,7 +45,6 @@ public class ChatCoordinateService {
             MemberInfoDTO memberInfoDTO) {
         LocalDateTime chattedAt = LocalDateTime.now();
 
-        redisService.markAsRead(teamId, memberInfoDTO.id(), chattedAt);
 
         ChatDTO chat = ChatDTO.builder()
                 .teamId(teamId)
@@ -54,7 +53,11 @@ public class ChatCoordinateService {
                 .message(Message.builder().value(request.message()).build())
                 .build();
 
+        //채팅을 저장한다.
         ChatDTO redisChat = redisService.saveMessage(teamId, chat);
+
+        //채팅을 읽는다.
+        redisService.markAsRead(teamId, memberInfoDTO.id(), chattedAt);
 
         return ChatResponse.from(redisChat);
     }
