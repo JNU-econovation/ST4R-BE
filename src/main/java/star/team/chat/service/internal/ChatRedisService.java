@@ -84,6 +84,19 @@ public class ChatRedisService {
         return count;
     }
 
+    public Long countUnreadMessages(Long teamId, LocalDateTime lastReadAt) {
+        String key = buildChatKey(teamId);
+        List<ChatDTO> chats = chatDTORedisTemplate.opsForList().range(key, 0, -1);
+
+        if (chats == null) {
+            return 0L;
+        }
+
+        return chats.stream()
+                .filter(chat -> chat.chattedAt().isAfter(lastReadAt))
+                .count();
+    }
+
     public Long updateChatWithDbIdMap(Map<Long, Map<Long, ChatDTO>> teamRedisChatMap) {
         Long count = 0L;
 
