@@ -3,8 +3,9 @@ package star.team.chat.dto.response;
 import lombok.Builder;
 
 @Builder
-public record UnreadChatCountsResponse(
+public record ChatPreviewResponse(
         Long teamId,
-        Long unreadCount
+        Long unreadCount,
+        String recentMessage
 ) {
 }
