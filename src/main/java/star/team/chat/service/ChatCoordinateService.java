@@ -106,7 +106,7 @@ public class ChatCoordinateService {
                     String recentMessage;
 
                     // 1. Redis에서 모든 채팅을 가져오기
-                    List<ChatDTO> redisChats = redisService.getChats(teamId, 0, -1, true);
+                    List<ChatDTO> redisChats = redisService.getChats(teamId, 0, 0, true);
 
                     // 1-1 가장 최근 채팅 가져오기
                     recentMessage = redisChats.isEmpty() ? null
@@ -214,6 +214,10 @@ public class ChatCoordinateService {
 
             int redisChatReadSize = redisChatReads.size();
             int dbNeedCount = pageable.getPageSize() - redisChatReadSize;
+
+            if (dbNeedCount > dbChatReads.size()) {
+                dbNeedCount = dbChatReads.size(); // DB 데이터가 부족하면 전부 사용
+            }
 
             resultChatReads.addAll(redisChatReads);
             resultChatReads.addAll(dbChatReads.subList(0, dbNeedCount));
