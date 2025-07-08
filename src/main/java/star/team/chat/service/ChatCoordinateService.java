@@ -126,9 +126,8 @@ public class ChatCoordinateService {
 
             Map<Long, LocalDateTime> lastReadTimeMap = new HashMap<>();
 
-            allMemberIdsInTeam.forEach(memberId -> {
-                        lastReadTimeMap.put(memberId, redisService.getLastReadTime(teamId, memberId));
-                    }
+            allMemberIdsInTeam.forEach(memberId -> lastReadTimeMap.put(memberId,
+                    redisService.getLastReadTime(teamId, memberId))
             );
 
             List<ChatDTO> pureDbChats =
