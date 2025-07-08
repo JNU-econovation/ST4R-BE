@@ -1,5 +1,7 @@
 package star.team.chat.repository;
 
+import java.time.LocalDateTime;
+import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,4 +13,8 @@ public interface ChatRepository extends JpaRepository<Chat, Long> {
     Page<Chat> getChatsByTeamMemberTeamId(Long teamId, Pageable pageable);
 
     void deleteChatsByTeamMemberTeamId(Long teamId);
+
+    Optional<Chat> getChatById(Long id);
+
+    boolean existsByIdAndChattedAtBefore(Long id, LocalDateTime readTime);
 }
