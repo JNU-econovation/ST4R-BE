@@ -26,7 +26,7 @@ public class ChatHistoryController {
     public ResponseEntity<Slice<ChatResponse>> getChatHistory(
             @PathVariable Long teamId,
             @AuthenticationPrincipal StarUserDetails userDetails,
-            @ResolvePageable(allowed = {SortField.CREATED_AT}) Pageable pageable
+            @ResolvePageable(allowed = {SortField.CHATTED_AT}) Pageable pageable
     ) {
 
         return ResponseEntity.ok(

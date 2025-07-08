@@ -28,6 +28,7 @@ import star.team.dto.request.JoinTeamRequest;
 import star.team.dto.request.TeamLeaderDelegateRequest;
 import star.team.dto.request.TeamMemberUnbanRequest;
 import star.team.dto.request.UpdateTeamRequest;
+import star.team.dto.response.GetMyTeamsResponse;
 import star.team.dto.response.GetTeamsResponse;
 import star.team.dto.response.TeamDetailsResponse;
 import star.team.dto.response.TeamMembersResponse;
@@ -180,6 +181,18 @@ public class TeamCoordinateService {
         }
 
         return teamMemberDataService.getTeamMemberEntityByIds(teamId, memberId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<GetMyTeamsResponse> getMyTeams(MemberInfoDTO memberInfoDTO) {
+
+        return teamMemberDataService.getTeamsByMemberId(memberInfoDTO.id())
+                .stream().map(team -> {
+                    List<String> imageUrls = teamImageDataService.getImageUrls(team.getId());
+                    return GetMyTeamsResponse.from(
+                            team, imageUrls.isEmpty() ? null : imageUrls.getFirst()
+                    );
+                }).toList();
     }
 
     @Transactional

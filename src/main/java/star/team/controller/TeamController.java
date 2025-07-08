@@ -3,6 +3,7 @@ package star.team.controller;
 import jakarta.annotation.Nullable;
 import jakarta.validation.Valid;
 import java.net.URI;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,11 +22,12 @@ import star.common.constants.SortField;
 import star.common.dto.response.CommonResponse;
 import star.common.security.dto.StarUserDetails;
 import star.member.dto.MemberInfoDTO;
-import star.team.dto.request.GetTeamsRequest;
 import star.team.dto.request.CreateTeamRequest;
+import star.team.dto.request.GetTeamsRequest;
 import star.team.dto.request.UpdateTeamRequest;
-import star.team.dto.response.TeamDetailsResponse;
+import star.team.dto.response.GetMyTeamsResponse;
 import star.team.dto.response.GetTeamsResponse;
+import star.team.dto.response.TeamDetailsResponse;
 import star.team.service.TeamCoordinateService;
 
 @RestController
@@ -57,6 +59,13 @@ public class TeamController {
         MemberInfoDTO memberInfoDTO = (userDetails != null) ? userDetails.getMemberInfoDTO() : null;
 
         return ResponseEntity.ok(service.getTeams(memberInfoDTO, request, pageable));
+    }
+
+    @GetMapping("/my")
+    public ResponseEntity<List<GetMyTeamsResponse>> getMyTeams(
+            @AuthenticationPrincipal StarUserDetails userDetails
+    ) {
+        return ResponseEntity.ok(service.getMyTeams(userDetails.getMemberInfoDTO()));
     }
 
     @GetMapping("/{teamId}")
