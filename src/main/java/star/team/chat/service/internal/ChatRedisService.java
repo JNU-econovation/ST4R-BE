@@ -126,11 +126,10 @@ public class ChatRedisService {
 
         String pattern = "read:chat:" + teamId + ":*";
         List<String> keysToDelete = new ArrayList<>();
+        ScanOptions scanOptions = ScanOptions.scanOptions().match(pattern).count(1000).build();
 
-        // SCAN을 사용하여 안전하게 키 조회
-        try (Cursor<byte[]> cursor = longRedisTemplate.getConnectionFactory().getConnection()
-                .scan(ScanOptions.scanOptions().match(pattern).count(1000).build())) {
-            cursor.forEachRemaining(key -> keysToDelete.add(new String(key)));
+        try (Cursor<String> cursor = longRedisTemplate.scan(scanOptions)) {
+            cursor.forEachRemaining(keysToDelete::add);
         }
 
         if (!keysToDelete.isEmpty()) {
