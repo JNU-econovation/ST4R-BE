@@ -1,35 +1,28 @@
 package star.team.chat.service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
-import org.springframework.data.domain.Sort;
-import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import star.member.dto.MemberInfoDTO;
-import star.team.chat.config.ChatRedisProperties;
 import star.team.chat.dto.ChatDTO;
 import star.team.chat.dto.request.ChatRequest;
+import star.team.chat.dto.response.ChatPreviewResponse;
 import star.team.chat.dto.response.ChatReadResponse;
 import star.team.chat.dto.response.ChatResponse;
-import star.team.chat.dto.response.ChatPreviewResponse;
-import star.team.chat.exception.server.RedisRangeExceededException;
-import star.team.chat.model.vo.Message;
 import star.team.chat.service.internal.ChatDataService;
 import star.team.chat.service.internal.ChatRedisService;
-import star.team.service.internal.TeamDataService;
+import star.team.chat.service.internal.RedisChatPublisher;
 import star.team.service.internal.TeamMemberDataService;
 
 @Service
@@ -37,194 +30,111 @@ import star.team.service.internal.TeamMemberDataService;
 @RequiredArgsConstructor
 public class ChatCoordinateService {
 
+    private static final Long ONE_MILLI_SECOND = 1_000_000L;
+
     private final ChatDataService chatDataService;
     private final ChatRedisService redisService;
-    private final TeamDataService teamDataService;
-    private final ChatRedisProperties chatRedisProperties;
     private final TeamMemberDataService teamMemberDataService;
+    private final RedisChatPublisher chatPublisher;
+    private final ChannelTopic channelTopic;
+    private final ChannelTopic previewChannelTopic;
 
-    public ChatResponse saveChatRedis(Long teamId, ChatRequest request,
-            MemberInfoDTO memberInfoDTO) {
-        LocalDateTime chattedAt = LocalDateTime.now();
 
-        ChatDTO chat = ChatDTO.builder()
-                .teamId(teamId)
-                .memberInfo(memberInfoDTO)
-                .chattedAt(chattedAt)
-                .message(Message.builder().value(request.message()).build())
-                .build();
 
-        //채팅을 저장한다.
-        ChatDTO redisChat = redisService.saveMessage(teamId, chat);
+    @Transactional
+    public void publishAndSaveChat(Long teamId, ChatRequest request, MemberInfoDTO memberInfoDTO) {
 
-        //채팅을 읽는다.
-        redisService.markAsRead(teamId, memberInfoDTO.id(), chattedAt);
+        // DB에 채팅 저장 todo: 비동기로 하기
+        ChatDTO savedChatDTO = chatDataService.saveChat(teamId, memberInfoDTO.id(),
+                request.message());
 
-        return ChatResponse.from(redisChat);
+        chatPublisher.publishChat(channelTopic, ChatResponse.from(savedChatDTO));
+
+        redisService.markAsRead(teamId, memberInfoDTO.id(),
+                savedChatDTO.chattedAt().plusNanos(ONE_MILLI_SECOND));
+
+        publishPreviewToAllMembers(teamId, savedChatDTO);
     }
 
 
+    @Transactional(readOnly = true)
     public Slice<ChatResponse> getChatHistory(Long teamId, MemberInfoDTO memberInfoDTO,
             Pageable pageable) {
 
-        try {
-            List<ChatResponse> chatResponseList = redisService.getChats(
-                            teamId, pageable.getPageNumber(), pageable.getPageSize(), false
-                    )
-                    .stream()
-                    .map(ChatResponse::from)
-                    .toList();
+        Page<ChatDTO> chatPage = chatDataService.getChatHistory(teamId, memberInfoDTO, pageable);
 
-            return new SliceImpl<>(
-                    chatResponseList, pageable, chatResponseList.size() >= pageable.getPageSize()
-            );
+        List<ChatResponse> chatResponses = chatPage.getContent().stream()
+                .map(ChatResponse::from)
+                .toList();
 
-        } catch (RedisRangeExceededException e) {
-            List<ChatDTO> redisChatDTOs = e.getRedisChats();
-
-            Page<ChatDTO> chatMessageInDb =
-                    chatDataService.getChatHistory(teamId, memberInfoDTO, pageable);
-
-            return mergeRedisAndDbChats(
-                    redisChatDTOs, chatMessageInDb, pageable.getPageSize(), pageable
-            );
-        }
+        return new SliceImpl<>(chatResponses, pageable, chatPage.hasNext());
     }
 
     public void markAsRead(Long teamId, MemberInfoDTO memberInfoDTO) {
         redisService.markAsRead(teamId, memberInfoDTO.id(), LocalDateTime.now());
     }
 
-    public List<ChatPreviewResponse> getPreview(MemberInfoDTO memberInfoDTO) {
-        List<Long> teamIds = teamMemberDataService.getAllTeamIdByMemberId(memberInfoDTO.id());
+    @Transactional(readOnly = true)
+    public Slice<ChatReadResponse> getReadCounts(
+            Long teamId, MemberInfoDTO memberInfoDTO, Pageable pageable
+    ) {
+        List<Long> allMemberIdsInTeam = teamMemberDataService.getAllMemberIdInTeam(teamId);
 
-        return teamIds.stream().map(
-                teamId -> {
-                    LocalDateTime lastReadAt = redisService.getLastReadTime(teamId,
-                            memberInfoDTO.id());
+        Map<Long, LocalDateTime> lastReadTimeMap = allMemberIdsInTeam.stream()
+                .collect(
+                        Collectors.toMap(
+                                memberId -> memberId,
+                                memberId -> redisService.getLastReadTime(teamId, memberId)
+                        )
+                );
 
-                    String recentMessage;
+        Page<ChatDTO> chatPage = chatDataService.getChatHistory(teamId, memberInfoDTO, pageable);
 
-                    // 1. Redis에서 모든 채팅을 가져오기
-                    List<ChatDTO> redisChats = redisService.getChats(teamId, 0, 0, true);
+        List<ChatReadResponse> resultChatReads = chatPage.getContent().stream()
+                .map(chatDTO ->
+                        ChatReadResponse.from(
+                                chatDTO,
+                                chatDataService.countReaders(chatDTO, lastReadTimeMap)
+                        )
+                ).toList();
 
-                    // 1-1 가장 최근 채팅 가져오기
-                    recentMessage = redisChats.isEmpty() ? null
-                            : redisChats.getFirst().message().getValue();
-
-                    // 2. Redis에서 안 읽은 채팅 수를 계산하기
-                    Long unreadInRedis = redisChats.stream()
-                            .filter(chat -> chat.chattedAt().isAfter(lastReadAt))
-                            .count();
-
-                    // 3. Redis에 있는 모든 채팅의 redisId를 추출하기
-                    Set<Long> redisIdsToExclude = redisChats.stream()
-                            .map(ChatDTO::chatRedisId)
-                            .collect(Collectors.toSet());
-
-                    // 4. DB에서 Redis에 없는 안 읽은 채팅만 계산하기
-                    Long unreadInDb = chatDataService.getUnreadChatCount(teamId, lastReadAt,
-                            redisIdsToExclude);
-
-                    if (recentMessage == null) {
-                        // 4-1. 만약 redis recent chat이 null이면 db에서 가장 최근 채팅 가져오기
-                        Page<ChatDTO> recentChatPage = chatDataService.getChatHistory(
-                                teamId, memberInfoDTO,
-                                PageRequest.of(
-                                        0, 1, Sort.by(Sort.Direction.DESC, "chattedAt"
-                                        )
-                                )
-                        );
-
-                        if (!recentChatPage.getContent().isEmpty()) {
-                            recentMessage = recentChatPage.getContent().getFirst()
-                                    .message().getValue();
-                        }
-                    }
-
-                    return ChatPreviewResponse.builder()
-                            .teamId(teamId)
-                            .recentMessage(recentMessage)
-                            .unreadCount(unreadInRedis + unreadInDb)
-                            .build();
-                }
-        ).toList();
+        return new SliceImpl<>(resultChatReads, pageable, chatPage.hasNext());
     }
 
-    public Slice<ChatReadResponse> getReadCountsByRedisOrDb(Long teamId,
-            MemberInfoDTO memberInfoDTO,
-            Pageable pageable) {
+    @Transactional(readOnly = true)
+    public List<ChatPreviewResponse> getPreviewForInitialLoading(MemberInfoDTO memberInfoDTO) {
 
-        List<Long> allMemberIdsInTeam = teamMemberDataService.getAllMemberIdInTeam(teamId);
-        List<ChatReadResponse> resultChatReads = new ArrayList<>();
+        List<Long> allTeamIds = teamMemberDataService.getAllTeamIdByMemberId(memberInfoDTO.id());
 
-        boolean hasNext;
+        Map<Long, LocalDateTime> teamIdLastReadTimeMap = allTeamIds.stream()
+                .collect(
+                        Collectors.toMap(
+                                teamId -> teamId,
+                                teamId -> redisService.getLastReadTime(teamId, memberInfoDTO.id())
+                        )
+                );
 
-        try {
-            // Redis에서 채팅 조회
-            List<ChatDTO> redisChats = redisService.getChats(teamId, pageable.getPageNumber(),
-                    pageable.getPageSize(), false);
+        return teamIdLastReadTimeMap.entrySet().stream()
+                .map(
+                        entry -> {
+                            Long teamId = entry.getKey();
+                            LocalDateTime lastReadTime = entry.getValue();
+                            Optional<ChatDTO> recentChat =
+                                    chatDataService.getRecentChat(teamId, memberInfoDTO);
 
-            List<ChatReadResponse> chatReads = redisChats.stream()
-                    .map(chatDTO ->
-                            ChatReadResponse.from(chatDTO,
-                                    redisService.countReaders(chatDTO, allMemberIdsInTeam)
-                            )
-                    ).toList();
-
-            resultChatReads = chatReads;
-            hasNext = chatReads.size() >= pageable.getPageSize();
-
-        } catch (RedisRangeExceededException e) {
-            // Redis에서 못 찾으면 DB 조회
-            List<ChatDTO> redisChats = e.getRedisChats();
-
-            List<ChatReadResponse> redisChatReads = redisChats.stream()
-                    .map(chatDTO ->
-                            ChatReadResponse.from(
-                                    chatDTO,
-                                    redisService.countReaders(chatDTO, allMemberIdsInTeam
+                            return ChatPreviewResponse.builder()
+                                    .teamId(teamId)
+                                    .targetMemberId(memberInfoDTO.id())
+                                    .unreadCount(chatDataService.getUnreadChatCount(teamId,
+                                            lastReadTime))
+                                    .recentMessage(
+                                            recentChat.map(chatDTO -> chatDTO.message().getValue())
+                                                    .orElse(null)
                                     )
-                            )
-                    ).toList();
-
-            Map<Long, LocalDateTime> lastReadTimeMap = new HashMap<>();
-
-            allMemberIdsInTeam.forEach(memberId -> lastReadTimeMap.put(memberId,
-                    redisService.getLastReadTime(teamId, memberId))
-            );
-
-            List<ChatDTO> pureDbChats =
-                    chatDataService.getChatHistory(teamId, memberInfoDTO, pageable)
-                            .stream()
-                            .filter(chat -> redisChats.stream()
-                                    .noneMatch(rc -> rc.chatRedisId()
-                                            .equals(chat.chatRedisId())
-                                    )
-                            )
-                            .toList();
-
-            List<ChatReadResponse> dbChatReads = pureDbChats.stream()
-                    .map(chatDTO ->
-                            ChatReadResponse.from(
-                                    chatDTO,
-                                    chatDataService.countReaders(chatDTO, lastReadTimeMap)
-                            )
-                    ).toList();
-
-            int redisChatReadSize = redisChatReads.size();
-            int dbNeedCount = pageable.getPageSize() - redisChatReadSize;
-
-            if (dbNeedCount > dbChatReads.size()) {
-                dbNeedCount = dbChatReads.size(); // DB 데이터가 부족하면 전부 사용
-            }
-
-            resultChatReads.addAll(redisChatReads);
-            resultChatReads.addAll(dbChatReads.subList(0, dbNeedCount));
-            hasNext = dbChatReads.size() > dbNeedCount;
-        }
-
-        return new SliceImpl<>(resultChatReads, pageable, hasNext);
+                                    .build();
+                        }
+                )
+                .toList();
     }
 
     @Transactional
@@ -233,65 +143,20 @@ public class ChatCoordinateService {
         chatDataService.deleteChats(teamId);
     }
 
-    @Transactional
-    @Scheduled(fixedRate = 600000)
-    public void syncChatsFromRedisToDb() {
-        List<Long> teamIds = teamDataService.getAllTeamIds();
-        List<ChatDTO> redisChatsToSync = new ArrayList<>();
 
-        for (Long teamId : teamIds) {
-            List<ChatDTO> redisChats = redisService.getChats(teamId, 0,
-                    chatRedisProperties.getSyncSize(), true);
+    private void publishPreviewToAllMembers(Long teamId, ChatDTO savedChatDTO) {
+        List<Long> allMemberIdsInTeam = teamMemberDataService.getAllMemberIdInTeam(teamId);
 
-            for (ChatDTO redisChat : redisChats) {
+        allMemberIdsInTeam.forEach(memberId -> {
+            LocalDateTime lastReadTime = redisService.getLastReadTime(teamId, memberId);
+            ChatPreviewResponse previewResponse = ChatPreviewResponse.builder()
+                    .teamId(teamId)
+                    .targetMemberId(memberId)
+                    .unreadCount(chatDataService.getUnreadChatCount(teamId, lastReadTime))
+                    .recentMessage(savedChatDTO.message().getValue())
+                    .build();
 
-                if (redisChat.chatDbId() == null) {
-                    redisChatsToSync.add(redisChat);
-                }
-            }
-        }
-
-        Map<Long, Map<Long, ChatDTO>> teamRedisChatMap = chatDataService.saveChatForSyncToDb(
-                redisChatsToSync);
-
-        Long updatedCount = redisService.updateChatWithDbIdMap(teamRedisChatMap);
-
-        log.info("Redis -> DB 채팅 {}개 동기화 완료", updatedCount);
-
+            chatPublisher.publishChatPreview(previewChannelTopic, previewResponse);
+        });
     }
-
-    private Slice<ChatResponse> mergeRedisAndDbChats(
-            List<ChatDTO> redisChats,
-            Page<ChatDTO> dbPage,
-            int pageSize,
-            Pageable pageable
-    ) {
-        Set<Long> redisIds = redisChats.stream()
-                .map(ChatDTO::chatRedisId)
-                .collect(Collectors.toSet());
-
-        List<ChatDTO> dbChats = dbPage.getContent().stream()
-                .filter(chat -> !redisIds.contains(chat.chatRedisId()))
-                .toList();
-
-        // 필요한 만큼만 DB에서 채워 넣음
-        int dbNeedCount = pageSize - redisChats.size();
-        if (dbNeedCount > dbChats.size()) {
-            dbNeedCount = dbChats.size(); // DB 데이터가 부족하면 전부 사용
-        }
-
-        List<ChatDTO> merged = new ArrayList<>(pageSize);
-        merged.addAll(redisChats);
-        merged.addAll(dbChats.subList(0, dbNeedCount));
-
-        // 변환
-        List<ChatResponse> chatResponses = merged.stream()
-                .map(ChatResponse::from)
-                .toList();
-
-        boolean hasNext = dbChats.size() > dbNeedCount;
-        return new SliceImpl<>(chatResponses, pageable, hasNext);
-    }
-
-
 }

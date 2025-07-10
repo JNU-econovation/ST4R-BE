@@ -1,323 +1,66 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WebSocket Chat Test Client</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 20px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      min-height: 100vh;
-    }
-    .container {
-      background: white;
-      border-radius: 10px;
-      padding: 20px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    }
-    .status {
-      padding: 10px;
-      border-radius: 5px;
-      margin-bottom: 15px;
-      font-weight: bold;
-    }
-    .connected { background-color: #d4edda; color: #155724; }
-    .disconnected { background-color: #f8d7da; color: #721c24; }
-    .connecting { background-color: #fff3cd; color: #856404; }
-
-    .form-group {
-      margin-bottom: 15px;
-    }
-    label {
-      display: block;
-      margin-bottom: 5px;
-      font-weight: bold;
-    }
-    input, textarea, button {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 5px;
-      font-size: 14px;
-    }
-    button {
-      background: #007bff;
-      color: white;
-      border: none;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-    button:hover { background: #0056b3; }
-    button:disabled {
-      background: #6c757d;
-      cursor: not-allowed;
-    }
-
-    .messages {
-      height: 300px;
-      overflow-y: auto;
-      border: 1px solid #ddd;
-      padding: 10px;
-      background: #f8f9fa;
-      border-radius: 5px;
-      margin-bottom: 15px;
-    }
-    .message {
-      padding: 8px;
-      margin-bottom: 8px;
-      border-radius: 5px;
-      border-left: 4px solid #007bff;
-      background: white;
-    }
-    .message-time {
-      color: #666;
-      font-size: 12px;
-    }
-    .message-content {
-      font-weight: bold;
-      margin-top: 4px;
-    }
-
-    .controls {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-bottom: 20px;
-    }
-
-    .send-section {
-      border-top: 2px solid #eee;
-      padding-top: 20px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>WebSocket Chat & Preview Test</title>
+    <link rel="stylesheet" href="chatTest.css">
 </head>
 <body>
 <div class="container">
-  <h1>🚀 WebSocket Chat Test Client</h1>
-
-  <div id="status" class="status disconnected">
-    연결 안됨
-  </div>
-
-  <div class="form-group">
-    <label for="serverUrl">서버 URL:</label>
-    <input type="text" id="serverUrl" value="http://" placeholder="WebSocket 서버 URL">
-  </div>
-
-  <div class="form-group">
-    <label for="jwtToken">JWT 토큰:</label>
-    <input type="text" id="jwtToken" placeholder="Bearer 토큰을 입력하세요">
-  </div>
-
-  <div class="controls">
-    <button id="connectBtn" onclick="connect()">연결</button>
-    <button id="disconnectBtn" onclick="disconnect()" disabled>연결 해제</button>
-  </div>
-
-  <div class="form-group">
-    <label for="subscribeDestination">구독할 목적지:</label>
-    <input type="text" id="subscribeDestination" value="/subscribe/" placeholder="예: /websocket/subscribe/1">
-    <button onclick="subscribe()" id="subscribeBtn" disabled style="margin-top: 5px;">구독</button>
-  </div>
-
-  <div class="form-group">
-    <label>받은 메시지:</label>
-    <div id="messages" class="messages"></div>
-  </div>
-
-  <div class="send-section">
-    <div class="form-group">
-      <label for="destination">전송할 목적지:</label>
-      <input type="text" id="destination" value="/broadcast/" placeholder="예: /websocket/broadcast/1">
+    <h1>WebSocket Chat & Preview Test</h1>
+    <div class="grid">
+        <div class="panel">
+            <h2>Connection</h2>
+            <div id="status" class="status disconnected">Disconnected</div>
+            <div class="form-group">
+                <label for="serverUrl">Server URL</label>
+                <input type="text" id="serverUrl" value="http://localhost:8080/websocket/connect">
+            </div>
+            <div class="form-group">
+                <label for="jwtToken">JWT Token</label>
+                <input type="text" id="jwtToken" placeholder="Enter Bearer token">
+            </div>
+            <div class="form-group">
+                <label for="previewDestination">Preview Subscribe URL</label>
+                <input type="text" id="previewDestination" value="/member/queue/previews">
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <button id="connectBtn" onclick="connect()">Connect</button>
+                <button id="disconnectBtn" onclick="disconnect()" disabled>Disconnect</button>
+            </div>
+        </div>
+        <div class="panel">
+            <h2>Chat Preview</h2>
+            <div id="preview-log" class="preview-log">Awaiting preview data...</div>
+        </div>
     </div>
 
-    <div class="form-group">
-      <label for="messageContent">메시지 내용:</label>
-      <textarea id="messageContent" rows="3" placeholder="전송할 메시지를 입력하세요"></textarea>
+    <div class="panel" style="margin-top: 2rem;">
+        <h2>Manual Test</h2>
+        <div class="grid">
+            <div class="form-group">
+                <label for="subscribeDestination">Subscribe Destination</label>
+                <input type="text" id="subscribeDestination" value="/subscribe/">
+                <button id="subscribeBtn" style="margin-top: .5rem;" disabled>Subscribe</button>
+            </div>
+            <div class="form-group">
+                <label for="publishDestination">Publish Destination</label>
+                <input type="text" id="publishDestination" value="/broadcast/">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="messageContent">Message</label>
+            <textarea id="messageContent" rows="3" placeholder="Enter message to send"></textarea>
+        </div>
+        <button id="sendBtn" onclick="sendMessage()" disabled>Send Message</button>
+        <h3 style="margin-top: 2rem;">Log</h3>
+        <div id="messages" class="messages"></div>
     </div>
-
-    <button onclick="sendMessage()" id="sendBtn" disabled>메시지 전송</button>
-  </div>
 </div>
 
-<script>
-  let stompClient = null;
-  let isConnected = false;
-
-  function updateStatus(status, className) {
-    const statusDiv = document.getElementById('status');
-    statusDiv.textContent = status;
-    statusDiv.className = `status ${className}`;
-  }
-
-  function updateButtons() {
-    document.getElementById('connectBtn').disabled = isConnected;
-    document.getElementById('disconnectBtn').disabled = !isConnected;
-    document.getElementById('subscribeBtn').disabled = !isConnected;
-    document.getElementById('sendBtn').disabled = !isConnected;
-  }
-
-  function connect() {
-    const serverUrl = document.getElementById('serverUrl').value;
-    const jwtToken = document.getElementById('jwtToken').value;
-
-    if (!serverUrl) {
-      alert('서버 URL을 입력해주세요.');
-      return;
-    }
-
-    updateStatus('연결 중...', 'connecting');
-
-    try {
-
-      const socket = new SockJS(serverUrl);
-      stompClient = Stomp.over(socket);
-
-      // JWT 토큰이 있는 경우 헤더에 추가
-      const connectHeaders = {};
-      if (jwtToken) {
-        connectHeaders['Authorization'] = jwtToken.startsWith('Bearer ') ? jwtToken : `Bearer ${jwtToken}`;
-      }
-
-      stompClient.connect(connectHeaders,
-          function(frame) {
-            console.log('Connected: ' + frame);
-            isConnected = true;
-            updateStatus('연결됨', 'connected');
-            updateButtons();
-            addMessage('시스템', '서버에 연결되었습니다.');
-          },
-          function(error) {
-            console.log('Connection error: ' + error);
-            isConnected = false;
-            updateStatus('연결 실패', 'disconnected');
-            updateButtons();
-            addMessage('시스템', `연결 실패: ${error}`);
-          }
-      );
-
-      // 연결 해제 시 처리
-      socket.onclose = function() {
-        if (isConnected) {
-          isConnected = false;
-          updateStatus('연결 해제됨', 'disconnected');
-          updateButtons();
-          addMessage('시스템', '서버와의 연결이 해제되었습니다.');
-        }
-      };
-
-    } catch (error) {
-      console.error('Connection error:', error);
-      updateStatus('연결 실패', 'disconnected');
-      addMessage('시스템', `연결 오류: ${error.message}`);
-    }
-  }
-
-  function disconnect() {
-    if (stompClient !== null && isConnected) {
-      stompClient.disconnect(function() {
-        console.log('Disconnected');
-        isConnected = false;
-        updateStatus('연결 해제됨', 'disconnected');
-        updateButtons();
-        addMessage('시스템', '연결을 해제했습니다.');
-      });
-    }
-  }
-
-  function subscribe() {
-    const destination = document.getElementById('subscribeDestination').value;
-
-    if (!destination) {
-      alert('구독할 목적지를 입력해주세요.');
-      return;
-    }
-
-    if (stompClient && isConnected) {
-      try {
-        stompClient.subscribe(destination, function(message) {
-          console.log('Received message:', message);
-          const messageBody = message.body;
-          addMessage('수신', messageBody, destination);
-        });
-        addMessage('시스템', `"${destination}"를 구독했습니다.`);
-      } catch (error) {
-        console.error('Subscribe error:', error);
-        addMessage('시스템', `구독 실패: ${error.message}`);
-      }
-    }
-  }
-
-  function sendMessage() {
-    const destination = document.getElementById('destination').value;
-    const content = document.getElementById('messageContent').value;
-
-    if (!destination || !content) {
-      alert('목적지와 메시지 내용을 모두 입력해주세요.');
-      return;
-    }
-
-    if (stompClient && isConnected) {
-      try {
-        // 메시지를 JSON 형태로 전송
-        const messagePayload = {
-          message: content,
-          timestamp: new Date().toISOString(),
-          sender: 'TestClient'
-        };
-
-        stompClient.send(destination, {}, JSON.stringify(messagePayload));
-        addMessage('전송', content, destination);
-        document.getElementById('messageContent').value = '';
-      } catch (error) {
-        console.error('Send error:', error);
-        addMessage('시스템', `전송 실패: ${error.message}`);
-      }
-    }
-  }
-
-  function addMessage(type, content, destination = '') {
-    const messagesDiv = document.getElementById('messages');
-    const messageDiv = document.createElement('div');
-    messageDiv.className = 'message';
-
-    const now = new Date();
-    const timeString = now.toLocaleTimeString();
-
-    messageDiv.innerHTML = `
-                <div class="message-time">[${timeString}] ${type} ${destination ? `(${destination})` : ''}</div>
-                <div class="message-content">${content}</div>
-            `;
-
-    messagesDiv.appendChild(messageDiv);
-    messagesDiv.scrollTop = messagesDiv.scrollHeight;
-  }
-
-  // 엔터 키로 메시지 전송
-  document.getElementById('messageContent').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
-    }
-  });
-
-  // 페이지 로드 시 초기 상태 설정
-  window.onload = function() {
-    updateButtons();
-  };
-
-  // 페이지 닫힐 때 연결 해제
-  window.onbeforeunload = function() {
-    if (isConnected) {
-      disconnect();
-    }
-  };
-</script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+<script src="chatTest.js"></script>
 </body>
 </html>

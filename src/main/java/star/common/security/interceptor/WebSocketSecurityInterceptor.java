@@ -11,7 +11,6 @@ import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Component;
-import star.common.exception.client.ClientException;
 import star.common.security.dto.StarUserDetails;
 import star.member.dto.MemberInfoDTO;
 import star.team.service.TeamCoordinateService;
@@ -19,9 +18,10 @@ import star.team.service.TeamCoordinateService;
 @Component
 @Slf4j
 public class WebSocketSecurityInterceptor implements ChannelInterceptor {
+    private static final String PREVIEW_URL = "/member/queue/previews";
 
     private static final Pattern ALLOWED_SUBSCRIBE_PATTERN =
-            Pattern.compile("^/subscribe/\\d+(/preview)?$");
+            Pattern.compile("^(?:/subscribe/\\d+|%s)$".formatted(PREVIEW_URL));
 
     private static final Pattern ALLOWED_SEND_PATTERN =
             Pattern.compile("^(/broadcast/\\d+)$");
@@ -30,7 +30,6 @@ public class WebSocketSecurityInterceptor implements ChannelInterceptor {
     public WebSocketSecurityInterceptor(TeamCoordinateService teamCoordinateService) {
         this.teamCoordinateService = teamCoordinateService;
     }
-
 
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
@@ -52,6 +51,10 @@ public class WebSocketSecurityInterceptor implements ChannelInterceptor {
                 throw new MessagingException("허용되지 않은 " + (isSubscribe ? "구독" : "발행") + " URL입니다.");
             }
 
+            if (PREVIEW_URL.equals(destination)) {
+                return message;
+            }
+
             // 1. teamId 추출 (예: /websocket/subscribe/{teamId} or /websocket/broadcast/{teamId})
             Long teamId = extractTeamId(destination);
 
@@ -64,9 +67,7 @@ public class WebSocketSecurityInterceptor implements ChannelInterceptor {
 
             MemberInfoDTO memberInfoDTO = extractMemberInfoFromPrincipal(user);
 
-            try {
-                teamCoordinateService.assertTeamMember(memberInfoDTO, teamId);
-            } catch (ClientException e) {
+            if (!teamCoordinateService.existsTeamMember(teamId, memberInfoDTO.id())) {
                 log.warn("memberInfo={} 는 teamId={} 의 팀원이 아님", memberInfoDTO, teamId);
                 throw new MessagingException("해당 팀에 속하지 않은 사용자입니다.");
             }
@@ -76,7 +77,7 @@ public class WebSocketSecurityInterceptor implements ChannelInterceptor {
     }
 
     private Long extractTeamId(String destination) {
-        /* /websocket/subscribe/123 or /websocket/broadcast/123  */
+        /* /subscribe/123 or /broadcast/123  */
         String[] tokens = destination.split("/");
         try {
             return Long.parseLong(tokens[2]);

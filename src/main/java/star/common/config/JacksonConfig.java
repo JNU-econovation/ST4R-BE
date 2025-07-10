@@ -16,6 +16,7 @@ public class JacksonConfig {
         mapper.registerModule(new JavaTimeModule());
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        mapper.setTimeZone(java.util.TimeZone.getTimeZone("Asia/Seoul"));
         return mapper;
 
     }

@@ -26,9 +26,6 @@ public class Chat extends SoftDeletableEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private Long redisId;
-
     @ManyToOne
     private TeamMember teamMember;
 
@@ -40,9 +37,8 @@ public class Chat extends SoftDeletableEntity {
     private Message message;
 
     @Builder
-    public Chat(TeamMember teamMember, Long redisId, LocalDateTime chattedAt, String message) {
+    public Chat(TeamMember teamMember, LocalDateTime chattedAt, String message) {
         this.teamMember = teamMember;
-        this.redisId = redisId;
         this.chattedAt = chattedAt;
         this.message = new Message(message);
     }
