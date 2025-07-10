@@ -25,16 +25,11 @@ public class ChatReadController {
 
     private final ChatCoordinateService service;
 
-    /**
-     * [최초 로딩용] 사용자가 속한 모든 팀의 채팅방 프리뷰 정보를 조회합니다.
-     * 이 API는 채팅방 목록 화면에 처음 진입할 때 한 번만 호출되어야 합니다.
-     * 이후의 모든 업데이트는 WebSocket PUSH를 통해 실시간으로 이루어집니다.
-     */
     @GetMapping("/chats/preview")
-    public ResponseEntity<List<ChatPreviewResponse>> getPreview(
+    public ResponseEntity<List<ChatPreviewResponse>> getPreviewForInitialLoading(
             @AuthenticationPrincipal StarUserDetails userDetails
     ) {
-        return ResponseEntity.ok(service.       getPreview(userDetails.getMemberInfoDTO()));
+        return ResponseEntity.ok(service.getPreviewForInitialLoading(userDetails.getMemberInfoDTO()));
     }
 
     @GetMapping("/{teamId}/chats/readCounts")

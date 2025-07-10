@@ -102,7 +102,7 @@ public class ChatCoordinateService {
     }
 
     @Transactional(readOnly = true)
-    public List<ChatPreviewResponse> getPreview(MemberInfoDTO memberInfoDTO) {
+    public List<ChatPreviewResponse> getPreviewForInitialLoading(MemberInfoDTO memberInfoDTO) {
 
         List<Long> allTeamIds = teamMemberDataService.getAllTeamIdByMemberId(memberInfoDTO.id());
 
@@ -124,6 +124,7 @@ public class ChatCoordinateService {
 
                             return ChatPreviewResponse.builder()
                                     .teamId(teamId)
+                                    .targetMemberId(memberInfoDTO.id())
                                     .unreadCount(chatDataService.getUnreadChatCount(teamId,
                                             lastReadTime))
                                     .recentMessage(
