@@ -1,4 +1,4 @@
-package star.team.chat.exception;
+package star.team.chat.exception.server;
 
 import java.util.List;
 import lombok.Getter;
