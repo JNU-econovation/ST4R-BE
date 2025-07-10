@@ -102,19 +102,13 @@ public class TeamCoordinateService {
 
         List<GetTeamsResponse> getTeamsResponseList = teams.getContent().stream()
                 .map(
-                        team -> GetTeamsResponse.builder()
-                                .id(team.getId())
-                                .imageUrls(teamImageDataService.getImageUrls(team.getId()))
-                                .name(team.getName().getValue())
-                                .whenToMeet(CommonTimeUtils.convertLocalDateTimeToOffsetDateTime(
-                                        team.getWhenToMeet()))
-                                .location(team.getLocation())
-                                .currentParticipantCount(team.getParticipant().getCurrent())
-                                .maxParticipantCount(team.getParticipant().getCapacity())
-                                .liked(teamHeartDataService.hasHearted(viewerId, team.getId()))
-                                .joinable(isJoinable(team, viewerId))
-                                .isPublic(isPublic(team))
-                                .build()
+                        team -> GetTeamsResponse.from(
+                                team,
+                                teamImageDataService.getImageUrls(team.getId()),
+                                teamHeartDataService.hasHearted(viewerId, team.getId()),
+                                isJoinable(team, viewerId),
+                                isPublic(team)
+                        )
                 ).toList();
 
         return new PageImpl<>(getTeamsResponseList, pageable, getTeamsResponseList.size());
@@ -125,10 +119,16 @@ public class TeamCoordinateService {
 
         if (request.meetBetweenStart() != null && request.meetBetweenEnd() != null) {
             meetBetWeen = LocalDateTimesDTO.builder()
-                    .start(CommonTimeUtils.convertOffsetDateTimeToLocalDateTime(
-                            request.meetBetweenStart()))
-                    .end(CommonTimeUtils.convertOffsetDateTimeToLocalDateTime(
-                            request.meetBetweenEnd()))
+                    .start(
+                            CommonTimeUtils.convertOffsetDateTimeToLocalDateTime(
+                                    request.meetBetweenStart()
+                            )
+                    )
+                    .end(
+                            CommonTimeUtils.convertOffsetDateTimeToLocalDateTime(
+                                    request.meetBetweenEnd()
+                            )
+                    )
                     .build();
         }
 
@@ -147,31 +147,22 @@ public class TeamCoordinateService {
         Long viewerId = (memberInfoDTO != null) ? memberInfoDTO.id() : ANONYMOUS_MEMBER_ID;
         Team team = teamDataService.getTeamEntityById(teamId);
         MemberInfoDTO authorInfo = MemberInfoDTO.from(team.getLeader());
-        Long authorId = authorInfo.id();
 
-        return TeamDetailsResponse.builder()
-                .id(teamId)
-                .author(Author.builder()
-                        .id(authorId)
-                        .nickname(authorInfo.email().getValue())
-                        .imageUrl(authorInfo.profileImageUrl())
-                        .build())
-                .isViewerAuthor(Objects.equals(authorId, viewerId))
-                .imageUrls(teamImageDataService.getImageUrls(teamId))
-                .name(team.getName().getValue())
-                .description(team.getDescription().getValue())
-                .location(team.getLocation())
-                .whenToMeet(
-                        CommonTimeUtils.convertLocalDateTimeToOffsetDateTime(team.getWhenToMeet()))
-                .nowParticipants(team.getParticipant().getCurrent())
-                .maxParticipants(team.getParticipant().getCapacity())
-                .createdAt(
-                        CommonTimeUtils.convertLocalDateTimeToOffsetDateTime(team.getCreatedAt()))
-                .likeCount(team.getHeartCount())
-                .liked(teamHeartDataService.hasHearted(viewerId, teamId))
-                .isPublic(isPublic(team))
-                .isJoinable(isJoinable(team, viewerId))
+        Author author = Author.builder()
+                .id(authorInfo.id())
+                .nickname(authorInfo.email().getValue())
+                .imageUrl(authorInfo.profileImageUrl())
                 .build();
+
+        return TeamDetailsResponse.from(
+                team,
+                author,
+                viewerId.equals(authorInfo.id()),
+                teamImageDataService.getImageUrls(teamId),
+                teamHeartDataService.hasHearted(viewerId, teamId),
+                isPublic(team),
+                isJoinable(team, viewerId)
+        );
     }
 
     @Transactional(readOnly = true)
@@ -433,11 +424,13 @@ public class TeamCoordinateService {
     }
 
     private void matchPassword(Team team, String password) {
-        if (team.getEncryptedPassword() != null) {
-            if (password == null ||
-                    !passwordEncoder.matches(password, team.getEncryptedPassword().getValue())) {
-                throw new InvalidTeamPasswordException();
-            }
+        if (team.getEncryptedPassword() == null) {
+            return;
+        }
+
+        if (password == null ||
+                !passwordEncoder.matches(password, team.getEncryptedPassword().getValue())) {
+            throw new InvalidTeamPasswordException();
         }
     }
 }

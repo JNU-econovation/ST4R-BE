@@ -5,6 +5,8 @@ import java.util.List;
 import lombok.Builder;
 import star.common.dto.internal.Author;
 import star.common.model.vo.Jido;
+import star.common.util.CommonTimeUtils;
+import star.team.model.entity.Team;
 
 @Builder
 public record TeamDetailsResponse(
@@ -23,4 +25,31 @@ public record TeamDetailsResponse(
         Boolean liked,
         Boolean isPublic,
         Boolean isJoinable
-) { }
+) {
+
+    public static TeamDetailsResponse from(Team team, Author author, Boolean isViewerAuthor,
+            List<String> imageUrls, Boolean liked, Boolean isPublic, Boolean isJoinable) {
+
+        return TeamDetailsResponse.builder()
+                .id(team.getId())
+                .author(author)
+                .isViewerAuthor(isViewerAuthor)
+                .imageUrls(imageUrls)
+                .name(team.getName().getValue())
+                .description(team.getDescription().getValue())
+                .location(team.getLocation())
+                .whenToMeet(
+                        CommonTimeUtils.convertLocalDateTimeToOffsetDateTime(team.getWhenToMeet())
+                )
+                .nowParticipants(team.getParticipant().getCurrent())
+                .maxParticipants(team.getParticipant().getCapacity())
+                .createdAt(
+                        CommonTimeUtils.convertLocalDateTimeToOffsetDateTime(team.getCreatedAt())
+                )
+                .likeCount(team.getHeartCount())
+                .liked(liked)
+                .isPublic(isPublic)
+                .isJoinable(isJoinable)
+                .build();
+    }
+}
