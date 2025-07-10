@@ -34,7 +34,7 @@ public class ChatReadController {
     public ResponseEntity<List<ChatPreviewResponse>> getPreview(
             @AuthenticationPrincipal StarUserDetails userDetails
     ) {
-        return ResponseEntity.ok(service.getPreview(userDetails.getMemberInfoDTO()));
+        return ResponseEntity.ok(service.       getPreview(userDetails.getMemberInfoDTO()));
     }
 
     @GetMapping("/{teamId}/chats/readCounts")
@@ -44,7 +44,7 @@ public class ChatReadController {
             @ResolvePageable(allowed = {SortField.CHATTED_AT}) Pageable pageable
     ) {
         return ResponseEntity.ok(
-                service.getReadCountsByRedisOrDb(teamId, userDetails.getMemberInfoDTO(), pageable)
+                service.getReadCounts(teamId, userDetails.getMemberInfoDTO(), pageable)
         );
     }
     //todo: 채팅 구독할때 -> 채팅을 읽는다 고민을 해보기
