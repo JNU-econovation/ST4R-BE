@@ -5,6 +5,7 @@ import static star.common.constants.CommonConstants.ANONYMOUS_MEMBER_ID;
 import jakarta.annotation.Nullable;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -102,19 +103,13 @@ public class TeamCoordinateService {
 
         List<GetTeamsResponse> getTeamsResponseList = teams.getContent().stream()
                 .map(
-                        team -> GetTeamsResponse.builder()
-                                .id(team.getId())
-                                .imageUrls(teamImageDataService.getImageUrls(team.getId()))
-                                .name(team.getName().getValue())
-                                .whenToMeet(CommonTimeUtils.convertLocalDateTimeToOffsetDateTime(
-                                        team.getWhenToMeet()))
-                                .location(team.getLocation())
-                                .currentParticipantCount(team.getParticipant().getCurrent())
-                                .maxParticipantCount(team.getParticipant().getCapacity())
-                                .liked(teamHeartDataService.hasHearted(viewerId, team.getId()))
-                                .joinable(isJoinable(team, viewerId))
-                                .isPublic(isPublic(team))
-                                .build()
+                        team -> GetTeamsResponse.from(
+                                team,
+                                teamImageDataService.getImageUrls(team.getId()),
+                                teamHeartDataService.hasHearted(viewerId, team.getId()),
+                                isJoinable(team, viewerId),
+                                isPublic(team)
+                        )
                 ).toList();
 
         return new PageImpl<>(getTeamsResponseList, pageable, getTeamsResponseList.size());
@@ -125,10 +120,16 @@ public class TeamCoordinateService {
 
         if (request.meetBetweenStart() != null && request.meetBetweenEnd() != null) {
             meetBetWeen = LocalDateTimesDTO.builder()
-                    .start(CommonTimeUtils.convertOffsetDateTimeToLocalDateTime(
-                            request.meetBetweenStart()))
-                    .end(CommonTimeUtils.convertOffsetDateTimeToLocalDateTime(
-                            request.meetBetweenEnd()))
+                    .start(
+                            CommonTimeUtils.convertOffsetDateTimeToLocalDateTime(
+                                    request.meetBetweenStart()
+                            )
+                    )
+                    .end(
+                            CommonTimeUtils.convertOffsetDateTimeToLocalDateTime(
+                                    request.meetBetweenEnd()
+                            )
+                    )
                     .build();
         }
 
@@ -147,39 +148,26 @@ public class TeamCoordinateService {
         Long viewerId = (memberInfoDTO != null) ? memberInfoDTO.id() : ANONYMOUS_MEMBER_ID;
         Team team = teamDataService.getTeamEntityById(teamId);
         MemberInfoDTO authorInfo = MemberInfoDTO.from(team.getLeader());
-        Long authorId = authorInfo.id();
 
-        return TeamDetailsResponse.builder()
-                .id(teamId)
-                .author(Author.builder()
-                        .id(authorId)
-                        .nickname(authorInfo.email().getValue())
-                        .imageUrl(authorInfo.profileImageUrl())
-                        .build())
-                .isViewerAuthor(Objects.equals(authorId, viewerId))
-                .imageUrls(teamImageDataService.getImageUrls(teamId))
-                .name(team.getName().getValue())
-                .description(team.getDescription().getValue())
-                .location(team.getLocation())
-                .whenToMeet(
-                        CommonTimeUtils.convertLocalDateTimeToOffsetDateTime(team.getWhenToMeet()))
-                .nowParticipants(team.getParticipant().getCurrent())
-                .maxParticipants(team.getParticipant().getCapacity())
-                .createdAt(
-                        CommonTimeUtils.convertLocalDateTimeToOffsetDateTime(team.getCreatedAt()))
-                .likeCount(team.getHeartCount())
-                .liked(teamHeartDataService.hasHearted(viewerId, teamId))
-                .isPublic(isPublic(team))
-                .isJoinable(isJoinable(team, viewerId))
+        Author author = Author.builder()
+                .id(authorInfo.id())
+                .nickname(authorInfo.email().getValue())
+                .imageUrl(authorInfo.profileImageUrl())
                 .build();
+
+        return TeamDetailsResponse.from(
+                team,
+                author,
+                viewerId.equals(authorInfo.id()),
+                teamImageDataService.getImageUrls(teamId),
+                teamHeartDataService.hasHearted(viewerId, teamId),
+                isPublic(team),
+                isJoinable(team, viewerId)
+        );
     }
 
     @Transactional(readOnly = true)
-    public TeamMember getTeamMember(Long teamId, Long memberId) {
-        if (!teamMemberDataService.existsTeamMember(teamId, memberId)) {
-            throw new TeamMemberNotFoundException();
-        }
-
+    public Optional<TeamMember> getTeamMember(Long teamId, Long memberId) {
         return teamMemberDataService.getTeamMemberEntityByIds(teamId, memberId);
     }
 
@@ -254,15 +242,16 @@ public class TeamCoordinateService {
     @Transactional
     public void joinTeam(MemberInfoDTO memberInfoDTO, Long teamId, JoinTeamRequest request) {
 
-        TeamMember teamMember = teamMemberDataService.getTeamMemberEntityByIds(teamId,
-                memberInfoDTO.id());
+        Optional<TeamMember> teamMember = getTeamMember(teamId, memberInfoDTO.id());
 
-        if (teamMember != null) {
-            if (teamMember.getIsBanned()) {
+        if (teamMember.isPresent()) {
+            TeamMember teamMemberEntity = teamMember.get();
+
+            if (teamMemberEntity.getIsBanned()) {
                 throw new YouAreBannedException();
             }
 
-            if (!teamMember.isDeprecated()) {
+            if (!teamMemberEntity.isDeprecated()) {
                 throw new YouAlreadyJoinedTeamException();
             }
         }
@@ -314,13 +303,10 @@ public class TeamCoordinateService {
         List<TeamMember> bannedTeamMembers = teamMemberDataService.getBannedTeamMemberEntitiesByTeamId(
                 teamId);
 
-        Long leaderId = team.getLeader().getId();
-
         return bannedTeamMembers.stream()
                 .map(
                         teamMember -> {
                             Member member = teamMember.getMember();
-                            Long memberId = member.getId();
 
                             return TeamMembersResponse.from(
                                     MemberInfoDTO.from(member),
@@ -411,6 +397,7 @@ public class TeamCoordinateService {
         }
     }
 
+    @Transactional(readOnly = true)
     public void assertTeamMember(MemberInfoDTO memberInfoDTO, Long teamId) {
         if (!teamMemberDataService.existsTeamMember(teamId, memberInfoDTO.id())) {
             throw new TeamMemberNotFoundException();
@@ -419,8 +406,8 @@ public class TeamCoordinateService {
 
     private void assertBanned(MemberInfoDTO targetMemberInfo, Team team) {
         if (teamMemberDataService.existsTeamMember(team.getId(), targetMemberInfo.id())) {
-            TeamMember teamMember = teamMemberDataService.getTeamMemberEntityByIds(team.getId(),
-                    targetMemberInfo.id());
+            TeamMember teamMember = getTeamMember(team.getId(), targetMemberInfo.id()).orElseThrow(
+                    TeamMemberNotFoundException::new);
 
             if (!teamMember.getIsBanned()) {
                 throw new TargetIsNotBannedException();
@@ -433,11 +420,13 @@ public class TeamCoordinateService {
     }
 
     private void matchPassword(Team team, String password) {
-        if (team.getEncryptedPassword() != null) {
-            if (password == null ||
-                    !passwordEncoder.matches(password, team.getEncryptedPassword().getValue())) {
-                throw new InvalidTeamPasswordException();
-            }
+        if (team.getEncryptedPassword() == null) {
+            return;
+        }
+
+        if (password == null ||
+                !passwordEncoder.matches(password, team.getEncryptedPassword().getValue())) {
+            throw new InvalidTeamPasswordException();
         }
     }
 }

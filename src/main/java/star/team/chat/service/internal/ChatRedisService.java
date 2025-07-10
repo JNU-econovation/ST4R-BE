@@ -12,7 +12,7 @@ import org.springframework.data.redis.core.ScanOptions;
 import org.springframework.stereotype.Service;
 import star.team.chat.config.ChatRedisProperties;
 import star.team.chat.dto.ChatDTO;
-import star.team.chat.exception.RedisRangeExceededException;
+import star.team.chat.exception.server.RedisRangeExceededException;
 
 @Service
 @RequiredArgsConstructor
@@ -49,7 +49,9 @@ public class ChatRedisService {
         return redisChat;
     }
 
-    public List<ChatDTO> getChats(Long teamId, Integer page, Integer size, boolean ignoreRangeExceed) {
+    public List<ChatDTO> getChats(
+            Long teamId, Integer page, Integer size, boolean ignoreRangeExceed
+    ) {
         String key = buildChatKey(teamId);
 
         Long sizeInRedis = chatDTORedisTemplate.opsForList().size(key);
@@ -104,7 +106,6 @@ public class ChatRedisService {
             Long teamId = teamEntry.getKey();
             Map<Long, ChatDTO> redisIdToUpdatedChatDTO = teamEntry.getValue();
 
-
             String redisListKey = buildChatKey(teamId);
             List<ChatDTO> redisChats = chatDTORedisTemplate.opsForList().range(redisListKey, 0, -1);
 
@@ -150,8 +151,6 @@ public class ChatRedisService {
             localDateTimeRedisTemplate.delete(keysToDelete);
         }
     }
-
-
 
 
     private String buildReadKey(Long teamId, Long memberId) {

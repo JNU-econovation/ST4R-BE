@@ -1,4 +1,4 @@
-package star.team.chat.exception;
+package star.team.chat.exception.server;
 
 import star.common.exception.server.InternalServerException;
 import star.team.chat.dto.ChatDTO;
