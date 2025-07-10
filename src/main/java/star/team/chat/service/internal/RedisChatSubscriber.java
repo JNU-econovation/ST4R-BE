@@ -15,7 +15,7 @@ public class RedisChatSubscriber {
     private final ObjectMapper objectMapper;
     private final SimpMessageSendingOperations messagingTemplate;
 
-    public void onMessage(String publishedMessage) {
+    public void onChatMessage(String publishedMessage) {
         try {
             ChatResponse chatResponse = objectMapper.readValue(publishedMessage,
                     ChatResponse.class);
