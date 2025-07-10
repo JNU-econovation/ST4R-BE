@@ -9,11 +9,11 @@ import star.team.chat.dto.ChatDTO;
 
 @Builder
 public record ChatResponse(
-        @Nullable
-        Long chatDbId,
+
+        Long teamId,
 
         @Nullable
-        Long chatRedisId,
+        Long chatId,
 
         Long memberId, String email, OffsetDateTime chattedAt, String message
 ) {
@@ -21,8 +21,8 @@ public record ChatResponse(
         MemberInfoDTO memberInfo = chat.memberInfo();
 
         return ChatResponse.builder()
-                .chatDbId(chat.chatDbId())
-                .chatRedisId(chat.chatRedisId())
+                .teamId(chat.teamId())
+                .chatId(chat.chatId())
                 .memberId(memberInfo.id())
                 .email(memberInfo.email().getValue())
                 .chattedAt(CommonTimeUtils.convertLocalDateTimeToOffsetDateTime(chat.chattedAt()))
