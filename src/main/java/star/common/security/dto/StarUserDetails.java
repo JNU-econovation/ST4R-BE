@@ -19,7 +19,7 @@ public class StarUserDetails implements UserDetails {
         return memberInfo;
     }
 
-    @Override public String getUsername() { return memberInfo.email().getValue(); }
+    @Override public String getUsername() { return memberInfo.id().toString(); }
     @Override public String getPassword() { return "Social"; }
 
     //사용자의 역할
