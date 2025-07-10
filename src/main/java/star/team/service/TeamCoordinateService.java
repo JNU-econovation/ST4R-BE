@@ -304,13 +304,10 @@ public class TeamCoordinateService {
         List<TeamMember> bannedTeamMembers = teamMemberDataService.getBannedTeamMemberEntitiesByTeamId(
                 teamId);
 
-        Long leaderId = team.getLeader().getId();
-
         return bannedTeamMembers.stream()
                 .map(
                         teamMember -> {
                             Member member = teamMember.getMember();
-                            Long memberId = member.getId();
 
                             return TeamMembersResponse.from(
                                     MemberInfoDTO.from(member),
