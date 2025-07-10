@@ -171,7 +171,7 @@ public class TeamCoordinateService {
             throw new TeamMemberNotFoundException();
         }
 
-        return teamMemberDataService.getTeamMemberEntityByIds(teamId, memberId);
+        return teamMemberDataService.getTeamMemberEntityByIds(teamId, memberId).get();
     }
 
     @Transactional(readOnly = true)
@@ -245,8 +245,7 @@ public class TeamCoordinateService {
     @Transactional
     public void joinTeam(MemberInfoDTO memberInfoDTO, Long teamId, JoinTeamRequest request) {
 
-        TeamMember teamMember = teamMemberDataService.getTeamMemberEntityByIds(teamId,
-                memberInfoDTO.id());
+        TeamMember teamMember = getTeamMember(teamId, memberInfoDTO.id());
 
         if (teamMember != null) {
             if (teamMember.getIsBanned()) {
@@ -402,6 +401,7 @@ public class TeamCoordinateService {
         }
     }
 
+    @Transactional(readOnly = true)
     public void assertTeamMember(MemberInfoDTO memberInfoDTO, Long teamId) {
         if (!teamMemberDataService.existsTeamMember(teamId, memberInfoDTO.id())) {
             throw new TeamMemberNotFoundException();
@@ -410,8 +410,7 @@ public class TeamCoordinateService {
 
     private void assertBanned(MemberInfoDTO targetMemberInfo, Team team) {
         if (teamMemberDataService.existsTeamMember(team.getId(), targetMemberInfo.id())) {
-            TeamMember teamMember = teamMemberDataService.getTeamMemberEntityByIds(team.getId(),
-                    targetMemberInfo.id());
+            TeamMember teamMember = getTeamMember(team.getId(), targetMemberInfo.id());
 
             if (!teamMember.getIsBanned()) {
                 throw new TargetIsNotBannedException();
