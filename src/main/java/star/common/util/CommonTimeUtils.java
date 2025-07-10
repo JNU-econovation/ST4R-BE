@@ -11,7 +11,7 @@ import star.common.exception.server.InternalServerException;
 import star.home.constants.Period;
 
 public final class CommonTimeUtils {
-    private static final ZoneId SERVER_ZONE = ZoneId.systemDefault();
+    private static final ZoneId SERVER_ZONE = ZoneId.of("Asia/Seoul");
 
     public static LocalDateTime convertOffsetDateTimeToLocalDateTime(OffsetDateTime offsetDateTime) {
         return offsetDateTime.atZoneSameInstant(SERVER_ZONE).toLocalDateTime();
