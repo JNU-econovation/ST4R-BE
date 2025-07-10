@@ -7,6 +7,7 @@ import star.common.dto.internal.Author;
 import star.common.model.vo.Jido;
 import star.common.util.CommonTimeUtils;
 import star.team.model.entity.Team;
+import star.team.model.vo.Description;
 
 @Builder
 public record TeamDetailsResponse(
@@ -30,13 +31,15 @@ public record TeamDetailsResponse(
     public static TeamDetailsResponse from(Team team, Author author, Boolean isViewerAuthor,
             List<String> imageUrls, Boolean liked, Boolean isPublic, Boolean isJoinable) {
 
+        Description description = team.getDescription();
+
         return TeamDetailsResponse.builder()
                 .id(team.getId())
                 .author(author)
                 .isViewerAuthor(isViewerAuthor)
                 .imageUrls(imageUrls)
                 .name(team.getName().getValue())
-                .description(team.getDescription().getValue())
+                .description(description == null ? null : description.getValue())
                 .location(team.getLocation())
                 .whenToMeet(
                         CommonTimeUtils.convertLocalDateTimeToOffsetDateTime(team.getWhenToMeet())
