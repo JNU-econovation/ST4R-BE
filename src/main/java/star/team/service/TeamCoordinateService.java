@@ -19,6 +19,8 @@ import star.common.util.CommonTimeUtils;
 import star.member.dto.MemberInfoDTO;
 import star.member.model.entity.Member;
 import star.member.service.MemberService;
+import star.team.annotation.AssertTeamLeader;
+import star.team.annotation.AssertTeamMember;
 import star.team.chat.service.ChatCoordinateService;
 import star.team.dto.CreateTeamDTO;
 import star.team.dto.TeamSearchDTO;
@@ -42,7 +44,6 @@ import star.team.exception.TeamMemberNotFoundException;
 import star.team.exception.TeamNotFoundException;
 import star.team.exception.YouAlreadyJoinedTeamException;
 import star.team.exception.YouAreBannedException;
-import star.team.exception.YouAreNotTeamLeaderException;
 import star.team.model.entity.Team;
 import star.team.model.entity.TeamMember;
 import star.team.model.vo.Description;
@@ -184,10 +185,9 @@ public class TeamCoordinateService {
     }
 
     @Transactional
+    @AssertTeamLeader(memberInfo = "#memberInfoDTO", teamId = "#teamId")
     public void updateTeam(MemberInfoDTO memberInfoDTO, Long teamId, UpdateTeamRequest request) {
         Team team = teamDataService.getTeamEntityById(teamId);
-
-        assertTeamLeader(memberInfoDTO, team);
 
         UpdateTeamDTO updateTeamDTO = UpdateTeamDTO.builder()
                 .name(new Name(request.name()))
@@ -205,10 +205,9 @@ public class TeamCoordinateService {
     }
 
     @Transactional
+    @AssertTeamLeader(memberInfo = "#memberInfoDTO", teamId = "#teamId")
     public void deleteTeam(MemberInfoDTO memberInfoDTO, Long teamId) {
         Team team = teamDataService.getTeamEntityById(teamId);
-
-        assertTeamLeader(memberInfoDTO, team);
 
         teamImageDataService.deleteBoardImageUrls(teamId);
         chatCoordinateService.deleteChats(teamId);
@@ -216,12 +215,6 @@ public class TeamCoordinateService {
         teamHeartDataService.deleteHeartsByTeamDelete(teamId);
         teamDataService.deleteTeam(teamId);
     }
-
-    /*
-     * <heartDataService 만 Member id가 아닌 Member 엔티티를 파라미터로 준 이유>
-     * DataService 는 CRUD 만 하는것이, 권한 검사는 그 위 서비스에서 하는 것이 바람직하다고 생각
-     * 그래서 권한 검사를 하려면 Member 엔티티가 필요했음
-     */
 
     @Transactional
     public void createHeart(MemberInfoDTO memberInfoDTO, Long teamId) {
@@ -293,12 +286,11 @@ public class TeamCoordinateService {
     }
 
     @Transactional(readOnly = true)
+    @AssertTeamLeader(memberInfo = "#memberInfoDTO", teamId = "#teamId")
     public List<TeamMembersResponse> getBannedTeamMembers(Long teamId,
             MemberInfoDTO memberInfoDTO) {
 
         Team team = teamDataService.getTeamEntityById(teamId);
-
-        assertTeamLeader(memberInfoDTO, team);
 
         List<TeamMember> bannedTeamMembers = teamMemberDataService.getBannedTeamMemberEntitiesByTeamId(
                 teamId);
@@ -320,11 +312,11 @@ public class TeamCoordinateService {
 
 
     @Transactional
+    @AssertTeamLeader(memberInfo = "#memberInfoDTO", teamId = "#teamId")
     public void delegateTeamLeader(MemberInfoDTO memberInfoDTO, Long teamId,
             TeamLeaderDelegateRequest request) {
 
         Team team = teamDataService.getTeamEntityById(teamId);
-        assertTeamLeader(memberInfoDTO, team);
 
         Member target = memberService.getMemberEntityById(request.targetMemberId());
 
@@ -332,7 +324,7 @@ public class TeamCoordinateService {
             throw new TeamLeaderSelfDelegatingException();
         }
 
-        if (!teamMemberDataService.existsTeamMember(teamId, target.getId())) {
+        if (!existsTeamMember(teamId, target.getId())) {
             throw new TeamMemberNotFoundException();
         }
 
@@ -340,12 +332,11 @@ public class TeamCoordinateService {
     }
 
     @Transactional
+    @AssertTeamMember(memberInfo = "#memberInfoDTO", teamId = "#teamId")
     public void leaveTeam(MemberInfoDTO memberInfoDTO, Long teamId) {
 
         Team team = teamDataService.getTeamEntityById(teamId);
-        assertTeamMember(memberInfoDTO, team.getId());
         if (Objects.equals(team.getLeader().getId(), memberInfoDTO.id())) {
-            //니 팀 버려? ㅋㅋㅋ
             throw new TeamLeaderCannotLeaveException();
         }
 
@@ -354,22 +345,22 @@ public class TeamCoordinateService {
     }
 
     @Transactional
+    @AssertTeamLeader(memberInfo = "#memberInfoDTO", teamId = "#teamId")
     public void banTeamMember(MemberInfoDTO memberInfoDTO, Long teamId, Long memberId) {
         if (Objects.equals(memberId, memberInfoDTO.id())) {
             throw new CanNotBanSelfException();
         }
 
         Team team = teamDataService.getTeamEntityById(teamId);
-        assertTeamLeader(memberInfoDTO, team);
 
         teamMemberDataService.banTeamMember(teamId, memberId);
         team.getParticipant().decrementCurrent();
     }
 
     @Transactional
+    @AssertTeamMember(memberInfo = "#memberInfoDTO", teamId = "#teamId")
     public void unbanTeamMember(MemberInfoDTO memberInfoDTO, Long teamId,
             TeamMemberUnbanRequest request) {
-        assertTeamLeader(memberInfoDTO, teamDataService.getTeamEntityById(teamId));
 
         MemberInfoDTO bannedMemberInfo = memberService.getMemberById(request.targetMemberId());
 
@@ -383,29 +374,21 @@ public class TeamCoordinateService {
         return team.getEncryptedPassword() == null;
     }
 
+    public boolean existsTeamMember(Long teamId, Long memberId) {
+        return teamMemberDataService.existsTeamMember(teamId, memberId);
+    }
+
     private Boolean isJoinable(Team team, Long memberId) {
         boolean isNotFull =
                 team.getParticipant().getCurrent() < team.getParticipant().getCapacity();
-        boolean joined = teamMemberDataService.existsTeamMember(team.getId(), memberId);
+        boolean joined = existsTeamMember(team.getId(), memberId);
 
         return (isNotFull && !joined);
     }
 
-    private void assertTeamLeader(MemberInfoDTO memberInfoDTO, Team team) {
-        if (!team.getLeader().getId().equals(memberInfoDTO.id())) {
-            throw new YouAreNotTeamLeaderException();
-        }
-    }
-
-    @Transactional(readOnly = true)
-    public void assertTeamMember(MemberInfoDTO memberInfoDTO, Long teamId) {
-        if (!teamMemberDataService.existsTeamMember(teamId, memberInfoDTO.id())) {
-            throw new TeamMemberNotFoundException();
-        }
-    }
 
     private void assertBanned(MemberInfoDTO targetMemberInfo, Team team) {
-        if (teamMemberDataService.existsTeamMember(team.getId(), targetMemberInfo.id())) {
+        if (existsTeamMember(team.getId(), targetMemberInfo.id())) {
             TeamMember teamMember = getTeamMember(team.getId(), targetMemberInfo.id()).orElseThrow(
                     TeamMemberNotFoundException::new);
 
