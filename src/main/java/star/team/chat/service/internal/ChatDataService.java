@@ -58,8 +58,7 @@ public class ChatDataService {
 
     @Transactional(readOnly = true)
     @AssertTeamMember(teamId = "#teamId", memberInfo = "#memberDTO")
-    public Page<ChatDTO> getChatHistory(Long teamId, MemberInfoDTO memberDTO,
-            Pageable pageable) {
+    public Page<ChatDTO> getChatHistory(Long teamId, MemberInfoDTO memberDTO, Pageable pageable) {
 
         return chatRepository.getChatsByTeamMemberTeamId(teamId, pageable).map(ChatDTO::from);
     }
