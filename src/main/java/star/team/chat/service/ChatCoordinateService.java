@@ -29,13 +29,16 @@ import star.team.service.internal.TeamMemberDataService;
 @Slf4j
 @RequiredArgsConstructor
 public class ChatCoordinateService {
+
     private static final Long ONE_MILLI_SECOND = 1_000_000L;
 
     private final ChatDataService chatDataService;
     private final ChatRedisService redisService;
     private final TeamMemberDataService teamMemberDataService;
-    private final RedisChatPublisher redisPublisher;
+    private final RedisChatPublisher chatPublisher;
     private final ChannelTopic channelTopic;
+    private final ChannelTopic previewChannelTopic;
+
 
 
     @Transactional
@@ -45,10 +48,12 @@ public class ChatCoordinateService {
         ChatDTO savedChatDTO = chatDataService.saveChat(teamId, memberInfoDTO.id(),
                 request.message());
 
-        redisPublisher.publish(channelTopic, ChatResponse.from(savedChatDTO));
+        chatPublisher.publishChat(channelTopic, ChatResponse.from(savedChatDTO));
 
         redisService.markAsRead(teamId, memberInfoDTO.id(),
                 savedChatDTO.chattedAt().plusNanos(ONE_MILLI_SECOND));
+
+        publishPreviewToAllMembers(teamId, savedChatDTO);
     }
 
 
@@ -135,5 +140,22 @@ public class ChatCoordinateService {
     public void deleteChats(Long teamId) {
         redisService.deleteAllByTeamId(teamId);
         chatDataService.deleteChats(teamId);
+    }
+
+
+    private void publishPreviewToAllMembers(Long teamId, ChatDTO savedChatDTO) {
+        List<Long> allMemberIdsInTeam = teamMemberDataService.getAllMemberIdInTeam(teamId);
+
+        allMemberIdsInTeam.forEach(memberId -> {
+            LocalDateTime lastReadTime = redisService.getLastReadTime(teamId, memberId);
+            ChatPreviewResponse previewResponse = ChatPreviewResponse.builder()
+                    .teamId(teamId)
+                    .targetMemberId(memberId)
+                    .unreadCount(chatDataService.getUnreadChatCount(teamId, lastReadTime))
+                    .recentMessage(savedChatDTO.message().getValue())
+                    .build();
+
+            chatPublisher.publishChatPreview(previewChannelTopic, previewResponse);
+        });
     }
 }
