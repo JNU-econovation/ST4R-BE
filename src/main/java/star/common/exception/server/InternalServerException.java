@@ -1,6 +1,8 @@
 package star.common.exception.server;
 
-public class InternalServerException extends RuntimeException {
+import org.springframework.core.NestedRuntimeException;
+
+public class InternalServerException extends NestedRuntimeException {
     public InternalServerException(String message) {
         super(message);
     }
