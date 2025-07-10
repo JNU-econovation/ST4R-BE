@@ -87,7 +87,7 @@ public class ChatDataService {
 
     @Transactional(readOnly = true)
     public Long getUnreadChatCount(Long teamId, LocalDateTime lastReadAt) {
-        return chatRepository.countByTeamMemberTeamIdAndChattedAtAfter(teamId, lastReadAt);
+        return chatRepository.countByTeamMemberTeamIdAndChattedAtGreaterThanEqual(teamId, lastReadAt);
     }
 
     private TeamMember getTeamMember(Long teamId, Long memberId) {

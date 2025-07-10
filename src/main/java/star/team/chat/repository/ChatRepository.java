@@ -19,5 +19,5 @@ public interface ChatRepository extends JpaRepository<Chat, Long> {
 
     boolean existsByIdAndChattedAtBefore(Long id, LocalDateTime readTime);
 
-    long countByTeamMemberTeamIdAndChattedAtAfter(Long teamId, LocalDateTime lastReadAt);
+    long countByTeamMemberTeamIdAndChattedAtGreaterThanEqual(Long teamId, LocalDateTime lastReadAt);
 }
