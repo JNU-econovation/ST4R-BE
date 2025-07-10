@@ -8,15 +8,12 @@ import star.team.chat.dto.ChatDTO;
 public record ChatReadResponse(
 
         @Nullable
-        Long chatDbId,
-
-        Long chatRedisId,
+        Long chatId,
         Integer readCount
 ) {
         public static ChatReadResponse from(ChatDTO chatDTO, Integer count) {
                 return ChatReadResponse.builder()
-                        .chatDbId(chatDTO.chatDbId())
-                        .chatRedisId(chatDTO.chatRedisId())
+                        .chatId(chatDTO.chatId())
                         .readCount(count)
                         .build();
         }

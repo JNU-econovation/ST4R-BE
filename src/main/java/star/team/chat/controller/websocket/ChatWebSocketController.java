@@ -5,14 +5,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.socket.messaging.SessionConnectedEvent;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 import star.common.security.dto.StarUserDetails;
 import star.team.chat.dto.request.ChatRequest;
-import star.team.chat.dto.response.ChatResponse;
 import star.team.chat.service.ChatCoordinateService;
 
 
@@ -24,8 +22,7 @@ public class ChatWebSocketController {
     private final ChatCoordinateService service;
 
     @MessageMapping("/broadcast/{teamId}")
-    @SendTo("/subscribe/{teamId}")
-    public ChatResponse receiveMessage(
+    public void receiveMessage(
             @AuthenticationPrincipal StarUserDetails userDetails,
             @DestinationVariable Long teamId,
             ChatRequest request
@@ -34,7 +31,7 @@ public class ChatWebSocketController {
         //todo: for debugging
         log.info("receiveMessage: teamId={}, request={}", teamId, request);
 
-        return service.saveChatRedis(teamId, request, userDetails.getMemberInfoDTO());
+        service.publishAndSaveChat(teamId, request, userDetails.getMemberInfoDTO());
     }
 
     @EventListener

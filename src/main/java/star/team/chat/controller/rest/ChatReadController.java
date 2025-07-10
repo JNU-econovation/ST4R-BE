@@ -14,8 +14,8 @@ import org.springframework.web.bind.annotation.RestController;
 import star.common.annotation.ResolvePageable;
 import star.common.constants.SortField;
 import star.common.security.dto.StarUserDetails;
-import star.team.chat.dto.response.ChatReadResponse;
 import star.team.chat.dto.response.ChatPreviewResponse;
+import star.team.chat.dto.response.ChatReadResponse;
 import star.team.chat.service.ChatCoordinateService;
 
 @RestController
@@ -26,10 +26,10 @@ public class ChatReadController {
     private final ChatCoordinateService service;
 
     @GetMapping("/chats/preview")
-    public ResponseEntity<List<ChatPreviewResponse>> getPreview(
+    public ResponseEntity<List<ChatPreviewResponse>> getPreviewForInitialLoading(
             @AuthenticationPrincipal StarUserDetails userDetails
     ) {
-        return ResponseEntity.ok(service.getPreview(userDetails.getMemberInfoDTO()));
+        return ResponseEntity.ok(service.getPreviewForInitialLoading(userDetails.getMemberInfoDTO()));
     }
 
     @GetMapping("/{teamId}/chats/readCounts")
@@ -39,9 +39,16 @@ public class ChatReadController {
             @ResolvePageable(allowed = {SortField.CHATTED_AT}) Pageable pageable
     ) {
         return ResponseEntity.ok(
-                service.getReadCountsByRedisOrDb(teamId, userDetails.getMemberInfoDTO(), pageable)
+                service.getReadCounts(teamId, userDetails.getMemberInfoDTO(), pageable)
         );
     }
+    //todo: 채팅 구독할때 -> 채팅을 읽는다 고민을 해보기
+    /*
+     *
+     *
+     *
+     *
+     */
 
     @PostMapping("/{teamId}/chats/markAsRead")
     public ResponseEntity<Void> markAsRead(

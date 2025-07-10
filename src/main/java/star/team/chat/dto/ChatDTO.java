@@ -10,10 +10,7 @@ import star.team.chat.model.vo.Message;
 @Builder
 public record ChatDTO(
         @Nullable
-        Long chatDbId,
-
-        @Nullable
-        Long chatRedisId,
+        Long chatId,
 
         Long teamId,
         MemberInfoDTO memberInfo,
@@ -23,25 +20,11 @@ public record ChatDTO(
 
     public static ChatDTO from(Chat chat) {
         return ChatDTO.builder()
-                .chatDbId(chat.getId())
-                .chatRedisId(chat.getRedisId())
+                .chatId(chat.getId())
                 .teamId(chat.getTeamMember().getTeam().getId())
                 .memberInfo(MemberInfoDTO.from(chat.getTeamMember().getMember()))
                 .chattedAt(chat.getCreatedAt())
                 .message(chat.getMessage())
                 .build();
     }
-
-    public static ChatDTO from(ChatDTO chat, Long chatRedisId) {
-        return ChatDTO.builder()
-                .chatDbId(chat.chatDbId())
-                .chatRedisId(chatRedisId)
-                .teamId(chat.teamId())
-                .memberInfo(chat.memberInfo())
-                .chattedAt(chat.chattedAt())
-                .message(chat.message())
-                .build();
-    }
-
-
 }
