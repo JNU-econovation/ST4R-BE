@@ -5,9 +5,9 @@ import java.time.OffsetDateTime;
 import org.springframework.lang.Nullable;
 import star.common.dto.LocationParamsDTO;
 import star.common.model.vo.CircularArea;
-import star.team.annotation.ValidZonedDateTimeRange;
+import star.team.annotation.ValidOffsetDateTimeRange;
 
-@ValidZonedDateTimeRange
+@ValidOffsetDateTimeRange
 public record GetTeamsRequest(
         @Nullable String name,
         @Nullable @Future(message = "모임 시간은 미래여야 합니다")
