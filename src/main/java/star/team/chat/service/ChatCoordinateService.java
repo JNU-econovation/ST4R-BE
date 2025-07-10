@@ -25,7 +25,7 @@ import star.team.chat.dto.request.ChatRequest;
 import star.team.chat.dto.response.ChatReadResponse;
 import star.team.chat.dto.response.ChatResponse;
 import star.team.chat.dto.response.ChatPreviewResponse;
-import star.team.chat.exception.RedisRangeExceededException;
+import star.team.chat.exception.server.RedisRangeExceededException;
 import star.team.chat.model.vo.Message;
 import star.team.chat.service.internal.ChatDataService;
 import star.team.chat.service.internal.ChatRedisService;

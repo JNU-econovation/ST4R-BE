@@ -16,7 +16,6 @@ import star.team.chat.dto.ChatDTO;
 import star.team.chat.exception.client.YouAreNotChatRoomException;
 import star.team.chat.model.entity.Chat;
 import star.team.chat.repository.ChatRepository;
-import star.team.exception.TeamMemberNotFoundException;
 import star.team.model.entity.TeamMember;
 import star.team.service.internal.TeamMemberDataService;
 
@@ -97,7 +96,6 @@ public class ChatDataService {
 
         for (Map.Entry<Long, LocalDateTime> entry : lastReadTimeMap.entrySet()) {
 
-            Long memberId = entry.getKey();
             LocalDateTime lastReadTime = entry.getValue();
 
             if (chatRepository.existsByIdAndChattedAtBefore(chatDTO.chatDbId(), lastReadTime)) {
@@ -124,10 +122,8 @@ public class ChatDataService {
     }
 
     private TeamMember getTeamMember(Long teamId, Long memberId) {
-        try {
-            return teamMemberDataService.getTeamMemberEntityByIds(teamId, memberId);
-        } catch (TeamMemberNotFoundException e) {
-            throw new YouAreNotChatRoomException();
-        }
+
+        return teamMemberDataService.getTeamMemberEntityByIds(teamId, memberId)
+                .orElseThrow(YouAreNotChatRoomException::new);
     }
 }
