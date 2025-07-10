@@ -27,16 +27,4 @@ public record ChatDTO(
                 .message(chat.getMessage())
                 .build();
     }
-
-    public static ChatDTO from(ChatDTO chat) {
-        return ChatDTO.builder()
-                .chatId(chat.chatId())
-                .teamId(chat.teamId())
-                .memberInfo(chat.memberInfo())
-                .chattedAt(chat.chattedAt())
-                .message(chat.message())
-                .build();
-    }
-
-
 }
