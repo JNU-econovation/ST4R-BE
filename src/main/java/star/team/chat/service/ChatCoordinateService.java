@@ -45,7 +45,8 @@ public class ChatCoordinateService {
 
         redisPublisher.publish(channelTopic, ChatResponse.from(savedChatDTO));
 
-        redisService.markAsRead(teamId, memberInfoDTO.id(), savedChatDTO.chattedAt());
+        redisService.markAsRead(teamId, memberInfoDTO.id(),
+                savedChatDTO.chattedAt().plusNanos(1_000_000));
     }
 
 
