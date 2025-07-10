@@ -10,9 +10,9 @@ import star.team.chat.dto.response.ChatResponse;
 @RequiredArgsConstructor
 public class RedisChatPublisher {
 
-    private final RedisTemplate<String, ChatResponse> redisTemplate;
+    private final RedisTemplate<String, ChatResponse> chatRedisTemplate;
 
-    public void publish(ChannelTopic topic, ChatResponse chatResponse) {
-        redisTemplate.convertAndSend(topic.getTopic(), chatResponse);
+    public void publishChat(ChannelTopic topic, ChatResponse chatResponse) {
+        chatRedisTemplate.convertAndSend(topic.getTopic(), chatResponse);
     }
 }
