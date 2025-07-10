@@ -11,7 +11,6 @@ import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Component;
-import star.common.exception.client.ClientException;
 import star.common.security.dto.StarUserDetails;
 import star.member.dto.MemberInfoDTO;
 import star.team.service.TeamCoordinateService;
@@ -64,9 +63,7 @@ public class WebSocketSecurityInterceptor implements ChannelInterceptor {
 
             MemberInfoDTO memberInfoDTO = extractMemberInfoFromPrincipal(user);
 
-            try {
-                teamCoordinateService.assertTeamMember(memberInfoDTO, teamId);
-            } catch (ClientException e) {
+            if (!teamCoordinateService.existsTeamMember(memberInfoDTO.id(), teamId)) {
                 log.warn("memberInfo={} 는 teamId={} 의 팀원이 아님", memberInfoDTO, teamId);
                 throw new MessagingException("해당 팀에 속하지 않은 사용자입니다.");
             }
@@ -76,7 +73,7 @@ public class WebSocketSecurityInterceptor implements ChannelInterceptor {
     }
 
     private Long extractTeamId(String destination) {
-        /* /websocket/subscribe/123 or /websocket/broadcast/123  */
+        /* /subscribe/123 or /broadcast/123  */
         String[] tokens = destination.split("/");
         try {
             return Long.parseLong(tokens[2]);
