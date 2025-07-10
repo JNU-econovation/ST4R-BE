@@ -1,6 +1,7 @@
 package star.team.repository;
 
 import java.util.List;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -10,7 +11,7 @@ import star.team.model.entity.TeamMember;
 @Repository
 public interface TeamMemberRepository extends JpaRepository<TeamMember, Long> {
 
-    TeamMember getByTeamIdAndMemberId(Long teamId, Long memberId);
+    Optional<TeamMember> getByTeamIdAndMemberId(Long teamId, Long memberId);
 
     List<TeamMember> getByTeamId(Long teamId);
 
