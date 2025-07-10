@@ -5,6 +5,7 @@ import static star.common.constants.CommonConstants.ANONYMOUS_MEMBER_ID;
 import jakarta.annotation.Nullable;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -166,12 +167,8 @@ public class TeamCoordinateService {
     }
 
     @Transactional(readOnly = true)
-    public TeamMember getTeamMember(Long teamId, Long memberId) {
-        if (!teamMemberDataService.existsTeamMember(teamId, memberId)) {
-            throw new TeamMemberNotFoundException();
-        }
-
-        return teamMemberDataService.getTeamMemberEntityByIds(teamId, memberId).get();
+    public Optional<TeamMember> getTeamMember(Long teamId, Long memberId) {
+        return teamMemberDataService.getTeamMemberEntityByIds(teamId, memberId);
     }
 
     @Transactional(readOnly = true)
@@ -245,14 +242,16 @@ public class TeamCoordinateService {
     @Transactional
     public void joinTeam(MemberInfoDTO memberInfoDTO, Long teamId, JoinTeamRequest request) {
 
-        TeamMember teamMember = getTeamMember(teamId, memberInfoDTO.id());
+        Optional<TeamMember> teamMember = getTeamMember(teamId, memberInfoDTO.id());
 
-        if (teamMember != null) {
-            if (teamMember.getIsBanned()) {
+        if (teamMember.isPresent()) {
+            TeamMember teamMemberEntity = teamMember.get();
+
+            if (teamMemberEntity.getIsBanned()) {
                 throw new YouAreBannedException();
             }
 
-            if (!teamMember.isDeprecated()) {
+            if (!teamMemberEntity.isDeprecated()) {
                 throw new YouAlreadyJoinedTeamException();
             }
         }
@@ -407,7 +406,8 @@ public class TeamCoordinateService {
 
     private void assertBanned(MemberInfoDTO targetMemberInfo, Team team) {
         if (teamMemberDataService.existsTeamMember(team.getId(), targetMemberInfo.id())) {
-            TeamMember teamMember = getTeamMember(team.getId(), targetMemberInfo.id());
+            TeamMember teamMember = getTeamMember(team.getId(), targetMemberInfo.id()).orElseThrow(
+                    TeamMemberNotFoundException::new);
 
             if (!teamMember.getIsBanned()) {
                 throw new TargetIsNotBannedException();
