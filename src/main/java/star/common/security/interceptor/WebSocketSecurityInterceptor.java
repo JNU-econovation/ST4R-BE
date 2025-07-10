@@ -18,9 +18,10 @@ import star.team.service.TeamCoordinateService;
 @Component
 @Slf4j
 public class WebSocketSecurityInterceptor implements ChannelInterceptor {
+    private static final String PREVIEW_URL = "/member/queue/previews";
 
     private static final Pattern ALLOWED_SUBSCRIBE_PATTERN =
-            Pattern.compile("^/subscribe/\\d+(/preview)?$");
+            Pattern.compile("^(?:/subscribe/\\d+|%s)$".formatted(PREVIEW_URL));
 
     private static final Pattern ALLOWED_SEND_PATTERN =
             Pattern.compile("^(/broadcast/\\d+)$");
@@ -29,7 +30,6 @@ public class WebSocketSecurityInterceptor implements ChannelInterceptor {
     public WebSocketSecurityInterceptor(TeamCoordinateService teamCoordinateService) {
         this.teamCoordinateService = teamCoordinateService;
     }
-
 
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
@@ -49,6 +49,10 @@ public class WebSocketSecurityInterceptor implements ChannelInterceptor {
             if (!pattern.matcher(destination).matches()) {
                 log.warn("허용되지 않은 {} URL: {}", isSubscribe ? "구독" : "발행", destination);
                 throw new MessagingException("허용되지 않은 " + (isSubscribe ? "구독" : "발행") + " URL입니다.");
+            }
+
+            if (PREVIEW_URL.equals(destination)) {
+                return message;
             }
 
             // 1. teamId 추출 (예: /websocket/subscribe/{teamId} or /websocket/broadcast/{teamId})

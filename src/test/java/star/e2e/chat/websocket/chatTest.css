@@ -1,0 +1,159 @@
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background-color: #f4f7f9;
+  color: #333;
+  padding: 20px;
+}
+
+.container {
+  max-width: 1200px;
+  margin: auto;
+  background: #fff;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+h1, h2 {
+  color: #2c3e50;
+  border-bottom: 2px solid #eaecef;
+  padding-bottom: 10px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+.panel {
+  background: #fdfdfd;
+  padding: 1.5rem;
+  border-radius: 6px;
+  border: 1px solid #e1e4e8;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+label {
+  font-weight: 600;
+  display: block;
+  margin-bottom: .5rem;
+}
+
+input[type="text"], textarea {
+  width: 100%;
+  padding: .75rem;
+  border: 1px solid #d1d5da;
+  border-radius: 6px;
+  box-sizing: border-box;
+}
+
+button {
+  width: 100%;
+  padding: .75rem;
+  border: none;
+  border-radius: 6px;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+button:disabled {
+  background-color: #95a5a6;
+  cursor: not-allowed;
+}
+
+#connectBtn {
+  background-color: #27ae60;
+}
+
+#connectBtn:hover:not(:disabled) {
+  background-color: #229954;
+}
+
+#disconnectBtn {
+  background-color: #c0392b;
+}
+
+#disconnectBtn:hover:not(:disabled) {
+  background-color: #a93226;
+}
+
+#sendBtn {
+  background-color: #2980b9;
+}
+
+#sendBtn:hover:not(:disabled) {
+  background-color: #2471a3;
+}
+
+#subscribeBtn {
+  background-color: #8e44ad;
+}
+
+#subscribeBtn:hover:not(:disabled) {
+  background-color: #7d3c98;
+}
+
+.status {
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-radius: 6px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.connected {
+  background-color: #eafaf1;
+  color: #27ae60;
+}
+
+.disconnected {
+  background-color: #f9ebea;
+  color: #c0392b;
+}
+
+.messages, .preview-log {
+  height: 300px;
+  overflow-y: auto;
+  border: 1px solid #e1e4e8;
+  padding: 1rem;
+  background: #f9f9f9;
+  border-radius: 6px;
+}
+
+.msg {
+  padding: .75rem;
+  background: #fff;
+  border-left: 4px solid;
+  border-radius: 4px;
+  margin-bottom: .5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.msg-recv {
+  border-color: #3498db;
+}
+
+.msg-send {
+  border-color: #2ecc71;
+}
+
+.msg-sys {
+  border-color: #f1c40f;
+}
+
+.msg .sender {
+  font-weight: bold;
+  color: #2980b9;
+}
+
+.msg .time {
+  float: right;
+  font-size: 0.8em;
+  color: #7f8c8d;
+}

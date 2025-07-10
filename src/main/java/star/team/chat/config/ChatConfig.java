@@ -27,6 +27,7 @@ public class ChatConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
+        registry.setUserDestinationPrefix("/member");
         registry.enableSimpleBroker("/subscribe", "/queue");
     }
 
