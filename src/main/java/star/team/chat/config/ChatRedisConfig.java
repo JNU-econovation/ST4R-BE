@@ -7,26 +7,29 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.serializer.GenericToStringSerializer;
+import org.springframework.data.redis.listener.ChannelTopic;
+import org.springframework.data.redis.listener.RedisMessageListenerContainer;
+import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
-import star.team.chat.dto.ChatDTO;
+import star.team.chat.dto.response.ChatResponse;
+import star.team.chat.service.internal.RedisChatSubscriber;
 
 @Configuration
-public class ChatRedisTemplateConfig {
+public class ChatRedisConfig {
 
     @Autowired
     private ObjectMapper objectMapper;
 
-    //Redis 서버와 연결하는 중간 다리
+
     @Bean
-    public RedisTemplate<String, ChatDTO> chatDTORedisTemplate(
+    public RedisTemplate<String, ChatResponse> chatResponseRedisTemplate(
             RedisConnectionFactory connectionFactory) {
-        RedisTemplate<String, ChatDTO> template = new RedisTemplate<>();
+        RedisTemplate<String, ChatResponse> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
 
-        Jackson2JsonRedisSerializer<ChatDTO> serializer =
-                new Jackson2JsonRedisSerializer<>(objectMapper, ChatDTO.class);
+        Jackson2JsonRedisSerializer<ChatResponse> serializer =
+                new Jackson2JsonRedisSerializer<>(objectMapper, ChatResponse.class);
 
         template.setDefaultSerializer(serializer);
         template.setKeySerializer(new StringRedisSerializer());
@@ -57,15 +60,26 @@ public class ChatRedisTemplateConfig {
         return template;
     }
 
+
     @Bean
-    public RedisTemplate<String, Long> longRedisTemplate(RedisConnectionFactory connectionFactory) {
-        RedisTemplate<String, Long> template = new RedisTemplate<>();
-        template.setConnectionFactory(connectionFactory);
-        template.setKeySerializer(new StringRedisSerializer());
-        template.setValueSerializer(new GenericToStringSerializer<>(Long.class));
-        template.afterPropertiesSet();
-        return template;
+    public RedisMessageListenerContainer redisMessageListener(
+            RedisConnectionFactory connectionFactory,
+            MessageListenerAdapter listenerAdapter,
+            ChannelTopic channelTopic
+    ) {
+        RedisMessageListenerContainer container = new RedisMessageListenerContainer();
+        container.setConnectionFactory(connectionFactory);
+        container.addMessageListener(listenerAdapter, channelTopic);
+        return container;
     }
 
+    @Bean
+    public MessageListenerAdapter listenerAdapter(RedisChatSubscriber subscriber) {
+        return new MessageListenerAdapter(subscriber, "onMessage");
+    }
 
+    @Bean
+    public ChannelTopic channelTopic() {
+        return new ChannelTopic("st4r-chat");
+    }
 }
