@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class ChatRedisService {
+
     private final RedisTemplate<String, LocalDateTime> localDateTimeRedisTemplate;
 
     public void markAsRead(Long teamId, Long memberId, LocalDateTime readTime) {
@@ -24,7 +25,7 @@ public class ChatRedisService {
         String key = buildReadKey(teamId, memberId);
         LocalDateTime value = localDateTimeRedisTemplate.opsForValue().get(key);
 
-        return value != null ? value : LocalDateTime.MIN;
+        return value != null ? value : LocalDateTime.of(1970, 1, 1, 0, 0);
     }
 
 
