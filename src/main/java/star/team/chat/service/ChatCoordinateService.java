@@ -29,6 +29,7 @@ import star.team.service.internal.TeamMemberDataService;
 @Slf4j
 @RequiredArgsConstructor
 public class ChatCoordinateService {
+    private static final Long ONE_MILLI_SECOND = 1_000_000L;
 
     private final ChatDataService chatDataService;
     private final ChatRedisService redisService;
@@ -39,6 +40,7 @@ public class ChatCoordinateService {
 
     @Transactional
     public void publishAndSaveChat(Long teamId, ChatRequest request, MemberInfoDTO memberInfoDTO) {
+
         // DB에 채팅 저장 todo: 비동기로 하기
         ChatDTO savedChatDTO = chatDataService.saveChat(teamId, memberInfoDTO.id(),
                 request.message());
@@ -46,7 +48,7 @@ public class ChatCoordinateService {
         redisPublisher.publish(channelTopic, ChatResponse.from(savedChatDTO));
 
         redisService.markAsRead(teamId, memberInfoDTO.id(),
-                savedChatDTO.chattedAt().plusNanos(1_000_000));
+                savedChatDTO.chattedAt().plusNanos(ONE_MILLI_SECOND));
     }
 
 
