@@ -1,7 +1,6 @@
 package star.team.dto.response;
 
 import lombok.Builder;
-import star.common.model.vo.Jido;
 import star.team.model.entity.Team;
 
 @Builder
@@ -10,8 +9,7 @@ public record GetMyTeamsResponse(
         String title,
         Integer nowParticipants,
         Integer maxParticipants,
-        String thumbnailImageUrl,
-        Jido location
+        String thumbnailImageUrl
 ) {
 
     public static GetMyTeamsResponse from(Team team, String thumbnailImageUrl) {
@@ -21,7 +19,6 @@ public record GetMyTeamsResponse(
                 .nowParticipants(team.getParticipant().getCurrent())
                 .maxParticipants(team.getParticipant().getCapacity())
                 .thumbnailImageUrl(thumbnailImageUrl)
-                .location(team.getLocation())
                 .build();
     }
 
