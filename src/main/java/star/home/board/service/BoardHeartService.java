@@ -4,8 +4,6 @@ package star.home.board.service;
 import static star.common.constants.CommonConstants.OPTIMISTIC_ATTEMPT_COUNT;
 
 import jakarta.persistence.OptimisticLockException;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
@@ -39,11 +37,6 @@ public class BoardHeartService extends BaseHeartService<BoardHeart, Board> {
     @Override
     protected BoardHeart createHeartEntity(Member member, Board board) {
         return BoardHeart.builder().member(member).board(board).build();
-    }
-
-    @Override
-    public Page<Board> getForeignEntitiesOfTargetByMemberId(Long memberId, Pageable pageable) {
-        return boardHeartRepository.findBoardsByMemberId(memberId, pageable);
     }
 
     @Override
