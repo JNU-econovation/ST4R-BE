@@ -30,7 +30,7 @@ public class TeamMemberController {
     public ResponseEntity<Void> joinTeam(
             @PathVariable Long teamId,
             @AuthenticationPrincipal StarUserDetails userDetails,
-            @RequestBody JoinTeamRequest request
+            @RequestBody(required = false) JoinTeamRequest request
     ) {
         service.joinTeam(userDetails.getMemberInfoDTO(), teamId, request);
 
