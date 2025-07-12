@@ -65,7 +65,7 @@ public class TeamMemberDataService {
 
     @Transactional(readOnly = true)
     public List<Long> getAllTeamIdByMemberId(Long memberId) {
-        return teamMemberRepository.getTeamIdsByMemberId(memberId);
+        return teamMemberRepository.getTeamIdsByMemberIdAndNotSoftDeleted(memberId);
     }
 
     @Transactional(readOnly = true)
