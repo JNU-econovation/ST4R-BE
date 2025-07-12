@@ -34,8 +34,6 @@ import star.team.service.internal.TeamMemberDataService;
 @RequiredArgsConstructor
 public class ChatCoordinateService {
 
-    private static final Long ONE_MILLI_SECOND = 1_000_000L;
-
     private final ChatDataService chatDataService;
     private final ChatRedisService redisService;
     private final TeamMemberDataService teamMemberDataService;
@@ -57,8 +55,6 @@ public class ChatCoordinateService {
                 ChatBroadcast.from(MessageType.GENERAL_MESSAGE, GeneralMessageDTO.from(savedChatDTO))
         );
 
-        markAsReadAndPublishUpdatedReadTime(teamId, memberInfoDTO, true);
-
         publishPreviewToAllMembers(teamId, savedChatDTO);
     }
 
@@ -75,15 +71,9 @@ public class ChatCoordinateService {
         return new SliceImpl<>(chatResponses, pageable, chatPage.hasNext());
     }
 
-    public void markAsReadAndPublishUpdatedReadTime(
-            Long teamId, MemberInfoDTO memberInfoDTO, boolean isSenderSelf
-    ) {
+    public void markAsReadAndPublishUpdatedReadTime(Long teamId, MemberInfoDTO memberInfoDTO) {
 
         LocalDateTime readTime = LocalDateTime.now();
-
-        if (isSenderSelf) {
-            readTime = readTime.plusNanos(ONE_MILLI_SECOND);
-        }
 
         redisService.markAsRead(teamId, memberInfoDTO.id(), readTime);
         UpdateReadTimeMessageDTO updateMessage = UpdateReadTimeMessageDTO.builder()

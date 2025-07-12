@@ -43,7 +43,7 @@ public class ChatWebSocketController {
         //todo: for debugging
         log.info("markAsRead: teamId={}, memberInfo={}", teamId, userDetails.getMemberInfoDTO());
 
-        service.markAsReadAndPublishUpdatedReadTime(teamId, userDetails.getMemberInfoDTO(), false);
+        service.markAsReadAndPublishUpdatedReadTime(teamId, userDetails.getMemberInfoDTO());
     }
 
     @EventListener
