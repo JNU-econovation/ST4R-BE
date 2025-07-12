@@ -40,7 +40,7 @@ public class MyPageController {
                 myPageService.getLikedBoards(userDetails.getMemberInfoDTO().id(), pageable));
     }
 
-    @GetMapping("/likedTeams")
+    @GetMapping("/likedGroups")
     public ResponseEntity<Slice<GetTeamsResponse>> getLikedTeams(
             @AuthenticationPrincipal StarUserDetails userDetails,
             @ResolvePageable(allowed = SortField.CREATED_AT) Pageable pageable) {
