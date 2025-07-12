@@ -12,7 +12,7 @@ import star.team.chat.dto.UpdateReadTimeMessageDTO;
 )
 @JsonSubTypes({
         @JsonSubTypes.Type(value = GeneralMessageDTO.class, name = "general"),
-        @JsonSubTypes.Type(value = UpdateReadTimeMessageDTO.class, name = "readTimeUpdate")
+        @JsonSubTypes.Type(value = UpdateReadTimeMessageDTO.class, name = "updateReadTime")
 })
 public interface ChatMessage {
     Long teamId();
