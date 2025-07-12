@@ -24,16 +24,17 @@ public class ChatInitialLoadingController {
     public ResponseEntity<List<ChatPreviewResponse>> getPreviewForInitialLoading(
             @AuthenticationPrincipal StarUserDetails userDetails
     ) {
-        return ResponseEntity.ok(service.getPreviewForInitialLoading(userDetails.getMemberInfoDTO()));
+        return ResponseEntity.ok(
+                service.getPreviewForInitialLoading(userDetails.getMemberInfoDTO())
+        );
     }
 
     @GetMapping("/{teamId}/chats/lastReadTimes")
     public ResponseEntity<List<ChatReadResponse>> getLastReadTimesForInitialLoading(
-            @PathVariable Long teamId,
-            @AuthenticationPrincipal StarUserDetails userDetails
+            @PathVariable Long teamId
     ) {
         return ResponseEntity.ok(
-                service.getLastReadTimesForInitialLoading(teamId, userDetails.getMemberInfoDTO())
+                service.getLastReadTimesForInitialLoading(teamId)
         );
     }
 }
