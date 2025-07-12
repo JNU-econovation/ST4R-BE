@@ -84,7 +84,7 @@ async function enterChatRoom() {
 
     try {
         // 1. 팀 멤버 및 초기 읽음 상태 가져오기
-        const apiUrl = `${chatState.serverBaseUrl}/groups/${teamId}/chats/readCounts`;
+        const apiUrl = `${chatState.serverBaseUrl}/groups/${teamId}/chats/lastReadTimes`;
         const response = await fetch(apiUrl, { headers: { 'Authorization': chatState.jwtToken } });
         if (!response.ok) throw new Error(`Failed to fetch initial data: ${response.statusText}`);
         
