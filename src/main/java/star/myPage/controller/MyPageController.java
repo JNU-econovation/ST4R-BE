@@ -13,7 +13,7 @@ import star.common.constants.SortField;
 import star.common.security.dto.StarUserDetails;
 import star.myPage.dto.response.MyBoardResponse;
 import star.myPage.service.MyPageService;
-import star.team.dto.response.GetMyTeamsResponse;
+import star.team.dto.response.GetTeamsResponse;
 
 @RestController
 @RequestMapping("/my")
@@ -40,8 +40,8 @@ public class MyPageController {
                 myPageService.getLikedBoards(userDetails.getMemberInfoDTO().id(), pageable));
     }
 
-    @GetMapping("/pickedTeams")
-    public ResponseEntity<Slice<GetMyTeamsResponse>> getLikedTeams(
+    @GetMapping("/likedTeams")
+    public ResponseEntity<Slice<GetTeamsResponse>> getLikedTeams(
             @AuthenticationPrincipal StarUserDetails userDetails,
             @ResolvePageable(allowed = SortField.CREATED_AT) Pageable pageable) {
         return ResponseEntity.ok(

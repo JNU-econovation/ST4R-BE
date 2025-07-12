@@ -16,7 +16,8 @@ import star.home.board.service.BoardImageService;
 import star.home.board.service.BoardService;
 import star.member.dto.MemberInfoDTO;
 import star.myPage.dto.response.MyBoardResponse;
-import star.team.dto.response.GetMyTeamsResponse;
+import star.team.dto.response.GetTeamsResponse;
+import star.team.service.TeamCoordinateService;
 import star.team.service.internal.TeamHeartDataService;
 import star.team.service.internal.TeamImageDataService;
 
@@ -30,6 +31,7 @@ public class MyPageService {
     private final BoardImageService boardImageService;
     private final TeamHeartDataService teamHeartDataService;
     private final TeamImageDataService teamImageDataService;
+    private final TeamCoordinateService teamCoordinateService;
 
     public Slice<MyBoardResponse> getMyBoards(MemberInfoDTO memberInfoDTO, Pageable pageable) {
 
@@ -67,14 +69,17 @@ public class MyPageService {
         return new SliceImpl<>(likedBoards, pageable, !likedBoards.isEmpty());
     }
 
-    public Slice<GetMyTeamsResponse> getLikedTeams(Long memberId, Pageable pageable) {
-        List<GetMyTeamsResponse> likedTeams = teamHeartDataService
+    public Slice<GetTeamsResponse> getLikedTeams(Long memberId, Pageable pageable) {
+        List<GetTeamsResponse> likedTeams = teamHeartDataService
                 .getForeignEntitiesOfTargetByMemberId(memberId, pageable)
-                .map(team -> {
-                            List<String> images = teamImageDataService.getImageUrls(team.getId());
-                            String thumbnailUrl = images.isEmpty() ? null : images.getFirst();
-                            return GetMyTeamsResponse.from(team, thumbnailUrl);
-                        }
+                .map(team -> GetTeamsResponse.from(
+                                team,
+                                teamImageDataService.getImageUrls(team.getId()),
+                                true,
+                                teamCoordinateService.isJoinable(team, memberId),
+                                teamCoordinateService.isPublic(team)
+                        )
+
                 )
                 .toList();
 
