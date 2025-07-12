@@ -22,7 +22,12 @@ public class DevInitializer {
     @EventListener(ApplicationReadyEvent.class)
     public void init() {
         MemberInfoDTO admin = memberService.getMemberById(1L);
-        String token = jwtManager.generateToken(admin);
-        log.info("관리자 토큰: {}", token);
+        MemberInfoDTO member = memberService.getMemberById(2L);
+
+        String adminToken = jwtManager.generateToken(admin);
+        String memberToken = jwtManager.generateToken(member);
+
+        log.info("관리자 토큰: {}", adminToken);
+        log.info("일반 유저 토큰: {}", memberToken);
     }
 }

@@ -12,8 +12,8 @@ import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+import star.team.chat.dto.broadcast.ChatBroadcast;
 import star.team.chat.dto.response.ChatPreviewResponse;
-import star.team.chat.dto.response.ChatResponse;
 import star.team.chat.service.internal.RedisChatPreviewSubscriber;
 import star.team.chat.service.internal.RedisChatSubscriber;
 
@@ -25,13 +25,13 @@ public class ChatRedisConfig {
 
 
     @Bean
-    public RedisTemplate<String, ChatResponse> chatResponseRedisTemplate(
+    public RedisTemplate<String, ChatBroadcast> chatResponseRedisTemplate(
             RedisConnectionFactory connectionFactory) {
-        RedisTemplate<String, ChatResponse> template = new RedisTemplate<>();
+        RedisTemplate<String, ChatBroadcast> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
 
-        Jackson2JsonRedisSerializer<ChatResponse> serializer =
-                new Jackson2JsonRedisSerializer<>(objectMapper, ChatResponse.class);
+        Jackson2JsonRedisSerializer<ChatBroadcast> serializer =
+                new Jackson2JsonRedisSerializer<>(objectMapper, ChatBroadcast.class);
 
         template.setDefaultSerializer(serializer);
         template.setKeySerializer(new StringRedisSerializer());
