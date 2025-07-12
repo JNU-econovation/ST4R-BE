@@ -5,6 +5,7 @@ import lombok.Builder;
 @Builder
 public record ChatPreviewResponse(
         Long teamId,
+        Long targetMemberId,
         Long unreadCount,
         String recentMessage
 ) {

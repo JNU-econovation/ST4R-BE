@@ -4,11 +4,11 @@ package star.team.validation;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import java.time.OffsetDateTime;
-import star.team.annotation.ValidZonedDateTimeRange;
+import star.team.annotation.ValidOffsetDateTimeRange;
 import star.team.dto.request.GetTeamsRequest;
 
-public class ZonedDateTimeRangeValidator implements
-        ConstraintValidator<ValidZonedDateTimeRange, GetTeamsRequest> {
+public class OffsetDateTimeRangeValidator implements
+        ConstraintValidator<ValidOffsetDateTimeRange, GetTeamsRequest> {
 
     @Override
     public boolean isValid(GetTeamsRequest request, ConstraintValidatorContext context) {

@@ -1,10 +1,12 @@
 package star.team.service.internal;
 
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import star.member.service.MemberService;
+import star.team.exception.TeamMemberNotFoundException;
 import star.team.model.entity.Team;
 import star.team.model.entity.TeamMember;
 import star.team.repository.TeamMemberRepository;
@@ -20,7 +22,8 @@ public class TeamMemberDataService {
     public void addTeamMember(Team team, Long memberId) {
 
         if (teamMemberRepository.existsByTeamIdAndMemberId(team.getId(), memberId)) {
-            TeamMember teamMember = getTeamMemberEntityByIds(team.getId(), memberId);
+            TeamMember teamMember = getTeamMemberEntityByIds(team.getId(), memberId).orElseThrow(
+                    TeamMemberNotFoundException::new);
 
             teamMember.markAsActivated();
 
@@ -36,7 +39,7 @@ public class TeamMemberDataService {
     }
 
     @Transactional(readOnly = true)
-    public TeamMember getTeamMemberEntityByIds(Long teamId, Long memberId) {
+    public Optional<TeamMember> getTeamMemberEntityByIds(Long teamId, Long memberId) {
         return teamMemberRepository.getByTeamIdAndMemberId(teamId, memberId);
     }
 
@@ -62,7 +65,7 @@ public class TeamMemberDataService {
 
     @Transactional(readOnly = true)
     public List<Long> getAllTeamIdByMemberId(Long memberId) {
-        return teamMemberRepository.getTeamIdsByMemberId(memberId);
+        return teamMemberRepository.getTeamIdsByMemberIdAndNotSoftDeleted(memberId);
     }
 
     @Transactional(readOnly = true)
@@ -72,19 +75,22 @@ public class TeamMemberDataService {
 
     @Transactional
     public void banTeamMember(Long teamId, Long memberId) {
-        TeamMember teamMember = getTeamMemberEntityByIds(teamId, memberId);
+        TeamMember teamMember = getTeamMemberEntityByIds(teamId, memberId).orElseThrow(
+                TeamMemberNotFoundException::new);
         teamMember.ban();
     }
 
     @Transactional
     public void unbanTeamMember(Long teamId, Long memberId) {
-        TeamMember teamMember = getTeamMemberEntityByIds(teamId, memberId);
+        TeamMember teamMember = getTeamMemberEntityByIds(teamId, memberId).orElseThrow(
+                TeamMemberNotFoundException::new);
         teamMember.unban();
     }
 
     @Transactional
     public void softDeleteTeamMember(Long teamId, Long memberId) {
-        TeamMember teamMember = getTeamMemberEntityByIds(teamId, memberId);
+        TeamMember teamMember = getTeamMemberEntityByIds(teamId, memberId).orElseThrow(
+                TeamMemberNotFoundException::new);
         teamMember.markAsDeprecated();
     }
 
