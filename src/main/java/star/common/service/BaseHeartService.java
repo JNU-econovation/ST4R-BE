@@ -2,6 +2,8 @@ package star.common.service;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.transaction.annotation.Transactional;
 import star.common.exception.client.AlreadyHeartedException;
@@ -28,6 +30,8 @@ public abstract class BaseHeartService<H, T> extends BaseRetryRecoverService {
     protected abstract void increaseHeartCount(T target);
 
     protected abstract void decreaseHeartCount(T target);
+
+    protected abstract Page<T> getForeignEntitiesOfTargetByMemberId(Long memberId, Pageable pageable);
 
     @Transactional
     public void createHeart(Member member, T target, Long targetId) {

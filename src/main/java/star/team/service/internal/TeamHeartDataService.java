@@ -3,6 +3,8 @@ package star.team.service.internal;
 import static star.common.constants.CommonConstants.OPTIMISTIC_ATTEMPT_COUNT;
 
 import jakarta.persistence.OptimisticLockException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
@@ -36,6 +38,11 @@ public class TeamHeartDataService extends BaseHeartService<TeamHeart, Team> {
     @Override
     protected TeamHeart createHeartEntity(Member member, Team team) {
         return TeamHeart.builder().member(member).team(team).build();
+    }
+
+    @Override
+    public Page<Team> getForeignEntitiesOfTargetByMemberId(Long memberId, Pageable pageable) {
+        return teamHeartRepository.findTeamsByMemberId(memberId, pageable);
     }
 
     @Override
