@@ -20,12 +20,12 @@ public class RedisChatSubscriber {
             ChatBroadcast chatBroadcast = objectMapper.readValue(publishedMessage,
                     ChatBroadcast.class);
 
-            messagingTemplate.convertAndSend("/subscribe/" + chatBroadcast.chatMessage().teamId(),
+            messagingTemplate.convertAndSend("/subscribe/" + chatBroadcast.message().teamId(),
                     chatBroadcast);
 
             log.info("Redis Pub/Sub 메시지 수신 및 전송 완료: teamId={}, message={}",
-                    chatBroadcast.chatMessage().teamId(),
-                    chatBroadcast.chatMessage());
+                    chatBroadcast.message().teamId(),
+                    chatBroadcast.message());
 
         } catch (Exception e) {
             log.error("채팅 메시지 처리 중 오류 발생", e);
