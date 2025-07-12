@@ -207,8 +207,6 @@ public class TeamCoordinateService {
     @Transactional
     @AssertTeamLeader(memberInfo = "#memberInfoDTO", teamId = "#teamId")
     public void deleteTeam(MemberInfoDTO memberInfoDTO, Long teamId) {
-        Team team = teamDataService.getTeamEntityById(teamId);
-
         teamImageDataService.deleteBoardImageUrls(teamId);
         chatCoordinateService.deleteChats(teamId);
         teamMemberDataService.deleteAllTeamMemberForTeamDelete(teamId);
@@ -291,8 +289,6 @@ public class TeamCoordinateService {
     @AssertTeamLeader(memberInfo = "#memberInfoDTO", teamId = "#teamId")
     public List<TeamMembersResponse> getBannedTeamMembers(Long teamId,
             MemberInfoDTO memberInfoDTO) {
-
-        Team team = teamDataService.getTeamEntityById(teamId);
 
         List<TeamMember> bannedTeamMembers = teamMemberDataService.getBannedTeamMemberEntitiesByTeamId(
                 teamId);
