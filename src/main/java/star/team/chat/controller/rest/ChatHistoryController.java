@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import star.common.annotation.ResolvePageable;
 import star.common.constants.SortField;
 import star.common.security.dto.StarUserDetails;
-import star.team.chat.dto.response.ChatResponse;
+import star.team.chat.dto.GeneralMessageDTO;
 import star.team.chat.service.ChatCoordinateService;
 
 @RestController
@@ -23,7 +23,7 @@ public class ChatHistoryController {
     private final ChatCoordinateService service;
 
     @GetMapping
-    public ResponseEntity<Slice<ChatResponse>> getChatHistory(
+    public ResponseEntity<Slice<GeneralMessageDTO>> getChatHistory(
             @PathVariable Long teamId,
             @AuthenticationPrincipal StarUserDetails userDetails,
             @ResolvePageable(allowed = {SortField.CHATTED_AT}) Pageable pageable
