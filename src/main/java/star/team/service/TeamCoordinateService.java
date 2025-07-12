@@ -368,7 +368,7 @@ public class TeamCoordinateService {
         teamMemberDataService.unbanTeamMember(teamId, request.targetMemberId());
     }
 
-    private Boolean isPublic(Team team) {
+    public Boolean isPublic(Team team) {
         return team.getEncryptedPassword() == null;
     }
 
@@ -376,7 +376,7 @@ public class TeamCoordinateService {
         return teamMemberDataService.existsTeamMember(teamId, memberId);
     }
 
-    private Boolean isJoinable(Team team, Long memberId) {
+    public Boolean isJoinable(Team team, Long memberId) {
         boolean isNotFull =
                 team.getParticipant().getCurrent() < team.getParticipant().getCapacity();
         boolean joined = existsTeamMember(team.getId(), memberId);
