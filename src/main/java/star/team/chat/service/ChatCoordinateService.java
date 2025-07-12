@@ -14,12 +14,16 @@ import org.springframework.data.domain.SliceImpl;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import star.common.util.CommonTimeUtils;
 import star.member.dto.MemberInfoDTO;
 import star.team.chat.dto.ChatDTO;
-import star.team.chat.dto.request.ChatRequest;
+import star.team.chat.dto.GeneralMessageDTO;
+import star.team.chat.dto.UpdateReadTimeMessageDTO;
+import star.team.chat.dto.broadcast.ChatBroadcast;
 import star.team.chat.dto.response.ChatPreviewResponse;
 import star.team.chat.dto.response.ChatReadResponse;
-import star.team.chat.dto.response.ChatResponse;
+import star.team.chat.dto.send.ChatSend;
+import star.team.chat.enums.MessageType;
 import star.team.chat.service.internal.ChatDataService;
 import star.team.chat.service.internal.ChatRedisService;
 import star.team.chat.service.internal.RedisChatPublisher;
@@ -30,75 +34,75 @@ import star.team.service.internal.TeamMemberDataService;
 @RequiredArgsConstructor
 public class ChatCoordinateService {
 
-    private static final Long ONE_MILLI_SECOND = 1_000_000L;
-
     private final ChatDataService chatDataService;
     private final ChatRedisService redisService;
     private final TeamMemberDataService teamMemberDataService;
     private final RedisChatPublisher chatPublisher;
     private final ChannelTopic channelTopic;
     private final ChannelTopic previewChannelTopic;
-
+    private final RedisChatPublisher redisChatPublisher;
 
 
     @Transactional
-    public void publishAndSaveChat(Long teamId, ChatRequest request, MemberInfoDTO memberInfoDTO) {
+    public void publishAndSaveChat(Long teamId, ChatSend chat, MemberInfoDTO memberInfoDTO) {
 
         // DB에 채팅 저장 todo: 비동기로 하기
         ChatDTO savedChatDTO = chatDataService.saveChat(teamId, memberInfoDTO.id(),
-                request.message());
+                chat.message());
 
-        chatPublisher.publishChat(channelTopic, ChatResponse.from(savedChatDTO));
-
-        redisService.markAsRead(teamId, memberInfoDTO.id(),
-                savedChatDTO.chattedAt().plusNanos(ONE_MILLI_SECOND));
+        chatPublisher.publishChat(
+                channelTopic,
+                ChatBroadcast.from(MessageType.GENERAL_MESSAGE, GeneralMessageDTO.from(savedChatDTO))
+        );
 
         publishPreviewToAllMembers(teamId, savedChatDTO);
     }
 
 
     @Transactional(readOnly = true)
-    public Slice<ChatResponse> getChatHistory(Long teamId, MemberInfoDTO memberInfoDTO,
+    public Slice<GeneralMessageDTO> getChatHistory(Long teamId, MemberInfoDTO memberInfoDTO,
             Pageable pageable) {
 
         Page<ChatDTO> chatPage = chatDataService.getChatHistory(teamId, memberInfoDTO, pageable);
 
-        List<ChatResponse> chatResponses = chatPage.getContent().stream()
-                .map(ChatResponse::from)
-                .toList();
+        List<GeneralMessageDTO> chatResponses = chatPage.getContent().stream()
+                .map(GeneralMessageDTO::from).toList();
 
         return new SliceImpl<>(chatResponses, pageable, chatPage.hasNext());
     }
 
-    public void markAsRead(Long teamId, MemberInfoDTO memberInfoDTO) {
-        redisService.markAsRead(teamId, memberInfoDTO.id(), LocalDateTime.now());
+    public void markAsReadAndPublishUpdatedReadTime(Long teamId, MemberInfoDTO memberInfoDTO) {
+
+        LocalDateTime readTime = LocalDateTime.now();
+
+        redisService.markAsRead(teamId, memberInfoDTO.id(), readTime);
+        UpdateReadTimeMessageDTO updateMessage = UpdateReadTimeMessageDTO.builder()
+                .teamId(teamId)
+                .updateMemberId(memberInfoDTO.id())
+                .updateReadTime(CommonTimeUtils.convertLocalDateTimeToOffsetDateTime(readTime))
+                .build();
+
+        redisChatPublisher.publishChat(
+                channelTopic, ChatBroadcast.from(MessageType.UPDATE_READ_TIME, updateMessage)
+        );
     }
 
     @Transactional(readOnly = true)
-    public Slice<ChatReadResponse> getReadCounts(
-            Long teamId, MemberInfoDTO memberInfoDTO, Pageable pageable
+    public List<ChatReadResponse> getReadCountsForInitialLoading(
+            Long teamId, MemberInfoDTO memberInfoDTO
     ) {
         List<Long> allMemberIdsInTeam = teamMemberDataService.getAllMemberIdInTeam(teamId);
 
-        Map<Long, LocalDateTime> lastReadTimeMap = allMemberIdsInTeam.stream()
-                .collect(
-                        Collectors.toMap(
-                                memberId -> memberId,
-                                memberId -> redisService.getLastReadTime(teamId, memberId)
+        return allMemberIdsInTeam.stream()
+                .map(memberId -> ChatReadResponse.builder()
+                        .memberId(memberId)
+                        .readTime(
+                                CommonTimeUtils.convertLocalDateTimeToOffsetDateTime(
+                                        redisService.getLastReadTime(teamId, memberId)
+                                )
                         )
-                );
-
-        Page<ChatDTO> chatPage = chatDataService.getChatHistory(teamId, memberInfoDTO, pageable);
-
-        List<ChatReadResponse> resultChatReads = chatPage.getContent().stream()
-                .map(chatDTO ->
-                        ChatReadResponse.from(
-                                chatDTO,
-                                chatDataService.countReaders(chatDTO, lastReadTimeMap)
-                        )
+                        .build()
                 ).toList();
-
-        return new SliceImpl<>(resultChatReads, pageable, chatPage.hasNext());
     }
 
     @Transactional(readOnly = true)
@@ -142,7 +146,6 @@ public class ChatCoordinateService {
         redisService.deleteAllByTeamId(teamId);
         chatDataService.deleteChats(teamId);
     }
-
 
     private void publishPreviewToAllMembers(Long teamId, ChatDTO savedChatDTO) {
         List<Long> allMemberIdsInTeam = teamMemberDataService.getAllMemberIdInTeam(teamId);

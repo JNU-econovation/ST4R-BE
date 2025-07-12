@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
-import star.team.chat.dto.response.ChatResponse;
+import star.team.chat.dto.broadcast.ChatBroadcast;
 
 @Service
 @RequiredArgsConstructor
@@ -17,13 +17,15 @@ public class RedisChatSubscriber {
 
     public void onChatMessage(String publishedMessage) {
         try {
-            ChatResponse chatResponse = objectMapper.readValue(publishedMessage,
-                    ChatResponse.class);
+            ChatBroadcast chatBroadcast = objectMapper.readValue(publishedMessage,
+                    ChatBroadcast.class);
 
-            messagingTemplate.convertAndSend("/subscribe/" + chatResponse.teamId(), chatResponse);
+            messagingTemplate.convertAndSend("/subscribe/" + chatBroadcast.message().teamId(),
+                    chatBroadcast);
 
-            log.info("Redis Pub/Sub 메시지 수신 및 전송 완료: teamId={}, message={}", chatResponse.teamId(),
-                    chatResponse.message());
+            log.info("Redis Pub/Sub 메시지 수신 및 전송 완료: teamId={}, message={}",
+                    chatBroadcast.message().teamId(),
+                    chatBroadcast.message());
 
         } catch (Exception e) {
             log.error("채팅 메시지 처리 중 오류 발생", e);
