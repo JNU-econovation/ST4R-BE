@@ -88,7 +88,7 @@ public class ChatCoordinateService {
     }
 
     @Transactional(readOnly = true)
-    public List<ChatReadResponse> getReadCountsForInitialLoading(
+    public List<ChatReadResponse> getLastReadTimesForInitialLoading(
             Long teamId, MemberInfoDTO memberInfoDTO
     ) {
         List<Long> allMemberIdsInTeam = teamMemberDataService.getAllMemberIdInTeam(teamId);
