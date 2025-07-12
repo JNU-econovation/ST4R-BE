@@ -46,16 +46,16 @@ public class ChatCoordinateService {
     @Transactional
     public void publishAndSaveChat(Long teamId, ChatSend chat, MemberInfoDTO memberInfoDTO) {
 
-        // DB에 채팅 저장 todo: 비동기로 하기
+        // DB에 채팅 저장
         ChatDTO savedChatDTO = chatDataService.saveChat(teamId, memberInfoDTO.id(),
                 chat.message());
 
-        chatPublisher.publishChat(
+        chatPublisher.publishChatAsync(
                 channelTopic,
                 ChatBroadcast.from(MessageType.GENERAL_MESSAGE, GeneralMessageDTO.from(savedChatDTO))
         );
 
-        publishPreviewToAllMembers(teamId, savedChatDTO);
+        publishPreviewToAllMembersAsync(teamId, savedChatDTO);
     }
 
 
@@ -82,15 +82,13 @@ public class ChatCoordinateService {
                 .updateReadTime(CommonTimeUtils.convertLocalDateTimeToOffsetDateTime(readTime))
                 .build();
 
-        redisChatPublisher.publishChat(
+        redisChatPublisher.publishChatAsync(
                 channelTopic, ChatBroadcast.from(MessageType.UPDATE_READ_TIME, updateMessage)
         );
     }
 
     @Transactional(readOnly = true)
-    public List<ChatReadResponse> getLastReadTimesForInitialLoading(
-            Long teamId, MemberInfoDTO memberInfoDTO
-    ) {
+    public List<ChatReadResponse> getLastReadTimesForInitialLoading(Long teamId) {
         List<Long> allMemberIdsInTeam = teamMemberDataService.getAllMemberIdInTeam(teamId);
 
         return allMemberIdsInTeam.stream()
@@ -147,7 +145,7 @@ public class ChatCoordinateService {
         chatDataService.deleteChats(teamId);
     }
 
-    private void publishPreviewToAllMembers(Long teamId, ChatDTO savedChatDTO) {
+    private void publishPreviewToAllMembersAsync(Long teamId, ChatDTO savedChatDTO) {
         List<Long> allMemberIdsInTeam = teamMemberDataService.getAllMemberIdInTeam(teamId);
 
         allMemberIdsInTeam.forEach(memberId -> {
@@ -159,7 +157,7 @@ public class ChatCoordinateService {
                     .recentMessage(savedChatDTO.message().getValue())
                     .build();
 
-            chatPublisher.publishChatPreview(previewChannelTopic, previewResponse);
+            chatPublisher.publishChatPreviewAsync(previewChannelTopic, previewResponse);
         });
     }
 }
