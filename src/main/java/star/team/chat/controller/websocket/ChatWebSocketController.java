@@ -10,7 +10,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.socket.messaging.SessionConnectedEvent;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 import star.common.security.dto.StarUserDetails;
-import star.team.chat.dto.request.ChatRequest;
+import star.team.chat.dto.send.ChatSend;
 import star.team.chat.service.ChatCoordinateService;
 
 
@@ -25,13 +25,25 @@ public class ChatWebSocketController {
     public void receiveMessage(
             @AuthenticationPrincipal StarUserDetails userDetails,
             @DestinationVariable Long teamId,
-            ChatRequest request
+            ChatSend chat
     ) {
 
         //todo: for debugging
-        log.info("receiveMessage: teamId={}, request={}", teamId, request);
+        log.info("receiveMessage: teamId={}, chat={}", teamId, chat);
 
-        service.publishAndSaveChat(teamId, request, userDetails.getMemberInfoDTO());
+        service.publishAndSaveChat(teamId, chat, userDetails.getMemberInfoDTO());
+    }
+
+    @MessageMapping("/markAsRead/{teamId}")
+    public void markAsRead(
+            @AuthenticationPrincipal StarUserDetails userDetails,
+            @DestinationVariable Long teamId
+    ) {
+
+        //todo: for debugging
+        log.info("markAsRead: teamId={}, memberInfo={}", teamId, userDetails.getMemberInfoDTO());
+
+        service.markAsReadAndPublishUpdatedReadTime(teamId, userDetails.getMemberInfoDTO(), false);
     }
 
     @EventListener
