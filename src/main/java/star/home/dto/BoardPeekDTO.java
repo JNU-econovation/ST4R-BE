@@ -1,15 +1,18 @@
 package star.home.dto;
 
+import static star.home.board.constants.BoardConstants.CONTENT_PREVIEW_MAX_LENGTH;
+
 import java.time.OffsetDateTime;
 import lombok.Builder;
-import star.common.util.CommonTimeUtils;
-import star.home.board.model.entity.Board;
 import star.common.model.vo.Jido;
 import star.common.model.vo.Marker;
+import star.common.util.CommonTimeUtils;
+import star.home.board.model.entity.Board;
 
 @Builder
 public record BoardPeekDTO(
         Long id,
+        Long authorId,
         String imageUrl,
         String title,
         String contentPreview,
@@ -22,8 +25,6 @@ public record BoardPeekDTO(
         OffsetDateTime createdAt
 ) {
 
-    private static final Integer CONTENT_PREVIEW_MAX_LENGTH = 100;
-
     public static BoardPeekDTO from(Board board, String imageUrl, Boolean liked) {
         String contentText = board.getContent().getText();
         Jido map = board.getContent().getMap();
@@ -31,6 +32,7 @@ public record BoardPeekDTO(
 
         return BoardPeekDTO.builder()
                 .id(board.getId())
+                .authorId(board.getMember().getId())
                 .imageUrl(imageUrl)
                 .title(board.getTitle().value())
                 .contentPreview(

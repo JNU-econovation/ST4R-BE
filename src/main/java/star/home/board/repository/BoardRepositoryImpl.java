@@ -92,6 +92,7 @@ public class BoardRepositoryImpl implements BoardRepositoryCustom {
 
     private NumberExpression<Double> buildSelectQuery(BooleanBuilder builder, QBoard board,
             BoardSearchDTO searchDTO) {
+
         LocalDateTimesDTO localDateTimesDTO = searchDTO.localDateTimesForSearch();
         List<CategoryName> categories = searchDTO.categories();
         CircularArea circularArea = searchDTO.circularArea();
@@ -127,14 +128,21 @@ public class BoardRepositoryImpl implements BoardRepositoryCustom {
 
         }
 
-        // 4) title contains
-        if (title != null) {
-            builder.and(board.title.value.containsIgnoreCase(title.value()));
+        if (title != null && content != null) {
+            builder.and(
+                    board.title.value.containsIgnoreCase(title.value())
+                            .or(board.content.text.containsIgnoreCase(content.getText()))
+            );
         }
 
-        // 5) content contains
-        if (content != null) {
-            builder.and(board.content.text.containsIgnoreCase(content.getText()));
+        if (title == null || content == null) {
+            if (title != null) {
+                builder.and(board.title.value.containsIgnoreCase(title.value()));
+            }
+
+            if (content != null) {
+                builder.and(board.content.text.containsIgnoreCase(content.getText()));
+            }
         }
 
         // 6) authorName contains
