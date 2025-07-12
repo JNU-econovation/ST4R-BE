@@ -25,8 +25,8 @@
                 <input type="text" id="previewDestination" value="/member/queue/previews">
             </div>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                <button id="connectBtn" onclick="connect()">Connect</button>
-                <button id="disconnectBtn" onclick="disconnect()" disabled>Disconnect</button>
+                <button id="connectBtn">Connect</button>
+                <button id="disconnectBtn" disabled>Disconnect</button>
             </div>
         </div>
         <div class="panel">
@@ -35,26 +35,27 @@
         </div>
     </div>
 
-    <div class="panel" style="margin-top: 2rem;">
-        <h2>Manual Test</h2>
+    <div class="chat-container panel" style="margin-top: 2rem;">
+        <h2>Chat Room</h2>
         <div class="grid">
             <div class="form-group">
-                <label for="subscribeDestination">Subscribe Destination</label>
-                <input type="text" id="subscribeDestination" value="/subscribe/">
-                <button id="subscribeBtn" style="margin-top: .5rem;" disabled>Subscribe</button>
+                <label for="teamId">Team ID</label>
+                <input type="text" id="teamId" placeholder="Enter Team ID to join">
             </div>
             <div class="form-group">
-                <label for="publishDestination">Publish Destination</label>
-                <input type="text" id="publishDestination" value="/broadcast/">
+                <label for="memberId">My Member ID</label>
+                <input type="text" id="memberId" placeholder="Enter your Member ID">
             </div>
         </div>
-        <div class="form-group">
-            <label for="messageContent">Message</label>
-            <textarea id="messageContent" rows="3" placeholder="Enter message to send"></textarea>
+        <button id="enterRoomBtn" disabled>Enter Chat Room</button>
+        
+        <div id="chat-window" class="chat-window">
+            <div id="messages" class="messages"></div>
+            <div class="message-input">
+                <textarea id="messageContent" rows="2" placeholder="Enter message..."></textarea>
+                <button id="sendBtn">Send</button>
+            </div>
         </div>
-        <button id="sendBtn" onclick="sendMessage()" disabled>Send Message</button>
-        <h3 style="margin-top: 2rem;">Log</h3>
-        <div id="messages" class="messages"></div>
     </div>
 </div>
 
