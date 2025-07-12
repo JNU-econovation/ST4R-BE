@@ -233,7 +233,9 @@ public class TeamCoordinateService {
     }
 
     @Transactional
-    public void joinTeam(MemberInfoDTO memberInfoDTO, Long teamId, JoinTeamRequest request) {
+    public void joinTeam(
+            MemberInfoDTO memberInfoDTO, Long teamId, @Nullable JoinTeamRequest request
+    ) {
 
         Optional<TeamMember> teamMember = getTeamMember(teamId, memberInfoDTO.id());
 
@@ -251,7 +253,7 @@ public class TeamCoordinateService {
 
         Team team = teamDataService.getTeamEntityById(teamId);
 
-        matchPassword(team, request.password());
+        matchPassword(team, request == null ? null : request.password());
 
         team.getParticipant().incrementCurrent();
         teamMemberDataService.addTeamMember(team, memberInfoDTO.id());
