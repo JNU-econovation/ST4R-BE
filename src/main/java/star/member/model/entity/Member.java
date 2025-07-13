@@ -15,6 +15,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import star.common.model.entity.SoftDeletableEntity;
 import star.member.model.vo.Email;
+import star.member.model.vo.Nickname;
 
 @Entity
 @Getter
@@ -29,9 +30,8 @@ public class Member extends SoftDeletableEntity {
     @AttributeOverride(name = "value", column = @Column(name = "email", nullable = false))
     private Email email;
 
-//    @Embedded
-//    @AttributeOverride(name = "value", column = @Column(name = "nickname", nullable = false))
-//    private Nickname nickname;
+    @AttributeOverride(name = "value", column = @Column(name = "nickname", nullable = false))
+    private Nickname nickname;
 
     @Column(nullable = true)
     private String encryptedKakaoAccessToken;
@@ -43,8 +43,9 @@ public class Member extends SoftDeletableEntity {
     private Role role;
 
     @Builder
-    public Member(Email email, String encryptedKakaoAccessToken, String profileImageUrl) {
+    public Member(Email email, Nickname nickname, String encryptedKakaoAccessToken, String profileImageUrl) {
         this.email = email;
+        this.nickname = nickname;
         this.encryptedKakaoAccessToken = encryptedKakaoAccessToken;
         this.profileImageUrl = profileImageUrl;
         this.role = Role.USER;
