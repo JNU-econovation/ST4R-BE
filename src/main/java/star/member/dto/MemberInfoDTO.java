@@ -3,9 +3,9 @@ package star.member.dto;
 import lombok.Builder;
 import star.common.dto.internal.Author;
 import star.member.model.entity.Member;
-import star.member.model.entity.Role;
 import star.member.model.vo.Email;
 import star.member.model.vo.Nickname;
+import star.member.model.vo.Role;
 
 @Builder
 public record MemberInfoDTO(
