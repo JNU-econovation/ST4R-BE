@@ -2,7 +2,17 @@ package star.home.board.model.entity;
 
 
 import com.querydsl.core.annotations.QueryInit;
-import jakarta.persistence.*;
+import jakarta.persistence.AttributeOverride;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Version;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -28,7 +38,7 @@ public class Board extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
-    @QueryInit("email.value") // todo: 닉네임으로 리팩터링 시 바꾸기
+    @QueryInit({"email.value", "nickname.value"})
     private Member member;
 
     @AttributeOverride(name = "value", column = @Column(name = "title", nullable = false))

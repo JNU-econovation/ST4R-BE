@@ -129,7 +129,7 @@ public class TeamRepositoryImpl implements TeamRepositoryCustom {
 
         // 4) authorName contains
         if (leaderName != null) {
-            builder.and(team.leader.email.value.containsIgnoreCase(leaderName.trim()));
+            builder.and(team.leader.nickname.value.containsIgnoreCase(leaderName.trim()));
         }
 
         return distanceExpr;
