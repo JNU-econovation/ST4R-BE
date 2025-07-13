@@ -1,5 +1,6 @@
 package star.member.service;
 
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -9,11 +10,13 @@ import star.common.exception.server.InternalServerException;
 import star.common.security.encryption.util.AESEncryptionUtil;
 import star.member.dto.MemberInfoDTO;
 import star.member.dto.SocialRegisterDTO;
+import star.member.dto.reqeust.CompleteRegistrationRequest;
+import star.member.exception.AlreadyCompletedRegistrationException;
 import star.member.exception.AlreadyInvalidatedTokenException;
-import star.member.exception.LoginFailedException;
 import star.member.exception.MemberDuplicatedEmailException;
 import star.member.exception.MemberNotFoundException;
 import star.member.model.entity.Member;
+import star.member.model.vo.MemberStatus;
 import star.member.repository.MemberRepository;
 
 @Service
@@ -25,31 +28,45 @@ public class MemberService {
     private final AESEncryptionUtil aesEncryptionUtil;
 
     @Transactional(readOnly = true)
-    public MemberInfoDTO login(KakaoMemberInfoDTO kakaoMemberInfoDTO) {
-        Member member = memberRepository.findByEmail(kakaoMemberInfoDTO.email())
-                .orElseThrow(LoginFailedException::new);
+    public Optional<MemberInfoDTO> login(KakaoMemberInfoDTO kakaoMemberInfoDTO) {
+        Optional<Member> optionalMember = memberRepository.findByEmail(kakaoMemberInfoDTO.email());
 
-        return MemberInfoDTO.from(member);
+        return optionalMember.map(MemberInfoDTO::from);
     }
 
     @Transactional
-    public MemberInfoDTO register(SocialRegisterDTO registerDTO) {
+    public MemberInfoDTO processRegistration(SocialRegisterDTO registerDTO) {
 
         if (memberRepository.existsByEmail(registerDTO.email())) {
             throw new MemberDuplicatedEmailException();
         }
 
-        String encryptedAccessToken = encryptToken(registerDTO.SocialAccessToken());
-
         Member newMember = Member
                 .builder()
                 .email(registerDTO.email())
-                .encryptedKakaoAccessToken(encryptedAccessToken)
                 .build();
 
         memberRepository.save(newMember);
 
         return MemberInfoDTO.from(newMember);
+    }
+
+    @Transactional
+    public void completeRegistration(
+            MemberInfoDTO memberInfo, CompleteRegistrationRequest registrationDTO
+    ) {
+        Member member = getMemberEntityById(memberInfo.id());
+
+        if(member.getStatus() == MemberStatus.REGISTER_COMPLETED) {
+            throw new AlreadyCompletedRegistrationException();
+        }
+
+        member.completeRegistration(
+                registrationDTO.birthDate(),
+                registrationDTO.gender(),
+                registrationDTO.nickname(),
+                registrationDTO.profileImageUrl()
+        );
     }
 
     @Transactional(readOnly = true)
@@ -61,6 +78,11 @@ public class MemberService {
     public Member getMemberEntityById(Long memberId) {
         return memberRepository.findById(memberId).orElseThrow(
                 () -> new MemberNotFoundException("id가 %d인 회원을 찾지 못했습니다.".formatted(memberId)));
+    }
+
+    @Transactional(readOnly = true)
+    public MemberStatus getMemberStatusById(Long memberId) {
+        return memberRepository.getStatusById(memberId);
     }
 
     @Transactional
