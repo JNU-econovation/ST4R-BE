@@ -13,7 +13,6 @@ import star.common.auth.kakao.service.KakaoAuthService;
 import star.common.dto.response.CommonResponse;
 import star.common.security.dto.StarUserDetails;
 import star.common.security.encryption.jwt.JwtManager;
-import star.member.dto.MemberInfoDTO;
 
 @Controller
 @RequestMapping("/oauth/kakao")
@@ -36,7 +35,8 @@ public class KakaoAuthController {
 
     @PostMapping("/logout")
     public ResponseEntity<CommonResponse> logout(
-            @AuthenticationPrincipal StarUserDetails userDetails) {
+            @AuthenticationPrincipal StarUserDetails userDetails
+    ) {
         kakaoAuthService.kakaoLogout(userDetails.getMemberInfoDTO());
 
         return ResponseEntity.ok(CommonResponse.success());
