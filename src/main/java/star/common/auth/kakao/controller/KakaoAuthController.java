@@ -9,35 +9,32 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import star.common.auth.kakao.service.KakaoAuthService;
+import star.common.auth.service.AuthCoordinateService;
 import star.common.dto.response.CommonResponse;
 import star.common.security.dto.StarUserDetails;
-import star.common.security.encryption.jwt.JwtManager;
 
 @Controller
 @RequestMapping("/oauth/kakao")
 @RequiredArgsConstructor
 public class KakaoAuthController {
 
-    private final KakaoAuthService kakaoAuthService;
-    private final JwtManager jwtManager;
+    private final AuthCoordinateService service;
 
     @GetMapping
     public String startKakaoOauth(@RequestParam("redirect") String feRedirectUri) {
-        return "redirect:" + kakaoAuthService.getAuthorizationUri(feRedirectUri);
+        return "redirect:" + service.getAuthorizationUri(feRedirectUri);
     }
 
     @GetMapping("/callback")
     public String loginOrRegister(@RequestParam String code, @RequestParam String state) {
-        String accessToken = jwtManager.generateToken(kakaoAuthService.kakaoLoginOrRegister(code));
-        return "redirect:" + kakaoAuthService.getHomeUriWithToken(state, accessToken);
+        return "redirect:" + service.getRedirectUriWithToken(state, code);
     }
 
     @PostMapping("/logout")
     public ResponseEntity<CommonResponse> logout(
             @AuthenticationPrincipal StarUserDetails userDetails
     ) {
-        kakaoAuthService.kakaoLogout(userDetails.getMemberInfoDTO());
+        service.logout(userDetails.getMemberInfoDTO());
 
         return ResponseEntity.ok(CommonResponse.success());
     }
