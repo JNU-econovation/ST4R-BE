@@ -24,6 +24,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import star.common.security.exception.handler.Rest401Handler;
+import star.common.security.filter.RegistrationCompletionFilter;
 import star.common.security.filter.RestJwtAuthFilter;
 
 @Configuration
@@ -78,7 +79,8 @@ public class WebSecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http,
-            CorsConfigurationSource corsConfigurationSource) throws Exception {
+            CorsConfigurationSource corsConfigurationSource,
+            RegistrationCompletionFilter registrationCompletionFilter) throws Exception {
         return http
                 .headers(headers -> headers.frameOptions(FrameOptionsConfig::sameOrigin))
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
@@ -98,8 +100,12 @@ public class WebSecurityConfig {
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-                .addFilterBefore(restJwtAuthFilter,
-                        UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(
+                        restJwtAuthFilter, UsernamePasswordAuthenticationFilter.class
+                )
+                .addFilterAfter(
+                        registrationCompletionFilter, UsernamePasswordAuthenticationFilter.class
+                )
                 .build();
     }
 
