@@ -17,7 +17,6 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import star.common.constants.CommonConstants;
-import star.common.dto.internal.Author;
 import star.common.exception.client.YouAreNotAuthorException;
 import star.common.service.BaseRetryRecoverService;
 import star.common.util.CommonTimeUtils;
@@ -95,16 +94,10 @@ public class BoardService extends BaseRetryRecoverService {
     public BoardResponse getBoard(@Nullable MemberInfoDTO memberInfoDTO, Long boardId) {
         Board board = getBoardEntity(boardId);
         Long viewerId = (memberInfoDTO != null) ? memberInfoDTO.id() : ANONYMOUS_MEMBER_ID;
-        MemberInfoDTO authorMember = memberService.getMemberById(board.getMember().getId());
-        Long authorId = authorMember.id();
+        MemberInfoDTO authorInfo = memberService.getMemberById(board.getMember().getId());
+        Long authorId = authorInfo.id();
 
         increaseViewCount(board);
-
-        Author author = Author.builder()
-                .id(authorId)
-                .imageUrl(authorMember.profileImageUrl())
-                .nickname(authorMember.email().getValue())
-                .build();
 
         List<String> imageUrlStrings = boardImageService.getImageUrls(boardId)
                 .stream()
@@ -114,7 +107,7 @@ public class BoardService extends BaseRetryRecoverService {
         //todo: 추후에 boardResponse from 으로 더 간결하게 리팩터링하기
         return BoardResponse.builder()
                 .id(boardId)
-                .author(author)
+                .author(authorInfo.toAuthor())
                 .isViewerAuthor(viewerId.equals(authorId))
                 .liked(boardHeartService.hasHearted(viewerId, boardId))
                 .title(board.getTitle().value())
