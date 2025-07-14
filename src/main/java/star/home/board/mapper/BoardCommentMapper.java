@@ -1,7 +1,6 @@
 package star.home.board.mapper;
 
 import java.util.List;
-import star.common.dto.internal.Author;
 import star.common.util.CommonTimeUtils;
 import star.home.comment.dto.CommentDTO;
 import star.home.comment.dto.response.CommentResponse;
@@ -18,11 +17,7 @@ public class BoardCommentMapper {
     private static CommentResponse toCommentResponse(CommentDTO dto, Long viewerId, Long authorId) {
         return CommentResponse.builder()
                 .id(dto.getId())
-                .author(Author.builder()
-                        .id(dto.getMemberInfoDTO().id())
-                        .imageUrl(dto.getMemberInfoDTO().profileImageUrl())
-                        .nickname(dto.getMemberInfoDTO().email().getValue())
-                        .build())
+                .author(dto.getMemberInfoDTO().toAuthor())
                 .isViewerAuthor(viewerId.equals(dto.getMemberInfoDTO().id()))
                 .isCommenterAuthor(authorId.equals(dto.getMemberInfoDTO().id()))
                 .content(dto.getContent())

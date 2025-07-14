@@ -20,9 +20,9 @@ import star.common.model.entity.BaseEntity;
 import star.common.model.vo.Jido;
 import star.member.model.entity.Member;
 import star.team.model.vo.Description;
+import star.team.model.vo.EncryptedPassword;
 import star.team.model.vo.Name;
 import star.team.model.vo.Participant;
-import star.team.model.vo.EncryptedPassword;
 
 @Entity
 @Getter
@@ -45,7 +45,7 @@ public class Team extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "leader_id", nullable = false)
-    @QueryInit("email.value") // todo: 닉네임으로 리팩터링 시 바꾸기
+    @QueryInit({"email.value", "nickname.value"})
     private Member leader;
 
     @Embedded
