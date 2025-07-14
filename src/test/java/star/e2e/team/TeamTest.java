@@ -272,6 +272,6 @@ public class TeamTest {
                 .get("/groups/" + teamId)
                 .then()
                 .log().all()
-                .statusCode(400);
+                .statusCode(404);
     }
 }

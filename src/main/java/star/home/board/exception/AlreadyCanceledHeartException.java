@@ -1,11 +1,10 @@
 package star.home.board.exception;
 
-import star.common.exception.client.Client409Exception;
+import star.common.exception.ErrorCode;
+import star.common.exception.client.ClientException;
 
-public class AlreadyCanceledHeartException extends Client409Exception {
-    private static final String ERROR_MESSAGE = "이미 좋아요 취소를 하였습니다.";
-
+public class AlreadyCanceledHeartException extends ClientException implements BoardException {
     public AlreadyCanceledHeartException() {
-        super(ERROR_MESSAGE);
+        super(ErrorCode.ALREADY_CANCELED_HEART);
     }
 }

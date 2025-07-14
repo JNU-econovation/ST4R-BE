@@ -6,25 +6,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.MessageExceptionHandler;
 import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.stereotype.Controller;
-import star.common.exception.client.Client403Exception;
 import star.common.exception.client.ClientException;
 
 @Controller
 @Slf4j
 public class ChatExceptionHandler {
 
-    @MessageExceptionHandler(Client403Exception.class)
-    @SendToUser("/queue/errors")
-    public String handleClient403Exception(Client403Exception e) {
-        log.warn("WebSocket Client403Exception: {}", e.getMessage());
-        return e.getMessage();
-    }
-
     @MessageExceptionHandler(ClientException.class)
     @SendToUser("/queue/errors")
     public String handleClientException(ClientException e) {
-        log.warn("WebSocket ClientException: {}", e.getMessage());
-        return e.getMessage();
+        log.warn("웹소켓 클라이언트 관련 에러: {}", e.getMessage());
+        return e.getErrorCode().getMessage();
     }
 
     @MessageExceptionHandler(Exception.class)

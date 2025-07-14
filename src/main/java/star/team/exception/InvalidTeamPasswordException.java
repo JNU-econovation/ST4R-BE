@@ -1,11 +1,10 @@
 package star.team.exception;
 
-import star.common.exception.client.Client403Exception;
+import star.common.exception.ErrorCode;
+import star.common.exception.client.ClientException;
 
-public class InvalidTeamPasswordException extends Client403Exception {
-    private static final String ERROR_MESSAGE = "올바르지 않은 모임 비밀번호 입니다.";
-
+public class InvalidTeamPasswordException extends ClientException implements TeamException {
     public InvalidTeamPasswordException() {
-        super(ERROR_MESSAGE);
+        super(ErrorCode.INVALID_TEAM_PASSWORD);
     }
 }

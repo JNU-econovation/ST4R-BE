@@ -7,14 +7,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
-import star.common.auth.exception.InvalidRedirectUriException;
 import star.common.auth.kakao.config.KakaoAuthConfig;
 import star.common.auth.kakao.dto.KakaoMemberInfoDTO;
-import star.common.exception.server.InternalServerException;
-import star.member.dto.MemberInfoDTO;
-import star.member.dto.SocialRegisterDTO;
-import star.member.exception.AlreadyInvalidatedTokenException;
-import star.member.exception.LoginFailedException;
 import star.member.service.MemberService;
 
 
@@ -28,9 +22,6 @@ public class KakaoAuthService {
     private final KakaoAuthConfig kakaoAuthConfig;
 
     public String getAuthorizationUri(String feRedirectUri) {
-        if (!kakaoAuthConfig.allowedFeRedirectOrigins().contains(feRedirectUri))
-            throw new InvalidRedirectUriException("%s 는 허용된 redirect uri가 아닙니다.".formatted(feRedirectUri));
-
         return UriComponentsBuilder
                 .fromUriString("https://kauth.kakao.com/oauth/authorize")
                 .queryParam("response_type", "code")
@@ -41,50 +32,17 @@ public class KakaoAuthService {
                 .toUriString();
     }
 
-    public String getHomeUriWithToken(String feRedirectUri, String accessToken) {
-        if (!kakaoAuthConfig.allowedFeRedirectOrigins().contains(feRedirectUri))
-            throw new InvalidRedirectUriException("%s 는 허용된 redirect uri가 아닙니다.".formatted(feRedirectUri));
-
-        return UriComponentsBuilder
-                .fromUriString(feRedirectUri + "/home")
-                .queryParam("accessToken", accessToken)
-                .build()
-                .toUriString();
+    public String getAccessToken(String authorizationCode) {
+        return kakaoClientService.getAccessToken(authorizationCode);
     }
 
-    public MemberInfoDTO kakaoLoginOrRegister(String authorizationCode) {
-        String accessToken = kakaoClientService.getAccessToken(authorizationCode);
-        KakaoMemberInfoDTO kakaoMemberInfoDTO = kakaoClientService.getMemberInfo(accessToken);
-
-        try {
-            // -> LoginFailedException 을 던질 수 있음
-            MemberInfoDTO memberInfoDTO = memberService.login(kakaoMemberInfoDTO);
-
-            memberService.updateAccessToken(memberInfoDTO.id(), accessToken);
-            return memberInfoDTO;
-        } catch (LoginFailedException e) { // 유저를 못 찾거나 탈퇴한 유저라면 회원가입
-            SocialRegisterDTO registerDTO = SocialRegisterDTO.builder()
-                    .SocialAccessToken(accessToken)
-                    .email(kakaoMemberInfoDTO.email())
-                    .build();
-            MemberInfoDTO memberInfoDTO = memberService.register(registerDTO);
-
-            memberService.updateAccessToken(memberInfoDTO.id(), accessToken);
-            return memberInfoDTO;
-        }
+    public KakaoMemberInfoDTO getMemberInfo(String accessToken) {
+        return kakaoClientService.getMemberInfo(accessToken);
     }
 
-    public void kakaoLogout(MemberInfoDTO memberInfoDTO) {
-        String kakaoAccessToken = invalidateKakaoAccessToken(memberInfoDTO);
+    public void logout(String kakaoAccessToken) {
         kakaoClientService.logout(kakaoAccessToken);
     }
 
-    private String invalidateKakaoAccessToken(MemberInfoDTO memberInfoDTO) {
-        try {
-            return memberService.invalidateAccessToken(memberInfoDTO.id());
-        } catch (AlreadyInvalidatedTokenException e) {
-            log.error(e.getMessage(), e);
-            throw new InternalServerException(e.getMessage());
-        }
-    }
+
 }

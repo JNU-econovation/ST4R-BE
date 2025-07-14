@@ -1,12 +1,11 @@
 package star.team.exception;
 
-import star.common.exception.client.Client409Exception;
+import star.common.exception.ErrorCode;
+import star.common.exception.client.ClientException;
 
-public class NewPasswordSameAsOldException extends Client409Exception {
-
-    private static final String ERROR_MESSAGE = "새 비밀번호가 이전 비밀번호와 같습니다.";
+public class NewPasswordSameAsOldException extends ClientException implements TeamException {
 
     public NewPasswordSameAsOldException() {
-        super(ERROR_MESSAGE);
+        super(ErrorCode.NEW_PASSWORD_SAME_AS_OLD);
     }
 }

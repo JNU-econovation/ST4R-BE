@@ -1,12 +1,11 @@
 package star.team.exception;
 
-import star.common.exception.client.Client409Exception;
+import star.common.exception.ErrorCode;
+import star.common.exception.client.ClientException;
 
-public class YouAlreadyJoinedTeamException extends Client409Exception {
-
-    private static final String ERROR_MESSAGE = "이미 모임에 참여하였습니다.";
+public class YouAlreadyJoinedTeamException extends ClientException implements TeamException {
 
     public YouAlreadyJoinedTeamException() {
-        super(ERROR_MESSAGE);
+        super(ErrorCode.YOU_ALREADY_JOINED_TEAM);
     }
 }

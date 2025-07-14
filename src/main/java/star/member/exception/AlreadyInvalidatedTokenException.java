@@ -1,10 +1,10 @@
 package star.member.exception;
 
-import star.common.exception.client.Client409Exception;
+import star.common.exception.ErrorCode;
+import star.common.exception.client.ClientException;
 
-public class AlreadyInvalidatedTokenException extends Client409Exception {
-    private static final String ERROR_MESSAGE = "이미 카카오 토큰이 만료되었습니다.";
+public class AlreadyInvalidatedTokenException extends ClientException implements MemberException {
     public AlreadyInvalidatedTokenException() {
-        super(ERROR_MESSAGE);
+        super(ErrorCode.ALREADY_INVALIDATED_TOKEN);
     }
 }

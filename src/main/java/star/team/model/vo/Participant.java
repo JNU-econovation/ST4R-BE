@@ -9,6 +9,8 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import star.common.exception.client.BadDataMeaningException;
+import star.common.exception.client.BadDataSyntaxException;
 import star.team.exception.EmptyParticipantException;
 import star.team.exception.FullParticipantException;
 
@@ -49,28 +51,28 @@ public class Participant {
         this.capacity = capacity;
     }
 
-    //todo: 추후 business exception 으로 refactoring
+
     private void validate(Integer current, Integer capacity) {
         if (current == null) {
-            throw new IllegalArgumentException("참여자 수를 입력해주세요.");
+            throw new BadDataSyntaxException("참여자 수를 입력해주세요.");
         }
 
         if (capacity == null) {
-            throw new IllegalArgumentException("정원 수를 입력해주세요.");
+            throw new BadDataSyntaxException("정원 수를 입력해주세요.");
         }
 
         if (current < PARTICIPANT_MIN_CAPACITY) {
-            throw new IllegalArgumentException(
+            throw new BadDataMeaningException(
                     "참여자 수는 %d보다 작을 수 없습니다.".formatted(PARTICIPANT_MIN_CAPACITY));
         }
 
         if (capacity > PARTICIPANT_MAX_CAPACITY) {
-            throw new IllegalArgumentException(
+            throw new BadDataMeaningException(
                     "정원 수는 %d보다 적어야 합니다.".formatted(PARTICIPANT_MAX_CAPACITY));
         }
 
         if (current >= capacity) {
-            throw new IllegalArgumentException("그룹이 꽉 찼습니다.");
+            throw new BadDataSyntaxException("그룹이 꽉 찼습니다.");
         }
     }
 

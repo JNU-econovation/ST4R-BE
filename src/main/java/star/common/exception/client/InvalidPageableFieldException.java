@@ -1,13 +1,20 @@
 package star.common.exception.client;
 
+import star.common.exception.ErrorCode;
+
 public class InvalidPageableFieldException extends ClientException {
 
-    private static final String ERROR_MESSAGE_PREFIX = """
-            올바르지 않은 필드 입니다.
-            입력한 필드 : 
-            """;
+    private final String fieldName;
+    private final String clientInput;
 
-    public InvalidPageableFieldException(String clientParam) {
-        super(ERROR_MESSAGE_PREFIX + clientParam);
+    public InvalidPageableFieldException(String fieldName, String clientInput) {
+        super(ErrorCode.INVALID_PAGEABLE_FIELD);
+        this.fieldName = fieldName;
+        this.clientInput = clientInput;
+    }
+
+    @Override
+    public String getMessage() {
+        return String.format(getErrorCode().getMessage(), fieldName, clientInput);
     }
 }

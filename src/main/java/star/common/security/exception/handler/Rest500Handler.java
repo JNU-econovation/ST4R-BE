@@ -1,8 +1,6 @@
 package star.common.security.exception.handler;
 
 
-import static star.common.constants.CommonConstants.CRITICAL_ERROR_MESSAGE;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -11,9 +9,11 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 import star.common.dto.response.CommonResponse;
+import star.common.exception.ErrorCode;
 
 @Component
 public class Rest500Handler implements AuthenticationEntryPoint {
+
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
@@ -24,6 +24,7 @@ public class Rest500Handler implements AuthenticationEntryPoint {
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
 
-        objectMapper.writeValue(response.getWriter(), CommonResponse.failure(CRITICAL_ERROR_MESSAGE));
+        objectMapper.writeValue(response.getWriter(),
+                CommonResponse.failure(ErrorCode.UNKNOWN_FILTER_ERROR));
     }
 }

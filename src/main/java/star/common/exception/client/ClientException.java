@@ -1,8 +1,12 @@
 package star.common.exception.client;
 
-public class ClientException extends RuntimeException {
+import star.common.exception.BusinessException;
+import star.common.exception.ErrorCode;
 
-    public ClientException(String message) {
-        super(message);
+
+public abstract class ClientException extends BusinessException {
+
+    public ClientException(ErrorCode errorCode) {
+        super(errorCode);
     }
 }

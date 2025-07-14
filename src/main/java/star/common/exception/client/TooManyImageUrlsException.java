@@ -1,8 +1,20 @@
 package star.common.exception.client;
 
+import lombok.Getter;
+import star.common.exception.ErrorCode;
+
+@Getter
 public class TooManyImageUrlsException extends ClientException {
 
-    public TooManyImageUrlsException(Integer maxImageUrls) {
-        super("이미지는 최대 %d개 까지 가능합니다.".formatted(maxImageUrls));
+    private final int maxImageUrls;
+
+    public TooManyImageUrlsException(int maxImageUrls) {
+        super(ErrorCode.TOO_MANY_IMAGE_URLS);
+        this.maxImageUrls = maxImageUrls;
+    }
+
+    @Override
+    public String getMessage() {
+        return String.format(getErrorCode().getMessage(), maxImageUrls);
     }
 }

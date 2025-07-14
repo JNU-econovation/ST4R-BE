@@ -11,7 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import star.common.exception.server.InternalServerException;
+import star.common.security.EncryptionException;
 import star.common.util.CommonTimeUtils;
 import star.member.model.entity.Member;
 import star.team.dto.CreateTeamDTO;
@@ -108,7 +108,7 @@ public class TeamDataService {
             return new EncryptedPassword(passwordEncoder.encode(plainPassword.value()));
         } catch (Exception e) {
             log.error(CRITICAL_ENCRYPT_ERROR_MESSAGE, e);
-            throw new InternalServerException(CRITICAL_ENCRYPT_ERROR_MESSAGE);
+            throw new EncryptionException();
         }
     }
 }

@@ -7,7 +7,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import star.member.dto.MemberInfoDTO;
-import star.member.model.entity.Role;
+import star.member.model.vo.Role;
 
 @RequiredArgsConstructor
 public class StarUserDetails implements UserDetails {
