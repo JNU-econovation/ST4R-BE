@@ -8,11 +8,14 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort.Order;
 import org.springframework.util.CollectionUtils;
 import star.common.dto.LocalDateTimesDTO;
+import star.common.exception.ErrorCode;
 import star.common.exception.server.InternalServerException;
 import star.common.model.vo.CircularArea;
 import star.common.model.vo.QJido;
@@ -24,10 +27,92 @@ import star.home.board.model.vo.Title;
 import star.home.category.model.vo.CategoryName;
 import star.member.model.entity.QMember;
 
+@Slf4j
 @RequiredArgsConstructor
 public class BoardRepositoryImpl implements BoardRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
+
+    private static void buildCreatedAt(BooleanBuilder builder, QBoard board,
+            LocalDateTimesDTO localDateTimesDTO) {
+        builder.and(board.createdAt.between(localDateTimesDTO.start(), localDateTimesDTO.end()));
+    }
+
+    private static void buildCategory(BooleanBuilder builder, QBoard board,
+            BoardSearchDTO searchDTO) {
+        if (!CollectionUtils.isEmpty(searchDTO.categories())) {
+            builder.and(board.category.name.in(searchDTO.categories()));
+        }
+    }
+
+    private static NumberExpression<Double> buildDistance(BooleanBuilder builder,
+            QBoard board, CircularArea circularArea) {
+        NumberExpression<Double> distanceExpr = null;
+
+        if (circularArea != null) {
+            Double latitude = circularArea.marker().getLatitude();
+            Double longitude = circularArea.marker().getLongitude();
+            Double distanceInMeters = circularArea.distanceInMeters();
+            QJido jido = board.content.map;
+
+            builder.and(jido.isNotNull());
+
+            distanceExpr = Expressions.numberTemplate(
+                    Double.class,
+                    "6371000 * acos(least(1.0, cos(radians({0})) * cos(radians({1})) * " +
+                            "cos(radians({2}) - radians({3})) + sin(radians({0})) * sin(radians({1}))))",
+                    latitude, jido.marker.latitude, jido.marker.longitude, longitude
+            );
+            builder.and(distanceExpr.loe(distanceInMeters));
+
+        }
+        return distanceExpr;
+    }
+
+    private static void buildTitleAndContent(
+            BooleanBuilder builder, QBoard board, Title title, Content content
+    ) {
+        boolean hasTitle = title != null;
+        boolean hasContent = content != null;
+
+        if (hasTitle && hasContent) {
+            builder.and(
+                    board.title.value.containsIgnoreCase(title.value())
+                            .or(board.content.text.containsIgnoreCase(content.getText()))
+            );
+            return;
+        }
+
+        if (hasTitle) {
+            builder.and(board.title.value.containsIgnoreCase(title.value()));
+        }
+
+        if (hasContent) {
+            builder.and(board.content.text.containsIgnoreCase(content.getText()));
+        }
+    }
+
+    private static void buildAuthorName(BooleanBuilder builder, QBoard board, String authorName) {
+        if (authorName != null) {
+            builder.and(board.member.email.value.containsIgnoreCase(authorName.trim()));
+        }
+    }
+
+    private static OrderSpecifier<?> getOrderSpecifier(Order order, QBoard board,
+            NumberExpression<Double> distanceExpr) {
+        boolean asc = order.isAscending();
+
+        return switch (order.getProperty()) {
+            case "createdAt" -> asc ? board.createdAt.asc() : board.createdAt.desc();
+            case "viewCount" -> asc ? board.viewCount.asc() : board.viewCount.desc();
+            case "heartCount" -> asc ? board.heartCount.asc() : board.heartCount.desc();
+            case "distance" -> asc ? distanceExpr.asc() : distanceExpr.desc();
+            default -> {
+                log.error("알려지지 않은 정렬 프로퍼티 입니다. -> {} ", order.getProperty());
+                throw new InternalServerException(ErrorCode.INTERNAL_SERVER_ERROR);
+            }
+        };
+    }
 
     @Override
     public Page<Board> searchBoards(BoardSearchDTO searchDTO, Pageable pageable) {
@@ -57,34 +142,8 @@ public class BoardRepositoryImpl implements BoardRepositoryCustom {
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .orderBy(pageable.getSort().stream()
-                        .map(order -> {
-                            boolean asc = order.isAscending();
-                            OrderSpecifier<?> spec;
-                            switch (order.getProperty()) {
-                                case "createdAt":
-                                    spec = asc ? board.createdAt.asc() : board.createdAt.desc();
-                                    break;
-                                case "viewCount":
-                                    spec = asc ? board.viewCount.asc() : board.viewCount.desc();
-                                    break;
-                                case "heartCount":
-                                    spec = asc ? board.heartCount.asc() : board.heartCount.desc();
-                                    break;
-                                case "distance":
-                                    if (distanceExpr == null) {
-                                        throw new InternalServerException(
-                                                "SortField가 거리 순이지만 distanceExpr에 거리가 없음"
-                                        );
-                                    }
-                                    spec = asc ? distanceExpr.asc() : distanceExpr.desc();
-                                    break;
-                                default:
-                                    throw new IllegalArgumentException(
-                                            "알려지지 않은 정렬 프로퍼티 입니다. -> " + order.getProperty()
-                                    );
-                            }
-                            return spec;
-                        }).toArray(OrderSpecifier<?>[]::new))
+                        .map(order -> getOrderSpecifier(order, board, distanceExpr))
+                        .toArray(OrderSpecifier<?>[]::new))
                 .fetch();
 
         return new PageImpl<>(results, pageable, total);
@@ -100,55 +159,15 @@ public class BoardRepositoryImpl implements BoardRepositoryCustom {
         Content content = searchDTO.content();
         String authorName = searchDTO.authorName();
 
-        NumberExpression<Double> distanceExpr = null;
+        buildCreatedAt(builder, board, localDateTimesDTO);
 
-        // 1) createdAt between start, end
-        builder.and(board.createdAt.between(localDateTimesDTO.start(), localDateTimesDTO.end()));
+        buildCategory(builder, board, searchDTO);
 
-        // 2) categoryName IN (...)
-        if (!CollectionUtils.isEmpty(searchDTO.categories())) {
-            builder.and(board.category.name.in(searchDTO.categories()));
-        }
+        NumberExpression<Double> distanceExpr = buildDistance(builder, board, circularArea);
 
-        if (circularArea != null) {
-            Double latitude = circularArea.marker().getLatitude();
-            Double longitude = circularArea.marker().getLongitude();
-            Double distanceInMeters = circularArea.distanceInMeters();
-            QJido jido = board.content.map;
+        buildTitleAndContent(builder, board, title, content);
 
-            builder.and(jido.isNotNull());
-
-            distanceExpr = Expressions.numberTemplate(
-                    Double.class,
-                    "6371000 * acos(least(1.0, cos(radians({0})) * cos(radians({1})) * " +
-                            "cos(radians({2}) - radians({3})) + sin(radians({0})) * sin(radians({1}))))",
-                    latitude, jido.marker.latitude, jido.marker.longitude, longitude
-            );
-            builder.and(distanceExpr.loe(distanceInMeters));
-
-        }
-
-        if (title != null && content != null) {
-            builder.and(
-                    board.title.value.containsIgnoreCase(title.value())
-                            .or(board.content.text.containsIgnoreCase(content.getText()))
-            );
-        }
-
-        if (title == null || content == null) {
-            if (title != null) {
-                builder.and(board.title.value.containsIgnoreCase(title.value()));
-            }
-
-            if (content != null) {
-                builder.and(board.content.text.containsIgnoreCase(content.getText()));
-            }
-        }
-
-        // 6) authorName contains
-        if (authorName != null) {
-            builder.and(board.member.email.value.containsIgnoreCase(authorName.trim()));
-        }
+        buildAuthorName(builder, board, authorName);
 
         return distanceExpr;
     }

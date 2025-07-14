@@ -10,10 +10,13 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort.Order;
 import star.common.dto.LocalDateTimesDTO;
+import star.common.exception.ErrorCode;
 import star.common.exception.client.IncompatibleRequestParametersException;
 import star.common.exception.server.InternalServerException;
 import star.common.model.vo.CircularArea;
@@ -24,10 +27,29 @@ import star.team.model.entity.QTeam;
 import star.team.model.entity.Team;
 import star.team.model.vo.Name;
 
+@Slf4j
 @RequiredArgsConstructor
 public class TeamRepositoryImpl implements TeamRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
+
+    private static OrderSpecifier<?> getOrderSpecifier(Order order, QTeam team,
+            NumberExpression<Double> distanceExpr) {
+        boolean asc = order.isAscending();
+
+        return switch (order.getProperty()) {
+            case "createdAt" -> asc ? team.createdAt.asc() : team.createdAt.desc();
+            case "whenToMeet" -> asc ? team.whenToMeet.asc() : team.whenToMeet.desc();
+            case "heartCount" -> asc ? team.heartCount.asc() : team.heartCount.desc();
+            case "distance" -> {
+                yield asc ? distanceExpr.asc() : distanceExpr.desc();
+            }
+            default -> {
+                log.error("알려지지 않은 정렬 프로퍼티 입니다. -> {}", order.getProperty());
+                throw new InternalServerException(ErrorCode.INTERNAL_SERVER_ERROR);
+            }
+        };
+    }
 
     public Page<Team> searchTeams(TeamSearchDTO searchDTO, Pageable pageable) {
 
@@ -55,29 +77,8 @@ public class TeamRepositoryImpl implements TeamRepositoryCustom {
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .orderBy(pageable.getSort().stream()
-                        .map(order -> {
-                            boolean asc = order.isAscending();
-                            OrderSpecifier<?> spec = switch (order.getProperty()) {
-                                case "createdAt" ->
-                                        asc ? team.createdAt.asc() : team.createdAt.desc();
-                                case "whenToMeet" ->
-                                        asc ? team.whenToMeet.asc() : team.whenToMeet.desc();
-                                case "heartCount" ->
-                                        asc ? team.heartCount.asc() : team.heartCount.desc();
-                                case "distance" -> {
-                                    if (distanceExpr == null) {
-                                        throw new InternalServerException(
-                                                "SortField가 거리 순이지만 distanceExpr에 거리가 없음"
-                                        );
-                                    }
-                                    yield asc ? distanceExpr.asc() : distanceExpr.desc();
-                                }
-                                default -> throw new IllegalArgumentException(
-                                        "알려지지 않은 정렬 프로퍼티 입니다. -> " + order.getProperty()
-                                );
-                            };
-                            return spec;
-                        }).toArray(OrderSpecifier<?>[]::new))
+                        .map(order -> getOrderSpecifier(order, team, distanceExpr))
+                        .toArray(OrderSpecifier<?>[]::new))
                 .fetch();
 
         return new PageImpl<>(results, pageable, total);
@@ -93,17 +94,38 @@ public class TeamRepositoryImpl implements TeamRepositoryCustom {
 
         NumberExpression<Double> distanceExpr = null;
 
-        // 1) whenToMeet between start, end Or Past
-        if (meetBetween != null) {
-            if (responseIncludePastMeetTime) {
-                throw new IncompatibleRequestParametersException("모임 날짜", "과거 모임 표시");
-            }
-            builder.and(team.whenToMeet.between(meetBetween.start(), meetBetween.end()));
-        } else if (!responseIncludePastMeetTime) {
-            builder.and(team.whenToMeet.after(LocalDateTime.now()));
+        buildWhenToMeet(builder, team, meetBetween, responseIncludePastMeetTime);
+
+        distanceExpr = buildDistance(builder, team, circularArea, distanceExpr);
+
+        buildTitle(builder, team, name);
+
+        buildAuthorName(builder, team, leaderName);
+
+        return distanceExpr;
+    }
+
+    private static void buildWhenToMeet(BooleanBuilder builder, QTeam team,
+            LocalDateTimesDTO meetBetween, boolean responseIncludePastMeetTime) {
+
+        if (meetBetween != null && responseIncludePastMeetTime) {
+            throw new IncompatibleRequestParametersException("모임 날짜", "과거 모임 표시");
         }
 
-        //2
+        if (meetBetween == null && responseIncludePastMeetTime) {
+            return;
+        }
+
+        if (meetBetween != null) {
+            builder.and(team.whenToMeet.between(meetBetween.start(), meetBetween.end()));
+            return;
+        }
+
+        builder.and(team.whenToMeet.after(LocalDateTime.now()));
+    }
+
+    private static NumberExpression<Double> buildDistance(BooleanBuilder builder,
+            QTeam team, CircularArea circularArea, NumberExpression<Double> distanceExpr) {
         if (circularArea != null) {
             Double latitude = circularArea.marker().getLatitude();
             Double longitude = circularArea.marker().getLongitude();
@@ -121,19 +143,18 @@ public class TeamRepositoryImpl implements TeamRepositoryCustom {
             builder.and(distanceExpr.loe(distanceInMeters));
 
         }
-
-        // 3) title contains
-        if (name != null) {
-            builder.and(team.name.value.containsIgnoreCase(name.getValue()));
-        }
-
-        // 4) authorName contains
-        if (leaderName != null) {
-            builder.and(team.leader.nickname.value.containsIgnoreCase(leaderName.trim()));
-        }
-
         return distanceExpr;
     }
 
+    private static void buildTitle(BooleanBuilder builder, QTeam team, Name name) {
+        if (name != null) {
+            builder.and(team.name.value.containsIgnoreCase(name.getValue()));
+        }
+    }
 
+    private static void buildAuthorName(BooleanBuilder builder, QTeam team, String leaderName) {
+        if (leaderName != null) {
+            builder.and(team.leader.nickname.value.containsIgnoreCase(leaderName.trim()));
+        }
+    }
 }
