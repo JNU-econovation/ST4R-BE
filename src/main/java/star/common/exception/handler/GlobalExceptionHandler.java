@@ -1,17 +1,14 @@
 package star.common.exception.handler;
 
-import static star.common.constants.CommonConstants.CRITICAL_ERROR_MESSAGE;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanInstantiationException;
-import org.springframework.core.NestedExceptionUtils;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
@@ -20,19 +17,18 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import star.common.dto.response.CommonResponse;
-import star.common.exception.client.Client403Exception;
-import star.common.exception.client.Client409Exception;
+import star.common.exception.ErrorCode;
 import star.common.exception.client.ClientException;
 import star.common.exception.server.InternalServerException;
 
-
-@RestControllerAdvice
 @Slf4j
+@RestControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
+
+    private static final String INTERNAL_SERVER_ERROR_MESSAGE = "서버에서 예상치 못한 오류가 발생했습니다.";
 
     @Override
     protected ResponseEntity<Object> handleMissingServletRequestParameter(
@@ -44,7 +40,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         String parameterName = ex.getParameterName();
         String message = "필요로 하는 파라미터 -> " + parameterName + " 이(가) 없습니다.";
         log.warn("Missing parameter: {}", parameterName);
-        return new ResponseEntity<>(CommonResponse.failure(message), status);
+        return handleExceptionInternal(ErrorCode.INVALID_INPUT_VALUE, message);
     }
 
     @Override
@@ -76,8 +72,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             });
         }
 
-        return new ResponseEntity<>(CommonResponse.failure(errorMessage.toString()),
-                HttpStatus.BAD_REQUEST);
+        return handleExceptionInternal(ErrorCode.INVALID_INPUT_VALUE, errorMessage.toString());
+
     }
 
     @Override
@@ -91,7 +87,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         Throwable cause = ex.getCause();
 
         if (cause instanceof JsonProcessingException jsonEx) {
-            log.error("JSON parsing error: {}", jsonEx.getMessage());
+            log.warn("JSON parsing error: {}", jsonEx.getMessage());
 
             switch (jsonEx) {
                 case InvalidFormatException invalidFormatEx -> {
@@ -118,84 +114,69 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 }
             }
         } else {
-            log.error("HTTP message not readable: {}", ex.getMessage());
+            log.warn("HTTP message not readable: {}", ex.getMessage());
             message = "요청 본문을 읽을 수 없습니다. JSON 형식을 확인해주세요.";
         }
 
-        return new ResponseEntity<>(CommonResponse.failure(message), HttpStatus.BAD_REQUEST);
+        return handleExceptionInternal(ErrorCode.INVALID_INPUT_VALUE, message);
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    public ResponseEntity<CommonResponse> handleMethodArgumentTypeMismatch(
+    public ResponseEntity<Object> handleMethodArgumentTypeMismatch(
             MethodArgumentTypeMismatchException ex) {
 
         String message = String.format("파라미터 '%s'의 값 '%s'이(가) 올바르지 않습니다.",
                 ex.getName(), ex.getValue());
         log.warn("Type mismatch for parameter: {} with value: {}", ex.getName(), ex.getValue());
 
-        return new ResponseEntity<>(CommonResponse.failure(message), HttpStatus.BAD_REQUEST);
+        return handleExceptionInternal(ErrorCode.INVALID_INPUT_VALUE, message);
     }
 
     @ExceptionHandler(JsonProcessingException.class)
-    public ResponseEntity<CommonResponse> handleJsonProcessingException(
+    public ResponseEntity<Object> handleJsonProcessingException(
             JsonProcessingException ex) {
-        log.error("JSON processing error: {}", ex.getMessage());
+        log.warn("JSON processing error: {}", ex.getMessage());
         String message = "JSON 처리 중 오류가 발생했습니다: " + ex.getOriginalMessage();
-        return new ResponseEntity<>(CommonResponse.failure(message), HttpStatus.BAD_REQUEST);
+        return handleExceptionInternal(ErrorCode.INVALID_INPUT_VALUE, message);
     }
 
-
-    @ExceptionHandler(InternalServerException.class)
-    public ResponseEntity<CommonResponse> handleInternalServerException(InternalServerException e) {
-        log.error(e.getMessage(), e);
-        return new ResponseEntity<>(CommonResponse.failure(CRITICAL_ERROR_MESSAGE),
-                HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-
-    @ExceptionHandler(Client403Exception.class)
-    public ResponseEntity<CommonResponse> handleClient403Exception(Client403Exception e) {
-        return new ResponseEntity<>(CommonResponse.failure(e.getMessage()), HttpStatus.FORBIDDEN);
-    }
-
-    @ExceptionHandler(Client409Exception.class)
-    public ResponseEntity<CommonResponse> handleClient409Exception(Client409Exception e) {
-        return new ResponseEntity<>(CommonResponse.failure(e.getMessage()), HttpStatus.CONFLICT);
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Object> handleIllegalArgumentException(IllegalArgumentException e) {
+        log.warn("IllegalArgumentException 발생 : {}", e.getMessage());
+        return handleExceptionInternal(ErrorCode.INVALID_INPUT_VALUE, e.getMessage());
     }
 
 
     @ExceptionHandler(ClientException.class)
     public ResponseEntity<CommonResponse> handleClientException(ClientException e) {
-        return new ResponseEntity<>(CommonResponse.failure(e.getMessage()), HttpStatus.BAD_REQUEST);
+        log.warn("클라이언트 예외 발생: Code={}, Message={}", e.getErrorCode().getCode(), e.getMessage());
+        return handleClientExceptionInternal(e);
     }
 
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<CommonResponse> handleIllegalArgumentException(
-            IllegalArgumentException e) {
-        return new ResponseEntity<>(CommonResponse.failure(e.getMessage()), HttpStatus.BAD_REQUEST);
+
+    @ExceptionHandler(InternalServerException.class)
+    public ResponseEntity<Object> handleServerException(InternalServerException e) {
+        ErrorCode errorCode = e.getErrorCode();
+        log.error("서버에 의한 오류 발생: Code={}, Message={}", errorCode.getCode(), e.getMessage(), e);
+        return handleExceptionInternal(errorCode, INTERNAL_SERVER_ERROR_MESSAGE);
     }
 
-    @ExceptionHandler(BeanInstantiationException.class)
-    public ResponseEntity<CommonResponse> handleBeanInstantiationException(
-            BeanInstantiationException e) {
-
-        Throwable cause = NestedExceptionUtils.getMostSpecificCause(e);
-
-        //rootCause 니까 instanceof 말고 getclass 로 하기
-        if (cause.getClass().equals(IllegalArgumentException.class)) {
-            return new ResponseEntity<>(CommonResponse.failure(cause.getMessage()),
-                    HttpStatus.BAD_REQUEST);
-        }
-
-        log.warn(e.getMessage(), e);
-        return new ResponseEntity<>(CommonResponse.failure("요청 파라미터가 잘못되었습니다."),
-                HttpStatus.BAD_REQUEST);
-
-    }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<CommonResponse> handleException(Exception e) {
-        log.error(CRITICAL_ERROR_MESSAGE, e);
-        return new ResponseEntity<>(CommonResponse.failure(CRITICAL_ERROR_MESSAGE),
-                HttpStatus.INTERNAL_SERVER_ERROR);
+    public ResponseEntity<Object> handleAllUncaughtException(Exception e) {
+        ErrorCode errorCode = ErrorCode.INTERNAL_SERVER_ERROR;
+        log.error("서버에 의한 오류 발생: ", e);
+        return handleExceptionInternal(errorCode, INTERNAL_SERVER_ERROR_MESSAGE);
+    }
+
+
+    private ResponseEntity<CommonResponse> handleClientExceptionInternal(ClientException e) {
+        return ResponseEntity.status(e.getErrorCode().getStatus())
+                .body(CommonResponse.failure(e.getErrorCode(), e.getMessage()));
+    }
+
+    private ResponseEntity<Object> handleExceptionInternal(ErrorCode errorCode, String message) {
+        return ResponseEntity.status(errorCode.getStatus())
+                .body(CommonResponse.failure(errorCode, message));
     }
 }
