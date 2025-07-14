@@ -14,14 +14,14 @@ import star.member.dto.reqeust.CompleteRegistrationRequest;
 import star.member.service.MemberService;
 
 @RestController
-    @RequestMapping("/completeRegister")
+@RequestMapping("/completeRegistration")
 @RequiredArgsConstructor
 public class MemberController {
 
     private final MemberService service;
 
     @PatchMapping
-    public ResponseEntity<CommonResponse> completeRegister(
+    public ResponseEntity<CommonResponse> completeRegistration(
             @AuthenticationPrincipal StarUserDetails userDetails,
             @Valid @RequestBody CompleteRegistrationRequest request
     ) {
