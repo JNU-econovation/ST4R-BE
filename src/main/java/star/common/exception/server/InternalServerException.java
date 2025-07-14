@@ -1,9 +1,11 @@
 package star.common.exception.server;
 
-import org.springframework.core.NestedRuntimeException;
 
-public class InternalServerException extends NestedRuntimeException {
-    public InternalServerException(String message) {
-        super(message);
+import star.common.exception.BusinessException;
+import star.common.exception.ErrorCode;
+
+public class InternalServerException extends BusinessException {
+    public InternalServerException(ErrorCode errorCode) {
+        super(errorCode);
     }
 }
