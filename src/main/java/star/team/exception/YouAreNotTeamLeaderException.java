@@ -1,12 +1,11 @@
 package star.team.exception;
 
-import star.common.exception.client.Client403Exception;
+import star.common.exception.ErrorCode;
+import star.common.exception.client.ClientException;
 
-public class YouAreNotTeamLeaderException extends Client403Exception {
-
-    private static final String ERROR_MESSAGE = "모임장만 모임을 수정 및 삭제할 수 있습니다.";
+public class YouAreNotTeamLeaderException extends ClientException implements TeamException {
 
     public YouAreNotTeamLeaderException() {
-        super(ERROR_MESSAGE);
+        super(ErrorCode.YOU_ARE_NOT_TEAM_LEADER);
     }
 }

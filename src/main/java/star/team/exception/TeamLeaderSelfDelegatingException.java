@@ -1,12 +1,11 @@
 package star.team.exception;
 
-import star.common.exception.client.Client409Exception;
+import star.common.exception.ErrorCode;
+import star.common.exception.client.ClientException;
 
-public class TeamLeaderSelfDelegatingException extends Client409Exception {
-    private static final String ERROR_MESSAGE = "자기 자신에게 모임장을 위임할 수 없습니다.";
-
+public class TeamLeaderSelfDelegatingException extends ClientException implements TeamException {
 
     public TeamLeaderSelfDelegatingException() {
-        super(ERROR_MESSAGE);
+        super(ErrorCode.TEAM_LEADER_SELF_DELEGATING);
     }
 }

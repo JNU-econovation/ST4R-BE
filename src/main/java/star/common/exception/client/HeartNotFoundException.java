@@ -1,9 +1,9 @@
 package star.common.exception.client;
 
-public class HeartNotFoundException extends Client409Exception {
-    private static final String ERROR_MESSAGE = "이미 좋아요를 취소하였습니다.";
+import star.common.exception.ErrorCode;
 
+public class HeartNotFoundException extends ClientException {
     public HeartNotFoundException() {
-        super(ERROR_MESSAGE);
+        super(ErrorCode.HEART_NOT_FOUND);
     }
 }

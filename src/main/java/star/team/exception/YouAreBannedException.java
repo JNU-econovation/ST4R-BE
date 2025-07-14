@@ -1,11 +1,10 @@
 package star.team.exception;
 
-import star.common.exception.client.Client403Exception;
+import star.common.exception.ErrorCode;
+import star.common.exception.client.ClientException;
 
-public class YouAreBannedException extends Client403Exception {
-    private static final String ERROR_MESSAGE = "강퇴된 방에는 다시 참여할 수 없습니다.";
-
+public class YouAreBannedException extends ClientException implements TeamException {
     public YouAreBannedException() {
-        super(ERROR_MESSAGE);
+        super(ErrorCode.YOU_ARE_BANNED);
     }
 }
