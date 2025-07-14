@@ -1,10 +1,10 @@
 package star.member.exception;
 
-import star.common.exception.client.Client409Exception;
+import star.common.exception.ErrorCode;
+import star.common.exception.client.ClientException;
 
-public class MemberDuplicatedEmailException extends Client409Exception {
-    private static final String ERROR_MESSAGE = "중복된 이메일입니다.";
+public class MemberDuplicatedEmailException extends ClientException implements MemberException {
     public MemberDuplicatedEmailException() {
-        super(ERROR_MESSAGE);
+        super(ErrorCode.MEMBER_DUPLICATED_EMAIL);
     }
 }

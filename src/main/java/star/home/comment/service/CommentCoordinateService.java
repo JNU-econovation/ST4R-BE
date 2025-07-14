@@ -13,7 +13,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import star.common.exception.server.InternalServerException;
+import star.common.constants.SortField;
 import star.common.service.BaseRetryRecoverService;
 import star.home.board.mapper.BoardCommentMapper;
 import star.home.board.model.entity.Board;
@@ -22,7 +22,6 @@ import star.home.comment.dto.request.CommentRequest;
 import star.home.comment.dto.response.CommentResponse;
 import star.home.comment.model.entity.Comment;
 import star.home.comment.service.internal.CommentDataService;
-import star.common.constants.SortField;
 import star.member.dto.MemberInfoDTO;
 
 @Service
@@ -82,7 +81,6 @@ public class CommentCoordinateService extends BaseRetryRecoverService {
 
 
 
-
     private List<CommentDTO> makeCommentDTOList(List<Comment> rootComments,
             List<Comment> notRootComments) {
         List<CommentDTO> result = new ArrayList<>();
@@ -101,11 +99,7 @@ public class CommentCoordinateService extends BaseRetryRecoverService {
             Long iLevelCommentId = iLevelComment.getId();
             Long parentCommentId = iLevelComment.getParentComment().getId();
             CommentDTO parentDTO = CommentsMap.get(parentCommentId);
-
-            if (parentDTO == null) {
-                throw new InternalServerException(
-                        "id가 %d인 부모 댓글을 찾을 수 없습니다.".formatted(parentCommentId));
-            }
+            
             CommentsMap.put(iLevelCommentId, iLevelCommentDTO);
             parentDTO.addChildCommentDTO(iLevelCommentDTO);
         }

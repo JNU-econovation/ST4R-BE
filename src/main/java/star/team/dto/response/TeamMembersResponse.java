@@ -14,7 +14,7 @@ public record TeamMembersResponse(
     public static TeamMembersResponse from(MemberInfoDTO memberInfoDTO, Boolean isLeader, Boolean isMe) {
         return TeamMembersResponse.builder()
                 .id(memberInfoDTO.id())
-                .nickname(memberInfoDTO.email().getValue())
+                .nickname(memberInfoDTO.nickname().value())
                 .imageUrl(memberInfoDTO.profileImageUrl())
                 .isLeader(isLeader)
                 .isMe(isMe)

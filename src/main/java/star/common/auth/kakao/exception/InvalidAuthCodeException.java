@@ -1,10 +1,11 @@
 package star.common.auth.kakao.exception;
 
-import star.common.exception.server.InternalServerException;
+import star.common.auth.exception.AuthException;
+import star.common.exception.ErrorCode;
+import star.common.exception.client.ClientException;
 
-public class InvalidAuthCodeException extends InternalServerException {
-    private final static String ERROR_MESSAGE = "인가코드가 올바르지 않습니다.";
+public class InvalidAuthCodeException extends ClientException implements AuthException {
     public InvalidAuthCodeException() {
-        super(ERROR_MESSAGE);
+        super(ErrorCode.INVALID_AUTH_CODE);
     }
 }

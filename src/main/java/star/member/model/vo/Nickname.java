@@ -1,20 +1,25 @@
 package star.member.model.vo;
 
+import static star.constants.MemberConstants.NICKNAME_MAX_LENGTH;
+import static star.constants.MemberConstants.NICKNAME_MIN_LENGTH;
+
+import jakarta.persistence.Embeddable;
+import star.common.exception.client.BadDataLengthException;
+
+@Embeddable
 public record Nickname(String value) {
 
-//    public Nickname {
-//        validateNickname(value);
-//    }
-//todo: 닉네임 최대 길이 정하기
+    public Nickname {
+        validate(value);
+    }
 
-//    private void validateNickname(String value) {
-//        if (value == null || value.isBlank()) {
-//            throw new IllegalArgumentException("닉네임을 입력해주세요.");
-//        }
-//
-//        if (value.length() > 32) {
-//            throw new IllegalArgumentException("닉네임의 길이는 최대 32자 입니다.");
-//        }
-//    }
+    private void validate(String value) {
+        if (value == null || value.length() < NICKNAME_MIN_LENGTH) {
+            throw new BadDataLengthException("닉네임", NICKNAME_MIN_LENGTH, NICKNAME_MAX_LENGTH);
+        }
 
+        if (value.length() > NICKNAME_MAX_LENGTH) {
+            throw new BadDataLengthException("닉네임", NICKNAME_MIN_LENGTH, NICKNAME_MAX_LENGTH);
+        }
+    }
 }

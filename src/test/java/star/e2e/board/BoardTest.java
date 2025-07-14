@@ -252,7 +252,7 @@ public class BoardTest {
                 .url("/home/boards/-1")
                 .method(Method.DELETE)
                 .accessToken(accessToken)
-                .expectedStatusCode(400)
+                .expectedStatusCode(404)
                 .build();
 
         sendRequest(deleteRequestExpect4XX);

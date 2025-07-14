@@ -7,7 +7,6 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
-import star.common.exception.server.InternalServerException;
 import star.common.security.dto.StarUserDetails;
 import star.common.security.encryption.jwt.JwtManager;
 import star.member.dto.MemberInfoDTO;
@@ -33,10 +32,6 @@ public class JwtAuthHelper {
 
         Long memberId = jwtManager.extractId(token);
         MemberInfoDTO memberInfo = memberService.getMemberById(memberId);
-
-        if (memberInfo == null) {
-            throw new InternalServerException("토큰에 해당하는 사용자 정보를 찾을 수 없습니다.");
-        }
 
         StarUserDetails userDetails = new StarUserDetails(memberInfo);
 

@@ -1,10 +1,22 @@
 package star.common.exception.client;
 
-public class IncompatibleRequestParametersException extends Client409Exception {
+import lombok.Getter;
+import star.common.exception.ErrorCode;
 
-    private static final String ERROR_MESSAGE = "%s 와(과) %s 옵션은 동시에 사용할 수 없습니다.";
+@Getter
+public class IncompatibleRequestParametersException extends ClientException {
+
+    private final String option1;
+    private final String option2;
 
     public IncompatibleRequestParametersException(String option1, String option2) {
-        super(ERROR_MESSAGE.formatted(option1, option2));
+        super(ErrorCode.INCOMPATIBLE_REQUEST_PARAMETERS);
+        this.option1 = option1;
+        this.option2 = option2;
+    }
+
+    @Override
+    public String getMessage() {
+        return String.format(getErrorCode().getMessage(), option1, option2);
     }
 }

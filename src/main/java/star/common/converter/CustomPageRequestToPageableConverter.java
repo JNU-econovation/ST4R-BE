@@ -33,7 +33,7 @@ public class CustomPageRequestToPageableConverter implements Converter<CustomPag
         try {
             direction = Direction.fromString(directionString.toUpperCase());
         } catch (IllegalArgumentException e) {
-            throw new InvalidPageableFieldException(directionString);
+            throw new InvalidPageableFieldException("direction", directionString);
         }
 
         boolean allowed = allowedFields.stream()
@@ -41,7 +41,7 @@ public class CustomPageRequestToPageableConverter implements Converter<CustomPag
                         .equals(requestFieldString));
 
         if (!allowed) {
-            throw new InvalidPageableFieldException(requestFieldString);
+            throw new InvalidPageableFieldException("sort" , requestFieldString);
         }
         SortField sortField = SortField.fromRequestKey(requestFieldString);
         Order order = new Sort.Order(direction, sortField.getDbField());

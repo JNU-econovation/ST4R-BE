@@ -8,7 +8,7 @@ public class PresignResponse extends CommonResponse {
     private final String presignedUrl;
 
     private PresignResponse(String presignedUrl) {
-        super(false, "SUCCESS");
+        super("SUCCESS");
         this.presignedUrl = presignedUrl;
     }
 

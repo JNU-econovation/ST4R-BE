@@ -14,7 +14,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import star.common.dto.LocalDateTimesDTO;
-import star.common.dto.internal.Author;
 import star.common.util.CommonTimeUtils;
 import star.member.dto.MemberInfoDTO;
 import star.member.model.entity.Member;
@@ -150,15 +149,9 @@ public class TeamCoordinateService {
         Team team = teamDataService.getTeamEntityById(teamId);
         MemberInfoDTO authorInfo = MemberInfoDTO.from(team.getLeader());
 
-        Author author = Author.builder()
-                .id(authorInfo.id())
-                .nickname(authorInfo.email().getValue())
-                .imageUrl(authorInfo.profileImageUrl())
-                .build();
-
         return TeamDetailsResponse.from(
                 team,
-                author,
+                authorInfo.toAuthor(),
                 viewerId.equals(authorInfo.id()),
                 teamImageDataService.getImageUrls(teamId),
                 teamHeartDataService.hasHearted(viewerId, teamId),

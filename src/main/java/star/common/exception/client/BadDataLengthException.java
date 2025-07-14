@@ -1,19 +1,27 @@
 package star.common.exception.client;
 
 import lombok.Getter;
+import star.common.exception.ErrorCode;
 
 @Getter
-public class BadDataLengthException extends IllegalArgumentException {
+public class BadDataLengthException extends ClientException {
 
-    private static final String ERROR_MESSAGE = "%s의 길이는 %d자 부터 %d자 까지 가능합니다.";
-    private final Integer minLength;
-    private final Integer maxLength;
     private final String fieldName;
+    private final int minLength;
+    private final int maxLength;
 
-    public BadDataLengthException(String fieldName, Integer minLength, Integer maxLength) {
-        super(ERROR_MESSAGE.formatted(fieldName, minLength, maxLength));
+    public BadDataLengthException(String fieldName, int minLength, int maxLength) {
+        super(ErrorCode.BAD_DATA_MEANING);
         this.fieldName = fieldName;
         this.minLength = minLength;
         this.maxLength = maxLength;
+    }
+
+    @Override
+    public String getMessage() {
+        return String.format(
+                getErrorCode().getMessage(),
+                "%s의 길이는 %d자 부터 %d자 까지 가능합니다.".formatted(fieldName, minLength, maxLength)
+        );
     }
 }

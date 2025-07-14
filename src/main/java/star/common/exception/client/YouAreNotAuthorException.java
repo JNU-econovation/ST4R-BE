@@ -1,8 +1,9 @@
 package star.common.exception.client;
 
-public class YouAreNotAuthorException extends Client403Exception {
-    private static final String ERROR_MESSAGE = "작성자만 삭제할 수 있습니다.";
+import star.common.exception.ErrorCode;
+
+public class YouAreNotAuthorException extends ClientException {
     public YouAreNotAuthorException() {
-        super(ERROR_MESSAGE);
+        super(ErrorCode.YOU_ARE_NOT_AUTHOR);
     }
 }

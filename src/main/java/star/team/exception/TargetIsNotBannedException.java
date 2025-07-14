@@ -1,11 +1,10 @@
 package star.team.exception;
 
+import star.common.exception.ErrorCode;
 import star.common.exception.client.ClientException;
 
-public class TargetIsNotBannedException extends ClientException {
-    private static final String ERROR_MESSAGE = "강퇴되지 않은 회원입니다.";
-
+public class TargetIsNotBannedException extends ClientException implements TeamException {
     public TargetIsNotBannedException() {
-        super(ERROR_MESSAGE);
+        super(ErrorCode.TARGET_IS_NOT_BANNED);
     }
 }

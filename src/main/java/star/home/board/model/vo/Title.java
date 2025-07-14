@@ -3,6 +3,7 @@ package star.home.board.model.vo;
 import static star.home.constants.HomeConstants.TITLE_MAX_LENGTH;
 import static star.home.constants.HomeConstants.TITLE_MIN_LENGTH;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import jakarta.persistence.Embeddable;
 import star.common.exception.client.BadDataLengthException;
 
@@ -11,6 +12,7 @@ public record Title(
         String value
 ) {
 
+    @JsonCreator
     public Title {
         validateTitle(value);
     }

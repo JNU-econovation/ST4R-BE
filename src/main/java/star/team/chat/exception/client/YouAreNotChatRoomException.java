@@ -1,11 +1,12 @@
 package star.team.chat.exception.client;
 
-import star.common.exception.client.Client403Exception;
+import star.common.exception.ErrorCode;
+import star.common.exception.client.ClientException;
+import star.team.chat.exception.ChatException;
 
-public class YouAreNotChatRoomException extends Client403Exception {
-    private static final String ERROR_MESSAGE = "유효하지 않은 채팅방 입니다.";
+public class YouAreNotChatRoomException extends ClientException implements ChatException {
 
     public YouAreNotChatRoomException() {
-        super(ERROR_MESSAGE);
+        super(ErrorCode.YOU_ARE_NOT_IN_CHAT_ROOM);
     }
 }

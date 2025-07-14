@@ -1,4 +1,4 @@
-package star.member.model.entity;
+package star.member.model.vo;
 
 public enum Role {
     USER, ADMIN
