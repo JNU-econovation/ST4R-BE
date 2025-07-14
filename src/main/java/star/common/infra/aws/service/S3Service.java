@@ -1,6 +1,8 @@
 package star.common.infra.aws.service;
 
 import java.time.Duration;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.awscore.exception.AwsServiceException;
@@ -9,10 +11,8 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import star.common.exception.server.InternalServerException;
 import star.common.infra.aws.dto.request.PresignRequest;
+import star.common.infra.exception.S3UnknownException;
 import star.member.dto.MemberInfoDTO;
 
 @Service
@@ -47,15 +47,15 @@ public class S3Service {
             
         } catch (AwsServiceException e) {
             log.error("AWS S3 서비스 오류로 Presigned URL 생성 실패: {}", e.getMessage(), e);
-            throw new InternalServerException("S3 서비스 오류: " + e.getMessage());
+            throw new S3UnknownException();
             
         } catch (SdkClientException e) {
             log.error("AWS SDK 클라이언트 오류로 Presigned URL 생성 실패: {}", e.getMessage(), e);
-            throw new InternalServerException("AWS 연결 오류: " + e.getMessage());
+            throw new S3UnknownException();
             
         } catch (Exception e) {
             log.error("Presigned URL 생성 중 예상치 못한 오류 발생: {}", e.getMessage(), e);
-            throw new InternalServerException("파일 업로드 URL 생성 중 오류가 발생했습니다.");
+            throw new S3UnknownException();
         }
     }
 }

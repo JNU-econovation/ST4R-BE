@@ -1,5 +1,7 @@
 package star.home.category.model.vo;
 
+import star.common.exception.client.BadDataSyntaxException;
+
 public enum CategoryName {
     SPOT, GENERAL, PROMOTION;
 
@@ -15,7 +17,7 @@ public enum CategoryName {
                 PROMOTION.name().toLowerCase()
         );
 
-        throw new IllegalArgumentException(
+        throw new BadDataSyntaxException(
                 "'%s'는 유효하지 않은 카테고리입니다. '%s' 중에 하나를 입력해 주세요.".formatted(text, validCategories)
         );
     }

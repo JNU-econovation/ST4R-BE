@@ -5,6 +5,7 @@ import java.util.regex.Pattern;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import star.common.exception.client.BadDataSyntaxException;
 
 @Embeddable
 @Getter
@@ -25,7 +26,7 @@ public class Email {
 
     private void validateEmail(String value) {
         if (value == null || !EMAIL_PATTERN.matcher(value).matches()) {
-            throw new IllegalArgumentException("올바른 이메일 형식이 아닙니다.");
+            throw new BadDataSyntaxException("올바른 이메일 형식이 아닙니다.");
         }
     }
 }

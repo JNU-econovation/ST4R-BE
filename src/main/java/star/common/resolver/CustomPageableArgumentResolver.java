@@ -13,6 +13,7 @@ import star.common.annotation.ResolvePageable;
 import star.common.constants.SortField;
 import star.common.converter.CustomPageRequestToPageableConverter;
 import star.common.dto.request.CustomPageRequest;
+import star.common.exception.client.BadDataSyntaxException;
 
 @Component
 public class CustomPageableArgumentResolver implements HandlerMethodArgumentResolver {
@@ -42,7 +43,7 @@ public class CustomPageableArgumentResolver implements HandlerMethodArgumentReso
 
         if (Objects.equals(sort, SortField.DISTANCE.getRequestField())
                 && (latitudeStr == null || longitudeStr == null && distanceStr == null)) {
-            throw new IllegalArgumentException("정렬 기준이 거리순이므로 위치 정보를 전부 입력해야 합니다.");
+            throw new BadDataSyntaxException("정렬 기준이 거리순이므로 위치 정보를 전부 입력해야 합니다.");
         }
 
 

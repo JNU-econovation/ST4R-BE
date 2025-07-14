@@ -27,8 +27,7 @@ public class AllowedOriginAspect {
         String origin = resolver.resolve(allowedOrigin.origin(), context, String.class);
 
         if (!authProperties.getAllowedFeRedirectOrigins().contains(origin)) {
-            throw new InvalidRedirectUriException(
-                    "%s 는 허용된 redirect uri가 아닙니다.".formatted(origin));
+            throw new InvalidRedirectUriException(origin);
         }
     }
 }

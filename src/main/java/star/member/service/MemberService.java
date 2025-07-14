@@ -6,7 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import star.common.auth.kakao.dto.KakaoMemberInfoDTO;
-import star.common.exception.server.InternalServerException;
+import star.common.security.EncryptionException;
 import star.common.security.encryption.util.AESEncryptionUtil;
 import star.member.dto.MemberInfoDTO;
 import star.member.dto.SocialRegisterDTO;
@@ -77,7 +77,7 @@ public class MemberService {
     @Transactional(readOnly = true)
     public Member getMemberEntityById(Long memberId) {
         return memberRepository.findById(memberId).orElseThrow(
-                () -> new MemberNotFoundException("id가 %d인 회원을 찾지 못했습니다.".formatted(memberId)));
+                () -> new MemberNotFoundException(memberId));
     }
 
     @Transactional(readOnly = true)
@@ -113,7 +113,7 @@ public class MemberService {
             return aesEncryptionUtil.encrypt(plainToken);
         } catch (Exception e) {
             log.error(CRITICAL_ENCRYPT_ERROR_MESSAGE, e);
-            throw new InternalServerException(CRITICAL_ENCRYPT_ERROR_MESSAGE);
+            throw new EncryptionException();
         }
     }
 
@@ -123,7 +123,7 @@ public class MemberService {
             return aesEncryptionUtil.decrypt(encryptedToken);
         } catch (Exception e) {
             log.error(CRITICAL_ENCRYPT_ERROR_MESSAGE, e);
-            throw new InternalServerException(CRITICAL_ENCRYPT_ERROR_MESSAGE);
+            throw new EncryptionException();
         }
     }
 

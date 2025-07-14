@@ -10,7 +10,7 @@ import star.common.auth.kakao.dto.KakaoMemberInfoDTO;
 import star.common.auth.kakao.dto.client.response.KakaoErrorResponse;
 import star.common.auth.kakao.exception.InvalidAuthCodeException;
 import star.common.auth.kakao.exception.KakaoAuthServerException;
-import star.common.exception.server.InternalServerException;
+import star.common.auth.kakao.exception.KakaoAuthUnknownException;
 import star.member.model.vo.Email;
 
 @Service
@@ -35,7 +35,7 @@ public class KakaoClientService {
         } catch (Exception e) {
             log.error(CRITICAL_KAKAO_AUTH_ERROR_MESSAGE, e);
         }
-        throw new InternalServerException(CRITICAL_KAKAO_AUTH_ERROR_MESSAGE);
+        throw new KakaoAuthUnknownException();
     }
 
     public KakaoMemberInfoDTO getMemberInfo(String kakaoAccessToken) {
@@ -48,7 +48,7 @@ public class KakaoClientService {
         } catch (HttpServerErrorException e) {
             handleServerError(e);
         }
-        throw new InternalServerException(CRITICAL_KAKAO_AUTH_ERROR_MESSAGE);
+        throw new KakaoAuthUnknownException();
     }
 
     public void logout(String kakaoAccessToken) {
@@ -65,7 +65,7 @@ public class KakaoClientService {
             throw new InvalidAuthCodeException();
         }
         log.error(kakaoErrorResponse.toString());
-        throw new InternalServerException(CRITICAL_KAKAO_AUTH_ERROR_MESSAGE);
+        throw new KakaoAuthUnknownException();
     }
 
     private void handleServerError(HttpServerErrorException e) {

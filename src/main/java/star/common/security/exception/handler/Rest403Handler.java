@@ -8,6 +8,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.stereotype.Component;
 import star.common.dto.response.CommonResponse;
+import star.common.exception.ErrorCode;
 
 @Component
 public class Rest403Handler implements AccessDeniedHandler {
@@ -23,7 +24,8 @@ public class Rest403Handler implements AccessDeniedHandler {
         response.setCharacterEncoding("UTF-8");
 
         objectMapper.writeValue(
-                response.getWriter(), CommonResponse.failure(accessDeniedException.getMessage())
+                response.getWriter(), CommonResponse.failure(ErrorCode.FORBIDDEN_ERROR,
+                        accessDeniedException.getMessage())
         );
     }
 }

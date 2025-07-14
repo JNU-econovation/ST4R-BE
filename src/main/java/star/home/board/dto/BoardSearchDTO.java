@@ -4,6 +4,7 @@ import java.util.List;
 import lombok.Builder;
 import org.springframework.lang.Nullable;
 import star.common.dto.LocalDateTimesDTO;
+import star.common.exception.client.BadDataSyntaxException;
 import star.common.model.vo.CircularArea;
 import star.home.board.model.vo.Content;
 import star.home.board.model.vo.Title;
@@ -25,7 +26,7 @@ public record BoardSearchDTO(
 
     private void validate(LocalDateTimesDTO localDateTimesForSearch) {
         if (localDateTimesForSearch == null) {
-            throw new IllegalArgumentException("검색할 시간을 입력해주세요.");
+            throw new BadDataSyntaxException("검색할 시간을 입력해주세요.");
         }
     }
 }

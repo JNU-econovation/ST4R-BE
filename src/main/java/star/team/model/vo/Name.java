@@ -6,28 +6,30 @@ import static star.team.constants.TeamConstants.NAME_MIN_LENGTH;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import star.common.exception.client.BadDataLengthException;
+import star.common.exception.client.BadDataSyntaxException;
 
 @Embeddable
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
 public class Name {
     @Column(name = "name", nullable = false)
     private String value;
 
-    
+    public Name(String value) {
+        validate(value);
+        this.value = value;
+    }
 
     private void validate(String value) {
         if (value == null) {
-            throw new IllegalArgumentException("그룹 이름을 입력해주세요.");
+            throw new BadDataSyntaxException("모임 이름을 입력해주세요.");
         }
 
         if (value.length() > NAME_MAX_LENGTH || value.length() < NAME_MIN_LENGTH) {
-            throw new IllegalArgumentException(
-                    "그룹의 제목은 최소 %d자, 최대 %d자여야 합니다.".formatted(NAME_MIN_LENGTH, NAME_MAX_LENGTH));
+            throw new BadDataLengthException("모임 제목", NAME_MIN_LENGTH, NAME_MAX_LENGTH);
         }
     }
 }
