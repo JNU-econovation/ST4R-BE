@@ -7,11 +7,13 @@ import org.springframework.stereotype.Repository;
 import star.member.model.entity.Member;
 import star.member.model.vo.Email;
 import star.member.model.vo.MemberStatus;
+import star.member.model.vo.Nickname;
 
 @Repository
 public interface MemberRepository extends JpaRepository<Member, Long> {
     Boolean existsByEmail(Email email);
     Optional<Member> findByEmail(Email email);
+    Boolean existsByNickname(Nickname nickname);
 
     @Query("SELECT m.status FROM Member m WHERE m.id = :id")
     MemberStatus getStatusById(Long id);
