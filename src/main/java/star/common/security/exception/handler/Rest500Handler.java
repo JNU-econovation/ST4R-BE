@@ -25,6 +25,6 @@ public class Rest500Handler implements AuthenticationEntryPoint {
         response.setCharacterEncoding("UTF-8");
 
         objectMapper.writeValue(response.getWriter(),
-                CommonResponse.failure(ErrorCode.UNKNOWN_FILTER_ERROR));
+                CommonResponse.failure(ErrorCode.INTERNAL_SERVER_ERROR));
     }
 }

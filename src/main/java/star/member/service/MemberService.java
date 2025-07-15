@@ -6,6 +6,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import star.common.auth.kakao.dto.KakaoMemberInfoDTO;
+import star.common.exception.ErrorCode;
+import star.common.exception.server.InternalServerException;
 import star.common.security.EncryptionException;
 import star.common.security.encryption.util.AESEncryptionUtil;
 import star.member.dto.MemberInfoDTO;
@@ -13,11 +15,13 @@ import star.member.dto.SocialRegisterDTO;
 import star.member.dto.reqeust.CompleteRegistrationRequest;
 import star.member.exception.AlreadyCompletedRegistrationException;
 import star.member.exception.AlreadyInvalidatedTokenException;
-import star.member.exception.MemberDuplicatedEmailException;
+import star.member.exception.MemberDuplicatedFieldException;
 import star.member.exception.MemberNotFoundException;
 import star.member.model.entity.Member;
 import star.member.model.vo.MemberStatus;
+import star.member.model.vo.Nickname;
 import star.member.repository.MemberRepository;
+import star.myPage.dto.request.UpdateProfileRequest;
 
 @Service
 @RequiredArgsConstructor
@@ -38,7 +42,7 @@ public class MemberService {
     public MemberInfoDTO processRegistration(SocialRegisterDTO registerDTO) {
 
         if (memberRepository.existsByEmail(registerDTO.email())) {
-            throw new MemberDuplicatedEmailException();
+            throw new MemberDuplicatedFieldException("email");
         }
 
         Member newMember = Member
@@ -57,7 +61,7 @@ public class MemberService {
     ) {
         Member member = getMemberEntityById(memberInfo.id());
 
-        if(member.getStatus() == MemberStatus.REGISTER_COMPLETED) {
+        if (member.getStatus() == MemberStatus.REGISTER_COMPLETED) {
             throw new AlreadyCompletedRegistrationException();
         }
 
@@ -85,6 +89,11 @@ public class MemberService {
         return memberRepository.getStatusById(memberId);
     }
 
+    @Transactional(readOnly = true)
+    public boolean existsByNickname(String nickname) {
+        return memberRepository.existsByNickname(new Nickname(nickname));
+    }
+
     @Transactional
     public void updateAccessToken(Long memberId, String plainAccessToken) {
         Member member = getMemberEntityById(memberId);
@@ -107,6 +116,26 @@ public class MemberService {
         return decryptedKakaoAccessToken;
     }
 
+    @Transactional
+    public void updateProfile(Long memberId, UpdateProfileRequest request) {
+        Member member = getMemberEntityById(memberId);
+
+        if (!request.changeNickname() && !request.changeProfileImage()) {
+
+            log.error("changeNickname과 changeProfileImage 필드가 false임");
+            throw new InternalServerException(ErrorCode.INTERNAL_SERVER_ERROR);
+        }
+
+        if (request.changeProfileImage()) {
+            member.updateProfile(request.profileImageUrlToChange());
+        }
+
+        if (request.changeNickname()) {
+            assertNicknameNotDuplicated(request);
+            member.updateProfile(new Nickname(request.profileImageUrlToChange()));
+        }
+    }
+
     private String encryptToken(String plainToken) {
         final String CRITICAL_ENCRYPT_ERROR_MESSAGE = "토큰 암호화 중 예상치 못한 에러 발생";
         try {
@@ -124,6 +153,12 @@ public class MemberService {
         } catch (Exception e) {
             log.error(CRITICAL_ENCRYPT_ERROR_MESSAGE, e);
             throw new EncryptionException();
+        }
+    }
+
+    private void assertNicknameNotDuplicated(UpdateProfileRequest request) {
+        if (existsByNickname(request.nicknameToChange())) {
+            throw new MemberDuplicatedFieldException("nickname");
         }
     }
 
