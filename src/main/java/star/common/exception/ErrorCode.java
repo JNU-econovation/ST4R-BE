@@ -13,7 +13,7 @@ public enum ErrorCode {
     INVALID_INPUT_VALUE(Domain.COMMON, HttpStatus.BAD_REQUEST, 1, "유효하지 않은 입력 값입니다."),
     INVALID_PAGEABLE_FIELD(Domain.COMMON, HttpStatus.BAD_REQUEST, 2, "페이징 가능한 필드가 아닙니다. -> %s = %s"),
     TOO_MANY_IMAGE_URLS(Domain.COMMON, HttpStatus.BAD_REQUEST, 3, "이미지는 최대 %d개 까지 가능합니다."),
-    INCOMPATIBLE_REQUEST_PARAMETERS(Domain.COMMON, HttpStatus.BAD_REQUEST, 4, "검색옵션 %s 와(과) %s은 동시에 사용할 수 없습니다."),
+    INCOMPATIBLE_REQUEST_PARAMETERS(Domain.COMMON, HttpStatus.BAD_REQUEST, 4, "옵션 %s 와(과) %s은 동시에 사용할 수 없습니다."),
     BAD_DATA_SYNTAX(Domain.COMMON, HttpStatus.BAD_REQUEST, 5, "%s"),
     YOU_ARE_NOT_AUTHOR(Domain.COMMON, HttpStatus.FORBIDDEN, 1, "작성자가 아닙니다."),
     ALREADY_HEARTED(Domain.COMMON, HttpStatus.CONFLICT, 2, "이미 좋아요를 눌렀습니다."),
@@ -38,7 +38,7 @@ public enum ErrorCode {
     // --- MEMBER ---
     ALREADY_INVALIDATED_TOKEN(Domain.MEMBER, HttpStatus.BAD_REQUEST, 1, "이미 유효하지 않은 토큰입니다."),
     MEMBER_NOT_FOUND(Domain.MEMBER, HttpStatus.INTERNAL_SERVER_ERROR, 1, "id가 %d인 회원을 찾을 수 없습니다."),
-    MEMBER_DUPLICATED_EMAIL(Domain.MEMBER, HttpStatus.CONFLICT, 1, "이미 사용중인 이메일입니다."),
+    MEMBER_DUPLICATED_FIELD(Domain.MEMBER, HttpStatus.CONFLICT, 1, "이미 사용중인 %s 입니다."),
     ALREADY_COMPLETED_REGISTRATION(Domain.MEMBER, HttpStatus.CONFLICT, 2, "이미 가입이 완료된 회원입니다."),
 
     // --- BOARD ---

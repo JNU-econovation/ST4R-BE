@@ -64,8 +64,8 @@ public class BoardTest {
                                         Jido.builder()
                                                 .marker(
                                                         Marker.builder()
-                                                                .longitude(37.123)
-                                                                .latitude(127.456)
+                                                                .latitude(37.123)
+                                                                .longitude(127.456)
                                                                 .locationName("location name test")
                                                                 .roadAddress("road address test")
                                                                 .build()
@@ -122,8 +122,8 @@ public class BoardTest {
                                         Jido.builder()
                                                 .marker(
                                                         Marker.builder()
-                                                                .longitude(37.123)
-                                                                .latitude(127.456)
+                                                                .latitude(37.123)
+                                                                .longitude(127.456)
                                                                 .locationName("location name test")
                                                                 .roadAddress("road address test")
                                                                 .build()
@@ -160,8 +160,8 @@ public class BoardTest {
                                         Jido.builder()
                                                 .marker(
                                                         Marker.builder()
-                                                                .longitude(35.123)
-                                                                .latitude(121.456)
+                                                                .latitude(35.123)
+                                                                .longitude(121.456)
                                                                 .locationName("location name test2")
                                                                 .roadAddress("road address test2")
                                                                 .build()
@@ -216,8 +216,8 @@ public class BoardTest {
                                         Jido.builder()
                                                 .marker(
                                                         Marker.builder()
-                                                                .longitude(37.123)
-                                                                .latitude(127.456)
+                                                                .latitude(37.123)
+                                                                .longitude(127.456)
                                                                 .locationName("location name test")
                                                                 .roadAddress("road address test")
                                                                 .build()

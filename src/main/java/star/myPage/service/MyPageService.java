@@ -15,14 +15,18 @@ import star.home.board.service.BoardHeartService;
 import star.home.board.service.BoardImageService;
 import star.home.board.service.BoardService;
 import star.member.dto.MemberInfoDTO;
+import star.member.enums.Constellation;
+import star.member.model.entity.Member;
+import star.member.service.MemberService;
+import star.myPage.dto.request.UpdateProfileRequest;
 import star.myPage.dto.response.MyBoardResponse;
+import star.myPage.dto.response.MyPageResponse;
 import star.team.dto.response.GetTeamsResponse;
 import star.team.service.TeamCoordinateService;
 import star.team.service.internal.TeamHeartDataService;
 import star.team.service.internal.TeamImageDataService;
 
 @Service
-@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class MyPageService {
 
@@ -32,7 +36,22 @@ public class MyPageService {
     private final TeamHeartDataService teamHeartDataService;
     private final TeamImageDataService teamImageDataService;
     private final TeamCoordinateService teamCoordinateService;
+    private final MemberService memberService;
 
+    @Transactional(readOnly = true)
+    public MyPageResponse getMyPage(MemberInfoDTO memberInfoDTO) {
+        Member member = memberService.getMemberEntityById(memberInfoDTO.id());
+
+        return MyPageResponse.builder()
+                .birthDate(member.getBirthDate().value())
+                .nickname(member.getNickname().value())
+                .email(member.getEmail().getValue())
+                .gender(member.getGender())
+                .constellation(Constellation.fromDate(member.getBirthDate().value()))
+                .build();
+    }
+
+    @Transactional(readOnly = true)
     public Slice<MyBoardResponse> getMyBoards(MemberInfoDTO memberInfoDTO, Pageable pageable) {
 
         BoardSearchDTO searchDTO = BoardSearchDTO.builder()
@@ -55,6 +74,7 @@ public class MyPageService {
         return new SliceImpl<>(myBoard, pageable, !myBoard.isEmpty());
     }
 
+    @Transactional(readOnly = true)
     public Slice<MyBoardResponse> getLikedBoards(Long memberId, Pageable pageable) {
         List<MyBoardResponse> likedBoards = boardHeartService
                 .getForeignEntitiesOfTargetByMemberId(memberId, pageable)
@@ -69,6 +89,7 @@ public class MyPageService {
         return new SliceImpl<>(likedBoards, pageable, !likedBoards.isEmpty());
     }
 
+    @Transactional(readOnly = true)
     public Slice<GetTeamsResponse> getLikedTeams(Long memberId, Pageable pageable) {
         List<GetTeamsResponse> likedTeams = teamHeartDataService
                 .getForeignEntitiesOfTargetByMemberId(memberId, pageable)
@@ -84,5 +105,10 @@ public class MyPageService {
                 .toList();
 
         return new SliceImpl<>(likedTeams, pageable, !likedTeams.isEmpty());
+    }
+
+    @Transactional
+    public void updateProfile(MemberInfoDTO memberInfoDTO, UpdateProfileRequest request) {
+        memberService.updateProfile(memberInfoDTO.id(), request);
     }
 }
