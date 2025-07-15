@@ -81,6 +81,14 @@ public class Member extends SoftDeletableEntity {
         this.encryptedKakaoAccessToken = encryptedKakaoAccessToken;
     }
 
+    public void updateProfile(Nickname nickname) {
+        this.nickname = nickname;
+    }
+
+    public void updateProfile(String profileImageUrl) {
+        this.profileImageUrl = profileImageUrl;
+    }
+
     public void promoteToAdmin() {
         this.role = Role.ADMIN;
     }
