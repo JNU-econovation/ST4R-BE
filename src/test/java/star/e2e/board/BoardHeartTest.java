@@ -61,8 +61,8 @@ public class BoardHeartTest {
                                         Jido.builder()
                                                 .marker(
                                                         Marker.builder()
-                                                                .longitude(37.123)
-                                                                .latitude(127.456)
+                                                                .latitude(37.123)
+                                                                .longitude(127.456)
                                                                 .locationName("location name test")
                                                                 .roadAddress("road address test")
                                                                 .build()
