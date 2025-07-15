@@ -31,7 +31,16 @@ public class RegistrationCompletionFilter extends OncePerRequestFilter {
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String uri = request.getRequestURI();
         String method = request.getMethod();
-        return HttpMethod.POST.name().equals(method) && uri.equals("/completeRegister");
+
+        if (HttpMethod.POST.matches(method) && uri.equals("/members/completeRegistration")) {
+            return true;
+        }
+
+        if (HttpMethod.GET.matches(method) && uri.startsWith("/members/exists")) {
+            return true;
+        }
+
+        return false;
     }
 
     @Override
