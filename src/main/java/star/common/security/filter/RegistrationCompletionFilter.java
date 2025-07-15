@@ -32,7 +32,7 @@ public class RegistrationCompletionFilter extends OncePerRequestFilter {
         String uri = request.getRequestURI();
         String method = request.getMethod();
 
-        if (HttpMethod.POST.matches(method) && uri.equals("/members/completeRegistration")) {
+        if (HttpMethod.PATCH.matches(method) && uri.equals("/members/completeRegistration")) {
             return true;
         }
 
