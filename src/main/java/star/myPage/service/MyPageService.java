@@ -46,9 +46,7 @@ public class MyPageService {
                 .nickname(member.getNickname().value())
                 .email(member.getEmail().getValue())
                 .gender(member.getGender())
-                .constellation(
-                        Constellation.fromDate(member.getBirthDate().value()).getKoreanName()
-                )
+                .constellation(Constellation.fromDate(member.getBirthDate().value()))
                 .build();
     }
 
