@@ -146,6 +146,7 @@ public class TeamTest {
                 .queryParam("location.latitude", MIN_LAT)
                 .queryParam("location.longitude", MIN_LON)
                 .queryParam("location.distanceInMeters", Double.MAX_VALUE)
+                .queryParam("location.roadAddress", "테스트")
                 .queryParam("sort", "distance")
                 .queryParam("direction", "asc")
                 .queryParam("page", page)
