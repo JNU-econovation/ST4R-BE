@@ -22,8 +22,6 @@ import star.common.model.vo.QJido;
 import star.home.board.dto.BoardSearchDTO;
 import star.home.board.model.entity.Board;
 import star.home.board.model.entity.QBoard;
-import star.home.board.model.vo.Content;
-import star.home.board.model.vo.Title;
 import star.home.category.model.vo.CategoryName;
 import star.member.model.entity.QMember;
 
@@ -74,8 +72,8 @@ public class BoardRepositoryImpl implements BoardRepositoryCustom {
         LocalDateTimesDTO localDateTimesDTO = searchDTO.localDateTimesForSearch();
         List<CategoryName> categories = searchDTO.categories();
         CircularArea circularArea = searchDTO.circularArea();
-        Title title = searchDTO.title();
-        Content content = searchDTO.content();
+        String title = searchDTO.title();
+        String contentText = searchDTO.contentText();
         String authorName = searchDTO.authorName();
 
         buildCreatedAt(builder, board, localDateTimesDTO);
@@ -84,7 +82,7 @@ public class BoardRepositoryImpl implements BoardRepositoryCustom {
 
         NumberExpression<Double> distanceExpr = buildDistance(builder, board, circularArea);
 
-        buildTitleAndContent(builder, board, title, content);
+        buildTitleAndContent(builder, board, title, contentText);
 
         buildAuthorName(builder, board, authorName);
 
@@ -128,25 +126,25 @@ public class BoardRepositoryImpl implements BoardRepositoryCustom {
     }
 
     private static void buildTitleAndContent(
-            BooleanBuilder builder, QBoard board, Title title, Content content
+            BooleanBuilder builder, QBoard board, String title, String contentText
     ) {
         boolean hasTitle = title != null;
-        boolean hasContent = content != null;
+        boolean hasContent = contentText != null;
 
         if (hasTitle && hasContent) {
             builder.and(
-                    board.title.value.containsIgnoreCase(title.value())
-                            .or(board.content.text.containsIgnoreCase(content.getText()))
+                    board.title.value.containsIgnoreCase(title)
+                            .or(board.content.text.containsIgnoreCase(contentText))
             );
             return;
         }
 
         if (hasTitle) {
-            builder.and(board.title.value.containsIgnoreCase(title.value()));
+            builder.and(board.title.value.containsIgnoreCase(title));
         }
 
         if (hasContent) {
-            builder.and(board.content.text.containsIgnoreCase(content.getText()));
+            builder.and(board.content.text.containsIgnoreCase(contentText));
         }
     }
 

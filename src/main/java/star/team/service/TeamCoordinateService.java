@@ -137,7 +137,7 @@ public class TeamCoordinateService {
                 .circularArea(request.circularArea())
                 .meetBetween(meetBetWeen)
                 .leaderName(request.leaderName())
-                .name(request.name() == null ? null : new Name(request.name()))
+                .name(request.name())
                 .includePast(request.includePast() != null && request.includePast())
                 .build();
     }
