@@ -1,4 +1,4 @@
-package star.member.enums;
+package star.member.constants;
 
 import java.time.LocalDate;
 import java.time.MonthDay;
