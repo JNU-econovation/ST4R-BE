@@ -73,7 +73,6 @@ public class Member extends SoftDeletableEntity {
         this.gender = gender;
         this.nickname = new Nickname(nickname);
         this.profileImageUrl = profileImageUrl;
-
         this.status = MemberStatus.REGISTER_COMPLETED;
     }
 
@@ -89,11 +88,27 @@ public class Member extends SoftDeletableEntity {
         this.profileImageUrl = profileImageUrl;
     }
 
+    public void invalidateKakaoAccessToken() {
+        this.encryptedKakaoAccessToken = null;
+    }
+
+
+    public void inactivate() {
+        this.status = MemberStatus.INACTIVATED;
+        this.birthDate = BirthDate.deleted();
+        this.email = Email.deleted();
+        this.gender = Gender.UNKNOWN;
+        this.profileImageUrl = null;
+
+        invalidateKakaoAccessToken();
+        demoteToUser();
+    }
+
     public void promoteToAdmin() {
         this.role = Role.ADMIN;
     }
 
-    public void invalidateKakaoAccessToken() {
-        this.encryptedKakaoAccessToken = null;
+    public void demoteToUser() {
+        this.role = Role.USER;
     }
 }
