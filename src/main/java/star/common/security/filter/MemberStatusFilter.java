@@ -15,17 +15,13 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import star.common.security.dto.StarUserDetails;
 import star.common.security.exception.handler.Rest403Handler;
-import star.member.dto.MemberInfoDTO;
-import star.member.model.vo.MemberStatus;
-import star.member.service.MemberService;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class RegistrationCompletionFilter extends OncePerRequestFilter {
+public class MemberStatusFilter extends OncePerRequestFilter {
 
     private final Rest403Handler rest403Handler;
-    private final MemberService memberService;
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
@@ -57,17 +53,28 @@ public class RegistrationCompletionFilter extends OncePerRequestFilter {
         }
 
         StarUserDetails principal = (StarUserDetails) authentication.getPrincipal();
-        MemberInfoDTO memberInfo = principal.getMemberInfoDTO();
 
-        MemberStatus status = memberService.getMemberStatusById(memberInfo.id());
+        switch (principal.getStatus()) {
 
-        if (status.equals(MemberStatus.REGISTERING)) {
-            log.warn("회원가입 미완료 사용자의 접근 시도 차단. MemberInfo: {}, URI: {}", memberInfo,
-                    request.getRequestURI());
+            case REGISTERING -> {
+                log.warn("회원가입 미완료 사용자의 접근 시도 차단. MemberInfo: {}, URI: {}",
+                        principal.getMemberInfoDTO(),
+                        request.getRequestURI());
 
-            AccessDeniedException ex = new AccessDeniedException("회원가입이 완료되지 않은 사용자 입니다.");
-            rest403Handler.handle(request, response, ex);
-            return;
+                AccessDeniedException ex = new AccessDeniedException("회원가입이 완료되지 않은 사용자 입니다.");
+                rest403Handler.handle(request, response, ex);
+                return;
+            }
+
+            case INACTIVATED -> {
+                log.warn("비활성화된 사용자의 접근 시도 차단. MemberInfo: {}, URI: {}",
+                        principal.getMemberInfoDTO(),
+                        request.getRequestURI());
+
+                AccessDeniedException ex = new AccessDeniedException("이미 탈퇴한 사용자 입니다.");
+                rest403Handler.handle(request, response, ex);
+                return;
+            }
         }
 
         filterChain.doFilter(request, response);

@@ -7,6 +7,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import star.common.auth.kakao.client.KakaoApiClient;
 import star.common.auth.kakao.dto.KakaoMemberInfoDTO;
+import star.common.auth.kakao.dto.KakaoMemberWithdrawDTO;
 import star.common.auth.kakao.dto.client.response.KakaoErrorResponse;
 import star.common.auth.kakao.exception.InvalidAuthCodeException;
 import star.common.auth.kakao.exception.KakaoAuthServerException;
@@ -55,9 +56,9 @@ public class KakaoClientService {
         kakaoApiClient.logout(kakaoAccessToken);
     }
 
-//    public void unlinkKakao(KakaoMemberWithdrawDTO kakaoMemberWithdrawDTO) {
-//        kakaoApiClient.unlinkKakao(kakaoMemberWithdrawDTO);
-//    }
+    public void unlinkKakao(KakaoMemberWithdrawDTO kakaoMemberWithdrawDTO) {
+        kakaoApiClient.unlinkKakao(kakaoMemberWithdrawDTO);
+    }
 
     private void handleClientError(HttpClientErrorException e) {
         KakaoErrorResponse kakaoErrorResponse = e.getResponseBodyAs(KakaoErrorResponse.class);

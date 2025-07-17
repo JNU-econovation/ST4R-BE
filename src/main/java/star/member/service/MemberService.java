@@ -15,6 +15,7 @@ import star.member.dto.SocialRegisterDTO;
 import star.member.dto.reqeust.CompleteRegistrationRequest;
 import star.member.exception.AlreadyCompletedRegistrationException;
 import star.member.exception.AlreadyInvalidatedTokenException;
+import star.member.exception.AlreadyWithdrawException;
 import star.member.exception.MemberDuplicatedFieldException;
 import star.member.exception.MemberNotFoundException;
 import star.member.model.entity.Member;
@@ -64,6 +65,8 @@ public class MemberService {
         if (member.getStatus() == MemberStatus.REGISTER_COMPLETED) {
             throw new AlreadyCompletedRegistrationException();
         }
+
+        assertNicknameNotDuplicated(registrationDTO.nickname());
 
         member.completeRegistration(
                 registrationDTO.birthDate(),
@@ -131,9 +134,23 @@ public class MemberService {
         }
 
         if (request.changeNickname()) {
-            assertNicknameNotDuplicated(request);
+            assertNicknameNotDuplicated(request.nicknameToChange());
             member.updateProfile(new Nickname(request.nicknameToChange()));
         }
+    }
+
+    @Transactional
+    public String withdraw(Long memberId) {
+        Member member = getMemberEntityById(memberId);
+
+        if(member.getStatus() == MemberStatus.INACTIVATED) {
+            throw new AlreadyWithdrawException();
+        }
+
+        String kakaoAccessToken = member.getEncryptedKakaoAccessToken();
+        member.inactivate();
+
+        return decryptToken(kakaoAccessToken);
     }
 
     private String encryptToken(String plainToken) {
@@ -156,8 +173,8 @@ public class MemberService {
         }
     }
 
-    private void assertNicknameNotDuplicated(UpdateProfileRequest request) {
-        if (existsByNickname(request.nicknameToChange())) {
+    private void assertNicknameNotDuplicated(String nickname) {
+        if (existsByNickname(nickname)) {
             throw new MemberDuplicatedFieldException("nickname");
         }
     }

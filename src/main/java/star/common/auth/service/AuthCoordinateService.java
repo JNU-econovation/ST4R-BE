@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.UriComponentsBuilder;
 import star.common.auth.annotation.AllowedOrigin;
 import star.common.auth.kakao.dto.KakaoMemberInfoDTO;
+import star.common.auth.kakao.dto.KakaoMemberWithdrawDTO;
 import star.common.auth.kakao.service.KakaoAuthService;
 import star.common.security.encryption.jwt.JwtManager;
 import star.member.dto.LoginOrRegisterReportDTO;
@@ -52,6 +53,10 @@ public class AuthCoordinateService {
     public void logout(MemberInfoDTO memberInfoDTO) {
         String kakaoAccessToken = memberService.invalidateAccessToken(memberInfoDTO.id());
         kakaoService.logout(kakaoAccessToken);
+    }
+
+    public void unlinkKakao(KakaoMemberWithdrawDTO withdrawDTO) {
+        kakaoService.unlink(withdrawDTO);
     }
 
     private LoginOrRegisterReportDTO loginOrRegister(KakaoMemberInfoDTO kakaoMemberInfoDTO,

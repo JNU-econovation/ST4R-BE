@@ -37,9 +37,11 @@ public enum ErrorCode {
 
     // --- MEMBER ---
     ALREADY_INVALIDATED_TOKEN(Domain.MEMBER, HttpStatus.BAD_REQUEST, 1, "이미 유효하지 않은 토큰입니다."),
+    TEAM_LEADER_CANNOT_WITHDRAW_MEMBER(Domain.MEMBER, HttpStatus.BAD_REQUEST, 2, "모임장은 회원 탈퇴할 수 없습니다. 모임장을 위임한 후에 탈퇴해주세요\n해당 모임 : %s"),
     MEMBER_NOT_FOUND(Domain.MEMBER, HttpStatus.INTERNAL_SERVER_ERROR, 1, "id가 %d인 회원을 찾을 수 없습니다."),
     MEMBER_DUPLICATED_FIELD(Domain.MEMBER, HttpStatus.CONFLICT, 1, "이미 사용중인 %s 입니다."),
     ALREADY_COMPLETED_REGISTRATION(Domain.MEMBER, HttpStatus.CONFLICT, 2, "이미 가입이 완료된 회원입니다."),
+    ALREADY_WITHDRAW_REGISTRATION(Domain.MEMBER, HttpStatus.CONFLICT, 3, "이미 탈퇴한 회원입니다."),
 
     // --- BOARD ---
     ALREADY_CANCELED_HEART(Domain.BOARD, HttpStatus.CONFLICT, 1, "이미 좋아요를 취소했습니다."),
