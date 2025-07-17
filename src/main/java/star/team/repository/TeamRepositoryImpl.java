@@ -25,7 +25,6 @@ import star.member.model.entity.QMember;
 import star.team.dto.TeamSearchDTO;
 import star.team.model.entity.QTeam;
 import star.team.model.entity.Team;
-import star.team.model.vo.Name;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -88,7 +87,7 @@ public class TeamRepositoryImpl implements TeamRepositoryCustom {
             TeamSearchDTO searchDTO) {
         LocalDateTimesDTO meetBetween = searchDTO.meetBetween();
         CircularArea circularArea = searchDTO.circularArea();
-        Name name = searchDTO.name();
+        String name = searchDTO.name();
         String leaderName = searchDTO.leaderName();
         boolean responseIncludePastMeetTime = searchDTO.includePast();
 
@@ -146,9 +145,9 @@ public class TeamRepositoryImpl implements TeamRepositoryCustom {
         return distanceExpr;
     }
 
-    private static void buildTitle(BooleanBuilder builder, QTeam team, Name name) {
+    private static void buildTitle(BooleanBuilder builder, QTeam team, String name) {
         if (name != null) {
-            builder.and(team.name.value.containsIgnoreCase(name.getValue()));
+            builder.and(team.name.value.containsIgnoreCase(name));
         }
     }
 
