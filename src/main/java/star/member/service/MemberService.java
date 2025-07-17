@@ -132,7 +132,7 @@ public class MemberService {
 
         if (request.changeNickname()) {
             assertNicknameNotDuplicated(request);
-            member.updateProfile(new Nickname(request.profileImageUrlToChange()));
+            member.updateProfile(new Nickname(request.nicknameToChange()));
         }
     }
 
