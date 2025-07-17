@@ -16,6 +16,10 @@ public record BirthDate(
         validate(value);
     }
 
+    public static BirthDate deleted() {
+        return new BirthDate(MIN_BIRTH_DATE);
+    }
+
     private void validate(LocalDate value) {
         if (value == null) {
             throw new BadDataSyntaxException("생년월일을 입력해주세요");

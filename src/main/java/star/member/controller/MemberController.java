@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -15,6 +16,7 @@ import star.common.security.dto.StarUserDetails;
 import star.member.dto.reqeust.CompleteRegistrationRequest;
 import star.member.dto.response.NicknameExistsResponse;
 import star.member.service.MemberService;
+import star.member.service.MemberWithdrawService;
 
 @RestController
 @RequestMapping("/members")
@@ -22,6 +24,7 @@ import star.member.service.MemberService;
 public class MemberController {
 
     private final MemberService service;
+    private final MemberWithdrawService withdrawService;
 
     @GetMapping("/exists")
     public ResponseEntity<NicknameExistsResponse> existsNickname(@RequestParam String nickname) {
@@ -36,5 +39,12 @@ public class MemberController {
     ) {
         service.completeRegistration(userDetails.getMemberInfoDTO(), request);
         return ResponseEntity.ok(CommonResponse.success());
+    }
+
+    @DeleteMapping
+    public ResponseEntity<Void> withdraw(@AuthenticationPrincipal StarUserDetails userDetails) {
+        withdrawService.withdraw(userDetails.getMemberInfoDTO());
+
+        return ResponseEntity.noContent().build();
     }
 }

@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
 import star.common.auth.kakao.config.KakaoAuthConfig;
 import star.common.auth.kakao.dto.KakaoMemberInfoDTO;
-import star.member.service.MemberService;
+import star.common.auth.kakao.dto.KakaoMemberWithdrawDTO;
 
 
 @Service
@@ -18,7 +18,6 @@ import star.member.service.MemberService;
 public class KakaoAuthService {
 
     private final KakaoClientService kakaoClientService;
-    private final MemberService memberService;
     private final KakaoAuthConfig kakaoAuthConfig;
 
     public String getAuthorizationUri(String feRedirectUri) {
@@ -42,6 +41,10 @@ public class KakaoAuthService {
 
     public void logout(String kakaoAccessToken) {
         kakaoClientService.logout(kakaoAccessToken);
+    }
+
+    public void unlink(KakaoMemberWithdrawDTO withdrawDTO) {
+        kakaoClientService.unlinkKakao(withdrawDTO);
     }
 
 

@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.RestClient;
 import star.common.auth.kakao.config.KakaoAuthConfig;
+import star.common.auth.kakao.dto.KakaoMemberWithdrawDTO;
 import star.common.auth.kakao.dto.client.response.KakaoMemberInfoResponse;
 import star.common.auth.kakao.dto.client.response.TokenResponse;
 
@@ -52,14 +53,14 @@ public class KakaoApiClient {
     }
 
 
-//    public void unlinkKakao(KakaoMemberWithdrawDTO kakaoMemberWithdrawDTO) {
-//        client.post()
-//                .uri(URI.create(kakaoAuthConfig.unlinkUrl()))
-//                .header("Authorization", "Bearer " + kakaoMemberWithdrawDTO.kakaoAccessToken())
-//                .header("Content-type",
-//                        MediaType.APPLICATION_FORM_URLENCODED_VALUE + ";charset_UTF-8")
-//                .retrieve();
-//    }
+    public void unlinkKakao(KakaoMemberWithdrawDTO kakaoMemberWithdrawDTO) {
+        client.post()
+                .uri(URI.create(kakaoAuthConfig.unlinkUrl()))
+                .header("Authorization", "Bearer " + kakaoMemberWithdrawDTO.kakaoAccessToken())
+                .header("Content-type",
+                        MediaType.APPLICATION_FORM_URLENCODED_VALUE + ";charset_UTF-8")
+                .retrieve();
+    }
 
     private LinkedMultiValueMap<String, String> makeBody(String clientId, String code) {
         var body = new LinkedMultiValueMap<String, String>();
