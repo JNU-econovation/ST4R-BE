@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
 import star.common.dto.LocalDateTimesDTO;
@@ -13,7 +14,7 @@ import star.home.constants.Period;
 @Slf4j
 public final class CommonTimeUtils {
 
-    private static final ZoneId SERVER_ZONE = ZoneId.of("Asia/Seoul");
+    private static final ZoneId SERVER_ZONE = ZoneId.of("UTC");
 
     public static LocalDateTime convertOffsetDateTimeToLocalDateTime(
             OffsetDateTime offsetDateTime) {
@@ -21,7 +22,7 @@ public final class CommonTimeUtils {
     }
 
     public static OffsetDateTime convertLocalDateTimeToOffsetDateTime(LocalDateTime localDateTime) {
-        return localDateTime.atZone(SERVER_ZONE).toOffsetDateTime();
+        return localDateTime.atOffset(ZoneOffset.UTC);
     }
 
     public static LocalDateTimesDTO getLocalDateTimesByPeriod(Period period) {
@@ -61,7 +62,7 @@ public final class CommonTimeUtils {
                 end = start.plusYears(1);
 
                 log.warn("Period 값이 예상치 못한 값이라 일단은 Yearly로 적용\n입력된 Period 값 -> {}",
-                        Objects.requireNonNull(period, "null").toString());
+                        Objects.requireNonNull(period, "null"));
             }
         }
 
