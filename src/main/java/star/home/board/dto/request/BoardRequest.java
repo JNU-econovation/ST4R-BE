@@ -4,12 +4,13 @@ import static star.common.constants.CommonConstants.MAX_IMAGE_COUNT;
 import static star.home.constants.HomeConstants.TITLE_MAX_LENGTH;
 import static star.home.constants.HomeConstants.TITLE_MIN_LENGTH;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.util.List;
 import lombok.Builder;
+import star.common.infra.aws.annotation.S3ImageUrl;
 import star.home.board.model.vo.Content;
-import jakarta.validation.constraints.NotBlank;
 
 @Builder
 public record BoardRequest(
@@ -20,7 +21,8 @@ public record BoardRequest(
         
         @NotNull(message = "이미지 url 필드를 입력해주세요")
         @Size(max = MAX_IMAGE_COUNT, message = "이미지는 최대 {max}개까지 등록할 수 있습니다.")
-        List<String> imageUrls, //todo: vo로 만들어서 url 정규식 유효성 검사
+        @S3ImageUrl
+        List<String> imageUrls,
 
         Content content,
 

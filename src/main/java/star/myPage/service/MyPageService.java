@@ -44,6 +44,7 @@ public class MyPageService {
 
         return MyPageResponse.builder()
                 .birthDate(member.getBirthDate().value())
+                .profileImageUrl(member.getProfileImageUrl())
                 .nickname(member.getNickname().value())
                 .email(member.getEmail().getValue())
                 .gender(member.getGender())

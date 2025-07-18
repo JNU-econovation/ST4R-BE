@@ -15,15 +15,16 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.time.OffsetDateTime;
 import java.util.List;
-import star.common.model.vo.Jido;
-
 import lombok.Builder;
+import star.common.infra.aws.annotation.S3ImageUrl;
+import star.common.model.vo.Jido;
 
 @Builder
 public record UpdateTeamRequest(
 
         @NotNull(message = "이미지 url 필드를 입력해주세요")
         @Size(max = MAX_IMAGE_COUNT, message = "이미지는 최대 {max}개까지 등록할 수 있습니다.")
+        @S3ImageUrl
         List<String> imageUrls,
 
         @NotBlank(message = "모임 이름을 입력해주세요")

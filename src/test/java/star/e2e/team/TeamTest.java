@@ -11,7 +11,6 @@ import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import java.time.OffsetDateTime;
-import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -72,8 +71,12 @@ public class TeamTest {
                     .location(jido)
                     .maxParticipantCount(10)
                     .password("1111")
-                    .imageUrls(Collections.singletonList("test_image_url_" + i))
-                    .build();
+                    .imageUrls(
+                            List.of(
+                                    "https://st4rbucket.s3.ap-northeast-2.amazonaws.com/asdf%d.jpeg"
+                                            .formatted(i)
+                            )
+                    ).build();
             createTeamAndGetId(createTeamRequestBody);
         }
     }
@@ -106,7 +109,11 @@ public class TeamTest {
                 .location(jido)
                 .password("2222")
                 .maxParticipantCount(10)
-                .imageUrls(Collections.singletonList("new_test_image_url"))
+                .imageUrls(
+                        List.of(
+                                "https://st4rbucket.s3.ap-northeast-2.amazonaws.com/asdf.jpeg"
+                        )
+                )
                 .build();
         createTeamAndGetId(createTeamRequestBody);
     }
@@ -172,7 +179,11 @@ public class TeamTest {
                 .whenToMeet(OffsetDateTime.now().plusDays(1))
                 .location(jido)
                 .maxParticipantCount(5)
-                .imageUrls(Collections.singletonList("detail_test_image_url"))
+                .imageUrls(
+                        List.of(
+                                "https://st4rbucket.s3.ap-northeast-2.amazonaws.com/asdf.jpeg"
+                        )
+                )
                 .build();
         Long teamId = createTeamAndGetId(createTeamRequestBody);
 
@@ -199,8 +210,12 @@ public class TeamTest {
                 .whenToMeet(OffsetDateTime.now().plusDays(2))
                 .location(jidoBefore)
                 .maxParticipantCount(8)
-                .imageUrls(List.of("before_update_image_url.com"))
-                .build();
+                .imageUrls(
+                        List.of(
+                                "https://st4rbucket.s3.ap-northeast-2.amazonaws.com/asdf.jpeg"
+                        )
+                ).build();
+
         Long teamId = createTeamAndGetId(createTeamRequestBody);
 
         Marker markerAfter = new Marker(37.0, 127.0, "테스트 주소 수정", "테스트 장소 수정");
@@ -212,7 +227,11 @@ public class TeamTest {
                 .newWhenToMeet(OffsetDateTime.now().plusDays(1))
                 .location(jidoAfter)
                 .maxParticipantCount(10)
-                .imageUrls(List.of("after_update_image_url.com"))
+                .imageUrls(
+                        List.of(
+                                "https://st4rbucket.s3.ap-northeast-2.amazonaws.com/asdf.jpeg"
+                        )
+                )
                 .changeWhenToMeet(true)
                 .changePassword(false)
                 .build();
@@ -251,8 +270,13 @@ public class TeamTest {
                 .whenToMeet(OffsetDateTime.now().plusDays(3))
                 .location(jido)
                 .maxParticipantCount(3)
-                .imageUrls(Collections.singletonList("delete_image_url"))
+                .imageUrls(
+                        List.of(
+                                "https://st4rbucket.s3.ap-northeast-2.amazonaws.com/asdf.jpeg"
+                        )
+                )
                 .build();
+
         Long teamId = createTeamAndGetId(createTeamRequestBody);
 
         given()

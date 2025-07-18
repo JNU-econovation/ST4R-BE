@@ -9,6 +9,7 @@ import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 import lombok.Builder;
+import star.common.infra.aws.annotation.S3ImageUrl;
 import star.member.model.vo.Gender;
 
 @Builder
@@ -23,6 +24,7 @@ public record CompleteRegistrationRequest(
         String nickname,
 
         @Nullable
+        @S3ImageUrl
         String profileImageUrl
 ) {
 

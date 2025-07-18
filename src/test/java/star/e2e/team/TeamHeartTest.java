@@ -7,7 +7,7 @@ import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import java.time.OffsetDateTime;
-import java.util.Collections;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -50,7 +50,7 @@ public class TeamHeartTest {
                 .whenToMeet(OffsetDateTime.now().plusDays(1))
                 .location(jido)
                 .maxParticipantCount(10)
-                .imageUrls(Collections.singletonList("heart_test_image_url"))
+                .imageUrls(List.of("https://st4rbucket.s3.ap-northeast-2.amazonaws.com/asdf1.jpeg"))
                 .build();
         teamId = createTeamAndGetId(createTeamRequestBody);
     }
