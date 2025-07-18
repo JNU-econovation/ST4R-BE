@@ -49,9 +49,9 @@ public class BoardHeartTest {
                 .title("행운의 편지")
                 .imageUrls(
                         List.of(
-                                "https://s3.amazonaws.com/ajjultv/image1.png",
-                                "https://s3.amazonaws.com/ajjultv/image2.png",
-                                "https://s3.amazonaws.com/ajjultv/image3.png"
+                                "https://st4rbucket.s3.ap-northeast-2.amazonaws.com/asdf1.jpeg",
+                                "https://st4rbucket.s3.ap-northeast-2.amazonaws.com/asdf2.jpeg",
+                                "https://st4rbucket.s3.ap-northeast-2.amazonaws.com/asdf3.jpeg"
                         )
                 )
                 .content(
