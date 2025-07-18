@@ -9,6 +9,7 @@ import star.member.model.vo.Gender;
 public record MyPageResponse(
         String nickname,
         String email,
+        String profileImageUrl,
         LocalDate birthDate,
         Gender gender,
         Constellation constellation
