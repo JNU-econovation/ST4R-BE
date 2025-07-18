@@ -1,14 +1,17 @@
 #!/bin/bash
 set -e
 
-echo "🔄 Pulling latest code..."
+echo "🔄 origin master branch pull 중..."
 git pull origin master
 
-echo "🔨 Building latest JAR with Gradle..."
+echo "🔧 ./gradlew 권한 +x로 변경 중..."
+chmod +x ./gradlew
+
+echo "🔨 gradle로 Jar 빌드 중"
 ./gradlew clean build -x test
 
-echo "🐳 Building and starting containers..."
-docker compose down   # 기존 컨테이너 정리 (선택)
+echo "🐳 컨테이너 내렸다가 다시 올리는 중"
+docker compose down
 docker compose up --build -d
 
-echo "✅ Deployment complete! App is running on http://localhost:8080"
+echo "✅ 배포 완료 -> http://localhost:8080"
