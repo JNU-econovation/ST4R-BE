@@ -19,7 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 import star.common.constants.CommonConstants;
 import star.common.exception.client.YouAreNotAuthorException;
 import star.common.service.BaseRetryRecoverService;
-import star.common.util.CommonTimeUtils;
 import star.home.board.dto.BoardImageDTO;
 import star.home.board.dto.BoardSearchDTO;
 import star.home.board.dto.request.BoardRequest;
@@ -92,6 +91,7 @@ public class BoardService extends BaseRetryRecoverService {
 
     @Transactional
     public BoardResponse getBoard(@Nullable MemberInfoDTO memberInfoDTO, Long boardId) {
+
         Board board = getBoardEntity(boardId);
         Long viewerId = (memberInfoDTO != null) ? memberInfoDTO.id() : ANONYMOUS_MEMBER_ID;
         MemberInfoDTO authorInfo = memberService.getMemberById(board.getMember().getId());
@@ -104,22 +104,13 @@ public class BoardService extends BaseRetryRecoverService {
                 .map(BoardImageDTO::imageUrl)
                 .toList();
 
-        //todo: 추후에 boardResponse from 으로 더 간결하게 리팩터링하기
-        return BoardResponse.builder()
-                .id(boardId)
-                .author(authorInfo.toAuthor())
-                .isViewerAuthor(viewerId.equals(authorId))
-                .liked(boardHeartService.hasHearted(viewerId, boardId))
-                .title(board.getTitle().value())
-                .imageUrls(imageUrlStrings)
-                .content(board.getContent())
-                .category(board.getCategory().getName().name())
-                .viewCount(board.getViewCount())
-                .createdAt(
-                        CommonTimeUtils.convertLocalDateTimeToOffsetDateTime(board.getCreatedAt()))
-                .likeCount(board.getHeartCount())
-                .commentCount(board.getCommentCount())
-                .build();
+        return BoardResponse.from(
+                board,
+                viewerId.equals(authorId),
+                boardHeartService.hasHearted(viewerId, boardId),
+                imageUrlStrings
+        );
+
     }
 
     @Transactional

@@ -1,7 +1,6 @@
 package star.team.chat.service.internal;
 
 import java.time.LocalDateTime;
-import java.util.Map;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -61,22 +60,6 @@ public class ChatDataService {
     public Page<ChatDTO> getChatHistory(Long teamId, MemberInfoDTO memberDTO, Pageable pageable) {
 
         return chatRepository.getChatsByTeamMemberTeamId(teamId, pageable).map(ChatDTO::from);
-    }
-
-    @Transactional(readOnly = true)
-    public Integer countReaders(ChatDTO chatDTO, Map<Long, LocalDateTime> lastReadTimeMap) {
-        int count = 0;
-
-        for (Map.Entry<Long, LocalDateTime> entry : lastReadTimeMap.entrySet()) {
-
-            LocalDateTime lastReadTime = entry.getValue();
-
-            if (chatRepository.existsByIdAndChattedAtBefore(chatDTO.chatId(), lastReadTime)) {
-                count++;
-            }
-        }
-
-        return count;
     }
 
     @Transactional

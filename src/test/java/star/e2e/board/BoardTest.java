@@ -48,7 +48,7 @@ public class BoardTest {
     @Test
     @DisplayName("게시글 생성 테스트")
     void createBoardTest() {
-        BoardRequest requestBody = BoardRequest.builder()
+        BoardRequest requestBodyWithInvalidImageUrls = BoardRequest.builder()
                 .title("행운의 편지")
                 .imageUrls(
                         List.of(
@@ -80,7 +80,45 @@ public class BoardTest {
                 .url("/home/boards")
                 .method(Method.POST)
                 .accessToken(accessToken)
-                .body(requestBody)
+                .body(requestBodyWithInvalidImageUrls)
+                .expectedStatusCode(400)
+                .build();
+
+        sendRequest(createRequest);
+
+        BoardRequest requestBodyWithValidImageUrls = BoardRequest.builder()
+                .title("행운의 편지")
+                .imageUrls(
+                        List.of(
+                                "https://st4rbucket.s3.ap-northeast-2.amazonaws.com/asdf1.jpeg",
+                                "https://st4rbucket.s3.ap-northeast-2.amazonaws.com/asdf2.jpeg",
+                                "https://st4rbucket.s3.ap-northeast-2.amazonaws.com/asdf3.jpeg"
+                                )
+                )
+                .content(
+                        Content.builder()
+                                .text("이 게시글은 영국에서 시작됨 ㅅㄱ")
+                                .map(
+                                        Jido.builder()
+                                                .marker(
+                                                        Marker.builder()
+                                                                .latitude(37.123)
+                                                                .longitude(127.456)
+                                                                .locationName("location name test")
+                                                                .roadAddress("road address test")
+                                                                .build()
+                                                ).zoomLevel(13)
+                                                .build()
+                                )
+                                .build())
+                .category("spot")
+                .build();
+
+        createRequest = E2ERequest.builder()
+                .url("/home/boards")
+                .method(Method.POST)
+                .accessToken(accessToken)
+                .body(requestBodyWithValidImageUrls)
                 .expectedStatusCode(201)
                 .build();
 
@@ -110,9 +148,9 @@ public class BoardTest {
                 .title("행운의 편지")
                 .imageUrls(
                         List.of(
-                                "https://s3.amazonaws.com/ajjultv/image1.png",
-                                "https://s3.amazonaws.com/ajjultv/image2.png",
-                                "https://s3.amazonaws.com/ajjultv/image3.png"
+                                "https://st4rbucket.s3.ap-northeast-2.amazonaws.com/asdf1.jpeg",
+                                "https://st4rbucket.s3.ap-northeast-2.amazonaws.com/asdf2.jpeg",
+                                "https://st4rbucket.s3.ap-northeast-2.amazonaws.com/asdf3.jpeg"
                         )
                 )
                 .content(
@@ -148,9 +186,9 @@ public class BoardTest {
                 .title("행운의 편지2")
                 .imageUrls(
                         List.of(
-                                "https://s3.amazonaws.com/ajjultv/image112.png",
-                                "https://s3.amazonaws.com/ajjultv/image212.png",
-                                "https://s3.amazonaws.com/ajjultv/image213.png"
+                                "https://st4rbucket.s3.ap-northeast-2.amazonaws.com/asdf1.jpeg",
+                                "https://st4rbucket.s3.ap-northeast-2.amazonaws.com/asdf2.jpeg",
+                                "https://st4rbucket.s3.ap-northeast-2.amazonaws.com/asdf3.jpeg"
                         )
                 )
                 .content(
@@ -204,9 +242,9 @@ public class BoardTest {
                 .title("행운의 편지")
                 .imageUrls(
                         List.of(
-                                "https://s3.amazonaws.com/ajjultv/image1.png",
-                                "https://s3.amazonaws.com/ajjultv/image2.png",
-                                "https://s3.amazonaws.com/ajjultv/image3.png"
+                                "https://st4rbucket.s3.ap-northeast-2.amazonaws.com/asdf1.jpeg",
+                                "https://st4rbucket.s3.ap-northeast-2.amazonaws.com/asdf2.jpeg",
+                                "https://st4rbucket.s3.ap-northeast-2.amazonaws.com/asdf3.jpeg"
                         )
                 )
                 .content(
