@@ -8,10 +8,12 @@ import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import star.common.exception.client.BadDataSyntaxException;
+import star.common.infra.aws.annotation.S3ImageUrl;
 
 public record UpdateProfileRequest(
 
         @Nullable
+        @S3ImageUrl
         String profileImageUrlToChange,
 
         @Nullable
