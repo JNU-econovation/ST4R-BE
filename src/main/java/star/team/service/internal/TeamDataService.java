@@ -11,7 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import star.common.security.EncryptionException;
+import star.common.security.exception.EncryptionException;
 import star.common.util.CommonTimeUtils;
 import star.member.model.entity.Member;
 import star.team.dto.CreateTeamDTO;

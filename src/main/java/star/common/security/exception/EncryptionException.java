@@ -1,4 +1,4 @@
-package star.common.security;
+package star.common.security.exception;
 
 import star.common.exception.ErrorCode;
 import star.common.exception.server.InternalServerException;
