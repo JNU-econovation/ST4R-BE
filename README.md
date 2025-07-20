@@ -138,11 +138,7 @@ GEOCODING_REST_API_KEY=YOUR https://www.vworld.kr/dev/v4dv_geocoderguide2_s001.d
 
 ### 3. 빌드 및 실행
 프로젝트 루트 디렉터리에서 아래 명령어를 실행합니다.
-```bash
-# 프로젝트 빌드
-./gradlew build
-
-# 애플리케이션 실행
-java -jar build/libs/star-0.0.1-SNAPSHOT.jar
+```shell
+sudo sh deploy.sh
 ```
 애플리케이션은 `application-prod.properties`에 설정된 포트(기본 `8080`)에서 실행됩니다.
