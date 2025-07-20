@@ -40,7 +40,6 @@ import star.team.exception.TargetIsNotBannedException;
 import star.team.exception.TeamLeaderCannotLeaveException;
 import star.team.exception.TeamLeaderSelfDelegatingException;
 import star.team.exception.TeamMemberNotFoundException;
-import star.team.exception.TeamNotFoundException;
 import star.team.exception.YouAlreadyJoinedTeamException;
 import star.team.exception.YouAreBannedException;
 import star.team.model.entity.Team;
@@ -62,15 +61,16 @@ public class TeamCoordinateService {
     private final TeamDataService teamDataService;
     private final TeamImageDataService teamImageDataService;
     private final TeamMemberDataService teamMemberDataService;
-    private final PasswordEncoder passwordEncoder;
     private final ChatCoordinateService chatCoordinateService;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional
     public Long createTeam(MemberInfoDTO memberInfoDTO, CreateTeamRequest request) {
 
         //todo: 인당 만들 수 있는 & 들어갈 수 있는 팀 개수 제한시키기
 
-        Long memberId = memberInfoDTO.id();
+        Member leader = memberService.getMemberEntityById(memberInfoDTO.id());
+
         CreateTeamDTO createTeamDTO = CreateTeamDTO.builder()
                 .name(new Name(request.name()))
                 .location(request.location())
@@ -83,11 +83,16 @@ public class TeamCoordinateService {
                 .description(new Description(request.description()))
                 .build();
 
-        Team createdTeam =
-                teamDataService.createTeam(memberService.getMemberEntityById(memberId),
-                        createTeamDTO);
+        Team createdTeam = teamDataService.createTeam(leader, createTeamDTO);
+
         teamImageDataService.addImageUrls(createdTeam, request.imageUrls());
-        teamMemberDataService.addTeamMember(createdTeam, memberId);
+
+        TeamMember createdTeamMember = TeamMember.builder()
+                .team(createdTeam)
+                .member(leader)
+                .build();
+
+        teamMemberDataService.addTeamMember(createdTeamMember);
 
         return createdTeam.getId();
     }
@@ -109,8 +114,8 @@ public class TeamCoordinateService {
                                         teamImageDataService.getImageUrls(team.getId()),
                                         teamHeartDataService.hasHearted(viewerId, team.getId()),
                                         isPublic(team),
-                                        joined(team, viewerId),
-                                        banned(team, viewerId),
+                                        existsRealTeamMember(team.getId(), viewerId),
+                                        existsBannedTeamMember(team.getId(), viewerId),
                                         isFull(team),
                                         isJoinable(team, viewerId)
                                 )
@@ -161,15 +166,10 @@ public class TeamCoordinateService {
                 teamHeartDataService.hasHearted(viewerId, teamId),
                 isPublic(team),
                 isJoinable(team, viewerId),
-                banned(team, viewerId),
+                existsBannedTeamMember(teamId, viewerId),
                 isFull(team),
-                joined(team, viewerId)
+                existsRealTeamMember(teamId, viewerId)
         );
-    }
-
-    @Transactional(readOnly = true)
-    public Optional<TeamMember> getTeamMember(Long teamId, Long memberId) {
-        return teamMemberDataService.getTeamMemberEntityByIds(teamId, memberId);
     }
 
     @Transactional(readOnly = true)
@@ -234,11 +234,12 @@ public class TeamCoordinateService {
     public void joinTeam(
             MemberInfoDTO memberInfoDTO, Long teamId, @Nullable JoinTeamRequest request
     ) {
-
-        Optional<TeamMember> teamMember = getTeamMember(teamId, memberInfoDTO.id());
+        Optional<TeamMember> teamMember = teamMemberDataService.getOptionalTeamMemberEntityByIds(
+                teamId, memberInfoDTO.id());
 
         if (teamMember.isPresent()) {
             TeamMember teamMemberEntity = teamMember.get();
+            Team team = teamMemberEntity.getTeam();
 
             if (teamMemberEntity.getIsBanned()) {
                 throw new YouAreBannedException();
@@ -247,23 +248,30 @@ public class TeamCoordinateService {
             if (!teamMemberEntity.isDeprecated()) {
                 throw new YouAlreadyJoinedTeamException();
             }
+
+            matchPassword(team, request == null ? null : request.password());
+            teamMemberEntity.markAsActivated();
+            team.getParticipant().incrementCurrent();
+
+            return;
         }
 
         Team team = teamDataService.getTeamEntityById(teamId);
-
         matchPassword(team, request == null ? null : request.password());
-
         team.getParticipant().incrementCurrent();
-        teamMemberDataService.addTeamMember(team, memberInfoDTO.id());
+
+        teamMemberDataService.addTeamMember(
+                TeamMember.builder()
+                        .team(team)
+                        .member(memberService.getMemberEntityById(memberInfoDTO.id()))
+                        .build()
+        );
     }
 
     @Transactional(readOnly = true)
+    @AssertTeamMember(memberInfo = "#memberInfoDTO", teamId = "#teamId")
     public List<TeamMembersResponse> getTeamMembers(Long teamId, MemberInfoDTO memberInfoDTO) {
         List<TeamMember> teamMembers = teamMemberDataService.getTeamMemberEntitiesByTeamId(teamId);
-
-        if (teamMembers.isEmpty()) {
-            throw new TeamNotFoundException();
-        }
 
         Long leaderId = teamMembers.getFirst().getTeam().getLeader().getId();
 
@@ -322,7 +330,7 @@ public class TeamCoordinateService {
             throw new TeamLeaderSelfDelegatingException();
         }
 
-        if (!existsTeamMember(teamId, target.getId())) {
+        if (!existsRealTeamMember(teamId, target.getId())) {
             throw new TeamMemberNotFoundException();
         }
 
@@ -338,71 +346,72 @@ public class TeamCoordinateService {
             throw new TeamLeaderCannotLeaveException();
         }
 
+        TeamMember teamMember = teamMemberDataService
+                .getOptionalTeamMemberEntityByIds(teamId, memberInfoDTO.id())
+                .orElseThrow(TeamMemberNotFoundException::new);
+
+        teamMemberDataService.softDeleteTeamMember(teamMember);
         team.getParticipant().decrementCurrent();
-        teamMemberDataService.softDeleteTeamMember(teamId, memberInfoDTO.id());
     }
 
     @Transactional
     @AssertTeamLeader(memberInfo = "#memberInfoDTO", teamId = "#teamId")
-    public void banTeamMember(MemberInfoDTO memberInfoDTO, Long teamId, Long memberId) {
-        if (Objects.equals(memberId, memberInfoDTO.id())) {
+    public void banTeamMember(MemberInfoDTO memberInfoDTO, Long teamId, Long targetMemberId) {
+        if (Objects.equals(targetMemberId, memberInfoDTO.id())) {
             throw new CanNotBanSelfException();
         }
 
-        Team team = teamDataService.getTeamEntityById(teamId);
+        TeamMember teamMember = teamMemberDataService
+                .getOptionalTeamMemberEntityByIds(teamId, targetMemberId)
+                .orElseThrow(TeamMemberNotFoundException::new);
 
-        teamMemberDataService.banTeamMember(teamId, memberId);
-        team.getParticipant().decrementCurrent();
+        teamMember.ban();
+        teamMember.getTeam().getParticipant().decrementCurrent();
     }
 
     @Transactional
     @AssertTeamMember(memberInfo = "#memberInfoDTO", teamId = "#teamId")
-    public void unbanTeamMember(MemberInfoDTO memberInfoDTO, Long teamId,
-            TeamMemberUnbanRequest request) {
+    public void unbanTeamMember(
+            MemberInfoDTO memberInfoDTO, Long teamId, TeamMemberUnbanRequest request
+    ) {
+        Long targetMemberId = request.targetMemberId();
 
-        MemberInfoDTO bannedMemberInfo = memberService.getMemberById(request.targetMemberId());
+        if (!existsBannedTeamMember(teamId, targetMemberId)) {
+            throw new TargetIsNotBannedException();
+        }
 
-        Team team = teamDataService.getTeamEntityById(teamId);
-        assertBanned(bannedMemberInfo, team);
-
-        teamMemberDataService.unbanTeamMember(teamId, request.targetMemberId());
+        teamMemberDataService
+                .getOptionalTeamMemberEntityByIds(teamId, targetMemberId)
+                .orElseThrow(TeamMemberNotFoundException::new)
+                .unban();
     }
 
+    @Transactional(readOnly = true)
+    public Boolean isJoinable(Team team, Long memberId) {
+        boolean joined = existsRealTeamMember(team.getId(), memberId);
+        boolean banned = existsBannedTeamMember(team.getId(), memberId);
+
+        return !joined && !banned && !isFull(team);
+    }
+
+    @Transactional(readOnly = true)
     public Boolean isPublic(Team team) {
         return team.getEncryptedPassword() == null;
     }
 
-    public boolean existsTeamMember(Long teamId, Long memberId) {
-        return teamMemberDataService.existsTeamMember(teamId, memberId);
+    @Transactional(readOnly = true)
+    public boolean existsRealTeamMember(Long teamId, Long memberId) {
+        return teamMemberDataService.existsRealTeamMember(teamId, memberId);
     }
 
-    public boolean existsByBannedTeamMember(Long teamId, Long memberId) {
+    @Transactional(readOnly = true)
+    public boolean existsBannedTeamMember(Long teamId, Long memberId) {
         return teamMemberDataService.existsByBannedTeamMember(teamId, memberId);
     }
 
-    public Boolean isJoinable(Team team, Long memberId) {
-        return !joined(team, memberId) && !banned(team, memberId) && !isFull(team);
-    }
-
-    public Boolean joined(Team team, Long memberId) {
-        return existsTeamMember(team.getId(), memberId);
-    }
-
-    public Boolean banned(Team team, Long memberId) {
-        return existsByBannedTeamMember(team.getId(), memberId);
-    }
-
+    @Transactional(readOnly = true)
     public Boolean isFull(Team team) {
         return team.getParticipant().getCurrent() >= team.getParticipant().getCapacity();
-    }
-
-
-    private void assertBanned(MemberInfoDTO targetMemberInfo, Team team) {
-        if (existsByBannedTeamMember(team.getId(), targetMemberInfo.id())) {
-            return;
-        }
-
-        throw new TargetIsNotBannedException();
     }
 
     private void matchPassword(Team team, String password) {

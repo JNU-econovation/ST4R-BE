@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import star.common.util.CommonTimeUtils;
 import star.member.dto.MemberInfoDTO;
+import star.team.annotation.AssertTeamMember;
 import star.team.chat.dto.ChatDTO;
 import star.team.chat.dto.GeneralMessageDTO;
 import star.team.chat.dto.UpdateReadTimeMessageDTO;
@@ -44,6 +45,7 @@ public class ChatCoordinateService {
 
 
     @Transactional
+    @AssertTeamMember(teamId = "#teamId", memberInfo = "#memberInfoDTO")
     public void publishAndSaveChat(Long teamId, ChatSend chat, MemberInfoDTO memberInfoDTO) {
 
         // DB에 채팅 저장
@@ -60,6 +62,7 @@ public class ChatCoordinateService {
 
 
     @Transactional(readOnly = true)
+    @AssertTeamMember(teamId = "#teamId", memberInfo = "#memberInfoDTO")
     public Slice<GeneralMessageDTO> getChatHistory(Long teamId, MemberInfoDTO memberInfoDTO,
             Pageable pageable) {
 
@@ -71,6 +74,7 @@ public class ChatCoordinateService {
         return new SliceImpl<>(chatResponses, pageable, chatPage.hasNext());
     }
 
+    @AssertTeamMember(teamId = "#teamId", memberInfo = "#memberInfoDTO")
     public void markAsReadAndPublishUpdatedReadTime(Long teamId, MemberInfoDTO memberInfoDTO) {
 
         LocalDateTime readTime = LocalDateTime.now();
@@ -88,7 +92,10 @@ public class ChatCoordinateService {
     }
 
     @Transactional(readOnly = true)
-    public List<ChatReadResponse> getLastReadTimesForInitialLoading(Long teamId) {
+    @AssertTeamMember(teamId = "#teamId", memberInfo = "#memberInfoDTO")
+    public List<ChatReadResponse> getLastReadTimesForInitialLoading(
+            Long teamId, MemberInfoDTO memberInfoDTO
+    ) {
         List<Long> allMemberIdsInTeam = teamMemberDataService.getAllMemberIdInTeam(teamId);
 
         return allMemberIdsInTeam.stream()

@@ -8,6 +8,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -16,9 +18,14 @@ import star.common.model.entity.SoftDeletableEntity;
 import star.member.model.entity.Member;
 
 @Entity
+@Table(
+        name = "team_member",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"team_id", "member_id"})
+)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 public class TeamMember extends SoftDeletableEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
