@@ -16,7 +16,7 @@ import star.team.chat.dto.GeneralMessageDTO;
 import star.team.chat.service.ChatCoordinateService;
 
 @RestController
-@RequestMapping("groups/{teamId}/chats")
+@RequestMapping("/groups/{teamId}/chats")
 @RequiredArgsConstructor
 public class ChatHistoryController {
 
