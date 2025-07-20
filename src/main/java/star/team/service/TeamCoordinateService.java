@@ -103,13 +103,17 @@ public class TeamCoordinateService {
 
         List<GetTeamsResponse> getTeamsResponseList = teams.getContent().stream()
                 .map(
-                        team -> GetTeamsResponse.from(
-                                team,
-                                teamImageDataService.getImageUrls(team.getId()),
-                                teamHeartDataService.hasHearted(viewerId, team.getId()),
-                                isJoinable(team, viewerId),
-                                isPublic(team)
-                        )
+                        team ->
+                                GetTeamsResponse.from(
+                                        team,
+                                        teamImageDataService.getImageUrls(team.getId()),
+                                        teamHeartDataService.hasHearted(viewerId, team.getId()),
+                                        isPublic(team),
+                                        joined(team, viewerId),
+                                        banned(team, viewerId),
+                                        isFull(team),
+                                        isJoinable(team, viewerId)
+                                )
                 ).toList();
 
         return new PageImpl<>(getTeamsResponseList, pageable, getTeamsResponseList.size());
@@ -156,7 +160,10 @@ public class TeamCoordinateService {
                 teamImageDataService.getImageUrls(teamId),
                 teamHeartDataService.hasHearted(viewerId, teamId),
                 isPublic(team),
-                isJoinable(team, viewerId)
+                isJoinable(team, viewerId),
+                banned(team, viewerId),
+                isFull(team),
+                joined(team, viewerId)
         );
     }
 
@@ -374,13 +381,19 @@ public class TeamCoordinateService {
     }
 
     public Boolean isJoinable(Team team, Long memberId) {
-        boolean isNotFull =
-                team.getParticipant().getCurrent() < team.getParticipant().getCapacity();
-        boolean joined = existsTeamMember(team.getId(), memberId);
+        return !joined(team, memberId) && !banned(team, memberId) && !isFull(team);
+    }
 
-        boolean banned = existsByBannedTeamMember(team.getId(), memberId);
+    public Boolean joined(Team team, Long memberId) {
+        return existsTeamMember(team.getId(), memberId);
+    }
 
-        return (isNotFull && !joined && !banned);
+    public Boolean banned(Team team, Long memberId) {
+        return existsByBannedTeamMember(team.getId(), memberId);
+    }
+
+    public Boolean isFull(Team team) {
+        return team.getParticipant().getCurrent() >= team.getParticipant().getCapacity();
     }
 
 
