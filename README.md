@@ -121,68 +121,49 @@ git clone https://github.com/your-repository/ST4R-BE.git
 cd ST4R-BE
 ```
 
-### 2. 설정 파일 구성
-`src/main/resources/` 경로에 아래 설명에 따라 **4개의 `.properties` 파일**을 생성하고, 자신의 환경에 맞게 내용을 채워야 합니다.
+### 2. env 파일 구성
 
+프로젝트 루트 디렉토리에 .env 파일을 생성합니다.
 
-#### `application-prod.properties`
-- Spring 애플리케이션의 프로덕션 환경 설정을 담당합니다.
 ```properties
-# 데이터베이스 연결 정보
-spring.datasource.url=jdbc:mysql://your_host:your_port/star_db?useUnicode=true&characterEncoding=UTF-8
-spring.datasource.username=your_db_username
-spring.datasource.password=your_db_password
-spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
-
-#redis
-spring.data.redis.host=your_redis_host
-spring.data.redis.port=your_redis_port
-spring.data.redis.password=your_redis_password
-
-# JPA 및 하이버네이트 설정 (프로덕션에서는 보통 validate 또는 none 사용)
-spring.jpa.hibernate.ddl-auto=validate
-```
-
-#### `application-secret.properties`
-- 데이터베이스 접속 정보, JWT 비밀 키 등 민감한 정보를 관리합니다.
-```properties
+# 이후 .env 파일을 다음과 같이 작성합니다.
 
 
-kakao.rest-api-key=카카오 api 키
+# MySQL
+SPRING_MYSQL_URL=jdbc:MySQL_호스트://mysql:3306/star?serverTimezone=UTC&allowLoadLocalInfile=true
+SPRING_MYSQL_DRIVER_CLASS_NAME=com.mysql.cj.jdbc.Driver
+MYSQL_ROOT_PASSWORD=your_mysql_root_password
+MYSQL_DATABASE=your_database
+MYSQL_USER=your_username
+MYSQL_PASSWORD=your_mysql_password
 
-# JWT 토큰 생성에 사용될 비밀 키 (충분히 길고 복잡한 문자열 사용)
-jwt.secret.key=your_super_secret_jwt_key_that_is_long_and_secure
+# Redis
+REDIS_PASSWORD=your_redis_password
+SPRING_REDIS_HOST=your_redis_host
+SPRING_REDIS_PORT=your_redis_port
+SPRING_REDIS_PASSWORD=your_redis_password
 
-# AES 암호화에 사용될 키 (카카오 액세스 토큰 암호화 등)
-aes.secret.key=your_super_secret_aes_key_16_24_32_bytes
-```
+SPRING_JPA_DDL_AUTO=update
 
-#### `application-aws.properties`
-- AWS S3 연동에 필요한 자격 증명 및 리전 정보를 설정합니다.
-```properties
-# AWS Access Key
-spring.cloud.aws.credentials.access-key=your_aws_access_key
+# S3
+S3_MAX_FILE_SIZE=ex) 20MB
+S3_MAX_REQUEST_SIZE=ex) 50MB
+S3_ACCESS_KEY=YOUR_ACCESS_KEY
+S3_SECRET_KEY=YOUR_SECRET_KEY
+S3_REGION=YOUR_REGION
+S3_BUCKET_NAME=YOUR_BUCKET_NAME
 
-# AWS Secret Key
-spring.cloud.aws.credentials.secret-key=your_aws_secret_key
+KAKAO_BE_CALLBACK_URL=http://YOUR_BACKEND_DEPLOY_URL:YOUR_PORT/oauth/kakao/callback
 
-# S3 버킷 이름
-spring.cloud.aws.s3.bucket=your_s3_bucket_name
+# Encrypt
+JWT_SECRET_KEY=YOUR_JWT_SECRET_KEY
+AES_SECRET_KEY=YOUR_AES_SECRET_KEY
 
-# AWS 리전
-spring.cloud.aws.region.static=your_region
+# API Key
+KAKAO_REST_API_KEY=YOUR_KAKAO_KEY
+WEATHER_REST_API_KEY=YOUR_OPEN_WEATHER_API_KEY
+GEOCODING_REST_API_KEY=YOUR https://www.vworld.kr/dev/v4dv_geocoderguide2_s001.do API_KEY
 
-spring.servlet.multipart.max-file-size=
-
-spring.servlet.multipart.max-request-size=
-```
-
-#### `application-kakao-auth-prod.properties`
-- 카카오 소셜 로그인 Redirect Uri를 설정합니다.
-```properties
-
-# 카카오 로그인 후 리다이렉트될 URI
-kakao.redirect-uri=http://your-domain.com/auth/kakao/callback
 ```
 
 
