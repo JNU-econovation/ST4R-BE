@@ -369,28 +369,27 @@ public class TeamCoordinateService {
         return teamMemberDataService.existsTeamMember(teamId, memberId);
     }
 
+    public boolean existsByBannedTeamMember(Long teamId, Long memberId) {
+        return teamMemberDataService.existsByBannedTeamMember(teamId, memberId);
+    }
+
     public Boolean isJoinable(Team team, Long memberId) {
         boolean isNotFull =
                 team.getParticipant().getCurrent() < team.getParticipant().getCapacity();
         boolean joined = existsTeamMember(team.getId(), memberId);
 
-        return (isNotFull && !joined);
+        boolean banned = existsByBannedTeamMember(team.getId(), memberId);
+
+        return (isNotFull && !joined && !banned);
     }
 
 
     private void assertBanned(MemberInfoDTO targetMemberInfo, Team team) {
-        if (existsTeamMember(team.getId(), targetMemberInfo.id())) {
-            TeamMember teamMember = getTeamMember(team.getId(), targetMemberInfo.id()).orElseThrow(
-                    TeamMemberNotFoundException::new);
-
-            if (!teamMember.getIsBanned()) {
-                throw new TargetIsNotBannedException();
-            }
-
+        if (existsByBannedTeamMember(team.getId(), targetMemberInfo.id())) {
             return;
         }
 
-        throw new TeamMemberNotFoundException();
+        throw new TargetIsNotBannedException();
     }
 
     private void matchPassword(Team team, String password) {
