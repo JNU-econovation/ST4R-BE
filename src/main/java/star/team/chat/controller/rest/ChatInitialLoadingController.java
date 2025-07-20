@@ -31,10 +31,11 @@ public class ChatInitialLoadingController {
 
     @GetMapping("/{teamId}/chats/lastReadTimes")
     public ResponseEntity<List<ChatReadResponse>> getLastReadTimesForInitialLoading(
-            @PathVariable Long teamId
+            @PathVariable Long teamId,
+            @AuthenticationPrincipal StarUserDetails userDetails
     ) {
         return ResponseEntity.ok(
-                service.getLastReadTimesForInitialLoading(teamId)
+                service.getLastReadTimesForInitialLoading(teamId, userDetails.getMemberInfoDTO())
         );
     }
 }

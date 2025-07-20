@@ -64,13 +64,13 @@ public class TeamMemberController {
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping("/{memberId}")
+    @DeleteMapping("/{targetMemberId}")
     public ResponseEntity<Void> banTeamMember(
             @PathVariable Long teamId,
-            @PathVariable Long memberId,
+            @PathVariable Long targetMemberId,
             @AuthenticationPrincipal StarUserDetails userDetails
     ) {
-        service.banTeamMember(userDetails.getMemberInfoDTO(), teamId, memberId);
+        service.banTeamMember(userDetails.getMemberInfoDTO(), teamId, targetMemberId);
 
         return ResponseEntity.noContent().build();
     }
