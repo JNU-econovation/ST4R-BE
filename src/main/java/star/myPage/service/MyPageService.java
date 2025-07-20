@@ -94,12 +94,16 @@ public class MyPageService {
     public Slice<GetTeamsResponse> getLikedTeams(Long memberId, Pageable pageable) {
         List<GetTeamsResponse> likedTeams = teamHeartDataService
                 .getForeignEntitiesOfTargetByMemberId(memberId, pageable)
-                .map(team -> GetTeamsResponse.from(
+                .map(team ->
+                        GetTeamsResponse.from(
                                 team,
                                 teamImageDataService.getImageUrls(team.getId()),
                                 true,
-                                teamCoordinateService.isJoinable(team, memberId),
-                                teamCoordinateService.isPublic(team)
+                                teamCoordinateService.isPublic(team),
+                                teamCoordinateService.joined(team, memberId),
+                                teamCoordinateService.banned(team, memberId),
+                                teamCoordinateService.isFull(team),
+                                teamCoordinateService.isJoinable(team, memberId)
                         )
 
                 )

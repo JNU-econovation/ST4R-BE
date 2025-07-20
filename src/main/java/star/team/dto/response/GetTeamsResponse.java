@@ -17,12 +17,22 @@ public record GetTeamsResponse(
         Integer currentParticipantCount,
         Integer maxParticipantCount,
         Boolean liked,
+        Boolean isPublic,
         Boolean joinable,
-        Boolean isPublic
+        Boolean banned,
+        Boolean isFull,
+        Boolean joined
 ) {
 
     public static GetTeamsResponse from(
-            Team team, List<String> imageUrls, Boolean liked, Boolean joinable, Boolean isPublic
+            Team team,
+            List<String> imageUrls,
+            Boolean liked,
+            Boolean isPublic,
+            Boolean joined,
+            Boolean banned,
+            Boolean isFull,
+            Boolean joinable
     ) {
         return GetTeamsResponse.builder()
                 .id(team.getId())
@@ -35,7 +45,10 @@ public record GetTeamsResponse(
                 .currentParticipantCount(team.getParticipant().getCurrent())
                 .maxParticipantCount(team.getParticipant().getCapacity())
                 .liked(liked)
+                .isFull(isFull)
                 .joinable(joinable)
+                .joined(joined)
+                .banned(banned)
                 .isPublic(isPublic)
                 .build();
     }
