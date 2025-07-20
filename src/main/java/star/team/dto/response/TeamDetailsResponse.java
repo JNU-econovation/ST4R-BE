@@ -25,11 +25,24 @@ public record TeamDetailsResponse(
         Integer likeCount,
         Boolean liked,
         Boolean isPublic,
-        Boolean isJoinable
+        Boolean joinable,
+        Boolean banned,
+        Boolean isFull,
+        Boolean joined
 ) {
 
-    public static TeamDetailsResponse from(Team team, Author author, Boolean isViewerAuthor,
-            List<String> imageUrls, Boolean liked, Boolean isPublic, Boolean isJoinable) {
+    public static TeamDetailsResponse from(
+            Team team,
+            Author author,
+            Boolean isViewerAuthor,
+            List<String> imageUrls,
+            Boolean liked,
+            Boolean isPublic,
+            Boolean joinable,
+            Boolean banned,
+            Boolean isFull,
+            Boolean joined
+    ) {
 
         Description description = team.getDescription();
 
@@ -52,7 +65,10 @@ public record TeamDetailsResponse(
                 .likeCount(team.getHeartCount())
                 .liked(liked)
                 .isPublic(isPublic)
-                .isJoinable(isJoinable)
+                .joinable(joinable)
+                .banned(banned)
+                .isFull(isFull)
+                .joined(joined)
                 .build();
     }
 }
