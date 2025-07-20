@@ -20,7 +20,7 @@ import star.team.dto.response.TeamMembersResponse;
 import star.team.service.TeamCoordinateService;
 
 @RestController
-@RequestMapping("groups/{teamId}/members")
+@RequestMapping("/groups/{teamId}/members")
 @RequiredArgsConstructor
 public class TeamMemberController {
 
@@ -45,7 +45,7 @@ public class TeamMemberController {
         return ResponseEntity.ok(service.getTeamMembers(teamId, userDetails.getMemberInfoDTO()));
     }
 
-    @GetMapping("/bannedMembers")
+    @GetMapping("/bans")
     public ResponseEntity<List<TeamMembersResponse>> getBannedTeamMembers(
             @PathVariable Long teamId,
             @AuthenticationPrincipal StarUserDetails userDetails
