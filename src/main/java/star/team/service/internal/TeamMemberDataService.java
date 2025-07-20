@@ -73,6 +73,11 @@ public class TeamMemberDataService {
         return teamMemberRepository.existsByTeamIdAndMemberId(teamId, memberId);
     }
 
+    @Transactional(readOnly = true)
+    public boolean existsByBannedTeamMember(Long teamId, Long memberId) {
+        return teamMemberRepository.existsByBannedTeamMember(teamId, memberId);
+    }
+
     @Transactional
     public void banTeamMember(Long teamId, Long memberId) {
         TeamMember teamMember = getTeamMemberEntityByIds(teamId, memberId).orElseThrow(
