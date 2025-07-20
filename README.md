@@ -62,45 +62,17 @@ ST4R는 별을 사랑하는 사람들을 위한 커뮤니티 공간입니다. �
 ---
 
 ## 📜 API 명세
-
-- `(Auth)`: 인증된 사용자만 접근 가능 (Authorization 헤더에 Bearer 토큰 필요)
-- `(Optional Auth)`: 인증/비인증 사용자 모두 접근 가능 (인증 시 개인화된 데이터 제공)
-
-### 인증 (Authentication)
-| Method | URL | 설명                    | 인증 |
-| --- | --- |-----------------------| --- |
-| `GET` | `/auth/kakao/login` | 카카오 로그인 페이지로 리다이렉트    | - |
-| `GET` | `/auth/kakao/callback` | 카카오 로그인 콜백 처리, JWT 발급 | - |
-| `POST` | `/auth/logout` | 로그아웃                  | `(Auth)` |
-| `PATCH` | `/completeRegistration` | 추가 정보 입력 (회원가입 완료)    | `(Auth)` |
-
-### 게시판 (Boards)
-| Method | URL | 설명 | 인증 |
-| --- | --- | --- | --- |
-| `GET` | `/home` | 게시글 목록 조회 (검색/필터링) | `(Optional Auth)` |
-| `POST` | `/home/boards` | 게시글 생성 | `(Auth)` |
-| `GET` | `/home/boards/{boardId}` | 게시글 상세 조회 | `(Optional Auth)` |
-| `PUT` | `/home/boards/{boardId}` | 게시글 수정 | `(Auth)` |
-| `DELETE` | `/home/boards/{boardId}` | 게시글 삭제 | `(Auth)` |
-
-### 모임 (Groups)
-| Method | URL | 설명 | 인증 |
-| --- | --- | --- | --- |
-| `POST` | `/groups` | 모임 생성 | `(Auth)` |
-| `GET` | `/groups` | 모임 목록 조회 (검색/필터링) | `(Optional Auth)` |
-| `GET` | `/groups/my` | 내가 속한 모임 목록 조회 | `(Auth)` |
-| `GET` | `/groups/{teamId}` | 모임 상세 정보 조회 | `(Optional Auth)` |
-| `PUT` | `/groups/{teamId}` | 모임 정보 수정 | `(Auth)` |
-| `DELETE` | `/groups/{teamId}` | 모임 삭제 | `(Auth)` |
-
-### 실시간 채팅 (Chat)
-| Method | URL | 설명 | 인증 |
-| --- | --- | --- | --- |
-| `GET` | `/groups/{teamId}/chat/messages` | 이전 채팅 메시지 조회 | `(Auth)` |
-| `SUB` | `/sub/chat/room/{teamId}` | 채팅방 구독 (메시지 수신) | `(Auth)` |
-| `PUB` | `/pub/chat/message/{teamId}` | 채팅 메시지 발행 (메시지 전송) | `(Auth)` |
+https://free-surfboard-c1d.notion.site/API-1e790183075880068b97cf89342a1222
 
 ---
+
+
+## ⚠️ 에러코드 명세
+https://free-surfboard-c1d.notion.site/25-07-17-V3-23090183075880fca3d8ec102d76ba95?source=copy_link
+
+---
+
+
 
 ## 🗄️ 데이터베이스 구조
 
