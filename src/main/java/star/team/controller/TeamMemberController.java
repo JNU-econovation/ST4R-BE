@@ -86,7 +86,7 @@ public class TeamMemberController {
         return ResponseEntity.noContent().build();
     }
 
-    @PatchMapping("/bannedMembers")
+    @PatchMapping("/bans")
     public ResponseEntity<Void> unbanTeamMember(
             @PathVariable Long teamId,
             @AuthenticationPrincipal StarUserDetails userDetails,
