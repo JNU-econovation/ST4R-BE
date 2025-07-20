@@ -75,13 +75,8 @@ https://free-surfboard-c1d.notion.site/25-07-17-V3-23090183075880fca3d8ec102d76b
 
 
 ## 🗄️ 데이터베이스 구조
+<img width="3438" height="2878" alt="image" src="https://github.com/user-attachments/assets/9f48ef3a-8283-46d6-a01e-c90a839859dd" />
 
-- **Member**: 사용자 정보.
-- **Board**: 커뮤니티 게시글. `Member`와 N:1 관계.
-- **Team**: 사용자들이 생성하는 소모임. `Member` (모임장)와 N:1 관계.
-- **Comment**: 게시글에 대한 댓글.
-- **TeamMember**: 모임과 `Member`의 N:M 관계를 나타내는 중간 테이블.
-- **Category**: 게시글의 카테고리 (e.g., '별자리 이야기', '자유 수다', '장비 질문').
 
 ---
 
