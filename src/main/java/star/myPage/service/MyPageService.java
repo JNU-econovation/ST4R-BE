@@ -100,8 +100,8 @@ public class MyPageService {
                                 teamImageDataService.getImageUrls(team.getId()),
                                 true,
                                 teamCoordinateService.isPublic(team),
-                                teamCoordinateService.joined(team, memberId),
-                                teamCoordinateService.banned(team, memberId),
+                                teamCoordinateService.existsRealTeamMember(team.getId(), memberId),
+                                teamCoordinateService.existsBannedTeamMember(team.getId(), memberId),
                                 teamCoordinateService.isFull(team),
                                 teamCoordinateService.isJoinable(team, memberId)
                         )

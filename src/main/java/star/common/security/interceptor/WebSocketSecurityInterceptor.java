@@ -68,7 +68,7 @@ public class WebSocketSecurityInterceptor implements ChannelInterceptor {
 
             MemberInfoDTO memberInfoDTO = extractMemberInfoFromPrincipal(user);
 
-            if (!teamCoordinateService.existsTeamMember(teamId, memberInfoDTO.id())) {
+            if (!teamCoordinateService.existsRealTeamMember(teamId, memberInfoDTO.id())) {
                 log.warn("memberInfo={} 는 teamId={} 의 팀원이 아님", memberInfoDTO, teamId);
                 throw new MessagingException("해당 팀에 속하지 않은 사용자입니다.");
             }

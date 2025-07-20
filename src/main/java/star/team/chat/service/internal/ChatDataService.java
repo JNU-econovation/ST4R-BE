@@ -74,7 +74,7 @@ public class ChatDataService {
 
     private TeamMember getTeamMember(Long teamId, Long memberId) {
 
-        return teamMemberDataService.getTeamMemberEntityByIds(teamId, memberId)
+        return teamMemberDataService.getOptionalTeamMemberEntityByIds(teamId, memberId)
                 .orElseThrow(YouAreNotChatRoomException::new);
     }
 }

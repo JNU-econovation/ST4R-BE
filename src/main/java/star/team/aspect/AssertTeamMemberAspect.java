@@ -29,7 +29,7 @@ public class AssertTeamMemberAspect {
         MemberInfoDTO memberInfo = resolver.resolve(assertTeamMember.memberInfo(), context,
                 MemberInfoDTO.class);
 
-        if (memberInfo == null || !teamMemberDataService.existsTeamMember(teamId,
+        if (memberInfo == null || !teamMemberDataService.existsRealTeamMember(teamId,
                 memberInfo.id())) {
             throw new TeamMemberNotFoundException();
         }
