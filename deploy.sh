@@ -7,6 +7,9 @@ git pull origin master
 echo "🔧 ./gradlew 권한 +x로 변경 중..."
 chmod +x ./gradlew
 
+echo "🔧 /nginx/entrypoint.sh 권한 +x로 변경 중..."
+chmod +x ./nginx/entrypoint.sh
+
 echo "🔨 gradle로 Jar 빌드 중"
 ./gradlew clean build -x test
 
