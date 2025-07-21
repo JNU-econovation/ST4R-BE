@@ -13,10 +13,12 @@ if [ -z "$BACKEND_SERVER_NAME" ] || [ -z "$LETSENCRYPT_EMAIL" ]; then
   exit 1
 fi
 
-# 이미 인증서가 있는지 확인
+# 이미 실제 인증서가 있는지 확인
 if [ -d "./ssl/letsencrypt/live/$BACKEND_SERVER_NAME" ]; then
-  echo "✅ 이미 '$BACKEND_SERVER_NAME'에 대한 인증서가 존재합니다. 초기화 스크립트를 종료합니다."
-  exit 0
+  if [ -L "./ssl/letsencrypt/live/$BACKEND_SERVER_NAME/fullchain.pem" ]; then
+    echo "✅ 이미 '$BACKEND_SERVER_NAME'에 대한 실제 인증서가 존재합니다. 초기화 스크립트를 종료합니다."
+    exit 0
+  fi
 fi
 
 echo "### Let's Encrypt를 위한 더미 인증서 생성 (Nginx 최초 실행용)..."
@@ -30,7 +32,7 @@ echo "### Nginx 컨테이너 빌드 및 시작 (더미 인증서 사용)..."
 docker compose up --force-recreate -d nginx
 
 echo "### Certbot으로 실제 인증서 발급 요청..."
-docker compose run --rm --entrypoint "" certbot/certbot \
+docker compose run --rm certbot \
     certonly --webroot -w /var/www/certbot \
     --email $LETSENCRYPT_EMAIL \
     --agree-tos --no-eff-email \
