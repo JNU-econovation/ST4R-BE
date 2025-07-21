@@ -57,6 +57,17 @@ services:
     env_file:
       - .env
 
+
+  # Let's Encrypt 인증서 발급 및 갱신
+  certbot:
+    image: certbot/certbot
+    container_name: certbot
+    volumes:
+      - ./ssl/letsencrypt:/etc/letsencrypt
+      - ./ssl/www:/var/www/certbot
+    # 12시간마다 갱신 시도
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+
 volumes:
   mysql_data:
     name: mysql_data
