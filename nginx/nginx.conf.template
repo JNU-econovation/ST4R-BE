@@ -1,0 +1,45 @@
+# /nginx/nginx.conf.template
+
+# 워커 프로세스 수를 정의합니다. auto로 설정하면 CPU 코어 수에 맞게 자동으로 조절됩니다.
+worker_processes auto;
+
+events {
+    # 워커 프로세스당 최대 연결 수를 설정합니다.
+    worker_connections 1024;
+}
+
+http {
+    # 프록시 설정 시 필요한 헤더들을 정의합니다.
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header Host $http_host;
+
+    # upstream: 백엔드 서버 그룹을 정의합니다.
+    upstream spring_boot_app {
+        server star-app:8080;
+    }
+
+    server {
+        listen 80;
+        # envsubst 도구가 인식할 수 있도록 $변수명 형식으로 변경합니다.
+        server_name ${BACKEND_SERVER_NAME};
+        return 301 https://$host$request_uri;
+    }
+
+    server {
+        listen 443 ssl;
+        # envsubst 도구가 인식할 수 있도록 $변수명 형식으로 변경합니다.
+        server_name ${BACKEND_SERVER_NAME};
+
+        ssl_certificate /etc/nginx/ssl/self-signed.crt;
+        ssl_certificate_key /etc/nginx/ssl/self-signed.key;
+
+        ssl_protocols TLSv1.2 TLSv1.3;
+        ssl_ciphers HIGH:!aNULL:!MD5;
+
+        location / {
+            proxy_pass http://spring_boot_app;
+        }
+    }
+}

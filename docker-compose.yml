@@ -5,23 +5,25 @@ services:
       dockerfile: Dockerfile
       args:
         JAR_FILE: build/libs/star-0.0.1-SNAPSHOT.jar
-    ports:
-      - "8080:8080"
+# nginx가 리버스 프록시 해줘서 없어도 됨
+#    ports:
+#      - "8080:8080"
     container_name: star-app
     depends_on:
       - redis
       - mysql
     networks:
       - my-network
+    env_file:
+      - .env
     environment:
       - SPRING_PROFILES_ACTIVE=prod
-
 
   redis:
     image: redis:latest
     container_name: redis
     ports:
-      - "6379:6379"
+      - ${SPRING_REDIS_PORT}:${SPRING_REDIS_PORT}
     networks:
       - my-network
 
@@ -37,6 +39,23 @@ services:
       - mysql_data:/var/lib/mysql
     networks:
       - my-network
+
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: nginx-proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./ssl:/etc/nginx/ssl
+    networks:
+      - my-network
+    depends_on:
+      - app
+    env_file:
+      - .env
 
 volumes:
   mysql_data:
