@@ -9,9 +9,6 @@ COPY ${JAR_FILE} /app/app.jar
 # 컨테이너 실행 시 작업 디렉토리를 설정
 WORKDIR /app
 
-# 환경 변수 파일을 컨테이너 내부로 복사
-COPY .env .
-
 # 애플리케이션이 사용할 포트
 EXPOSE 8080
 
