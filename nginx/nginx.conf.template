@@ -1,42 +1,48 @@
 # /nginx/nginx.conf.template
 
-# 워커 프로세스 수를 정의합니다. auto로 설정하면 CPU 코어 수에 맞게 자동으로 조절됩니다.
 worker_processes auto;
 
 events {
-    # 워커 프로세스당 최대 연결 수를 설정합니다.
     worker_connections 1024;
 }
 
 http {
-    # 프록시 설정 시 필요한 헤더들을 정의합니다.
+    # 프록시 설정 시 필요한 헤더들을 정의
     proxy_set_header X-Real-IP $remote_addr;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     proxy_set_header X-Forwarded-Proto $scheme;
     proxy_set_header Host $http_host;
 
-    # upstream: 백엔드 서버 그룹을 정의합니다.
+    # upstream: 백엔드 서버 그룹을 정의
     upstream spring_boot_app {
         server star-app:8080;
     }
 
     server {
         listen 80;
-        # envsubst 도구가 인식할 수 있도록 $변수명 형식으로 변경합니다.
         server_name ${BACKEND_SERVER_NAME};
-        return 301 https://$host$request_uri;
+
+        # Let's Encrypt 도메인 소유권 확인(ACME challenge)을 위한 경로
+        location /.well-known/acme-challenge/ {
+            root /var/www/certbot;
+        }
+
+        # 나머지 모든 HTTP 요청은 HTTPS로 리디렉션
+        location / {
+            return 301 https://$host$request_uri;
+        }
     }
 
     server {
-        listen 443 ssl;
-        # envsubst 도구가 인식할 수 있도록 $변수명 형식으로 변경합니다.
+        listen 443 ssl http2;
         server_name ${BACKEND_SERVER_NAME};
 
-        ssl_certificate /etc/nginx/ssl/self-signed.crt;
-        ssl_certificate_key /etc/nginx/ssl/self-signed.key;
+        # Let's Encrypt로 발급받은 인증서 경로
+        ssl_certificate /etc/letsencrypt/live/${BACKEND_SERVER_NAME}/fullchain.pem;
+        ssl_certificate_key /etc/letsencrypt/live/${BACKEND_SERVER_NAME}/privkey.pem;
 
         ssl_protocols TLSv1.2 TLSv1.3;
-        ssl_ciphers HIGH:!aNULL:!MD5;
+        ssl_prefer_server_ciphers off;
 
         location / {
             proxy_pass http://spring_boot_app;
