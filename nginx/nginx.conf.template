@@ -34,7 +34,8 @@ http {
     }
 
     server {
-        listen 443 ssl http2;
+        listen 443 ssl;
+        http2 on;
         server_name ${BACKEND_SERVER_NAME};
 
         # Let's Encrypt로 발급받은 인증서 경로
