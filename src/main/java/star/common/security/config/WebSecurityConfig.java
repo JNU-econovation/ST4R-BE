@@ -38,6 +38,8 @@ public class WebSecurityConfig {
     private final RestJwtAuthFilter restJwtAuthFilter;
     private final Rest401Handler rest401Handler;
 
+
+    //todo: 프론트 배포시 url 추가
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
