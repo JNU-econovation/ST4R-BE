@@ -1,14 +1,63 @@
 services:
-  app:
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf.template:/etc/nginx/templates/nginx.conf.template:ro
+      - ./nginx/entrypoint.sh:/entrypoint.sh:ro
+      - certbot-etc:/etc/letsencrypt
+      - certbot-var:/var/www/certbot
+      - ./ssl/private:/etc/nginx/private:ro    # 선택: 자체 키 저장
+    env_file:
+      - .env
+    entrypoint: ["/entrypoint.sh"]
+    depends_on:
+      - spring
+    networks:
+      - my-network
+
+  certbot:
+    image: certbot/certbot:latest
+    container_name: certbot
+    volumes:
+      - certbot-etc:/etc/letsencrypt
+      - certbot-var:/var/www/certbot
+    env_file:
+      - .env
+    entrypoint:
+      - sh
+      - -c
+      - |
+        # 최초 발급: live 디렉토리가 없으면 실행
+        if [ ! -d "/etc/letsencrypt/live/${BACKEND_SERVER_NAME}" ]; then
+          certbot certonly \
+            --webroot -w /var/www/certbot \
+            --email "${LETSENCRYPT_EMAIL}" \
+            --agree-tos \
+            --no-eff-email \
+            --non-interactive \
+            -d "${BACKEND_SERVER_NAME}"
+        fi
+        # 갱신 루프: 12시간마다
+        while true; do
+          certbot renew \
+            --webroot -w /var/www/certbot \
+            --non-interactive
+          sleep 12h
+        done
+    networks:
+      - my-network
+
+  spring:
     build:
       context: .
       dockerfile: Dockerfile
       args:
         JAR_FILE: build/libs/star-0.0.1-SNAPSHOT.jar
-# nginx가 리버스 프록시 해줘서 없어도 됨
-#    ports:
-#      - "8080:8080"
-    container_name: star-app
+    container_name: spring
     depends_on:
       - redis
       - mysql
@@ -40,37 +89,14 @@ services:
     networks:
       - my-network
 
-  nginx:
-    build:
-      context: ./nginx
-      dockerfile: Dockerfile
-    container_name: nginx-proxy
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./ssl:/etc/nginx/ssl
-    networks:
-      - my-network
-    depends_on:
-      - app
-    env_file:
-      - .env
-
-
-  # Let's Encrypt 인증서 발급 및 갱신
-  certbot:
-    image: certbot/certbot
-    container_name: certbot
-    volumes:
-      - ./ssl/letsencrypt:/etc/letsencrypt
-      - ./ssl/www:/var/www/certbot
-    # 12시간마다 갱신 시도
-    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
-
 volumes:
+  certbot-etc:
+    name: certbot-etc
+  certbot-var:
+    name: certbot-var
   mysql_data:
     name: mysql_data
+
 
 networks:
   my-network:
