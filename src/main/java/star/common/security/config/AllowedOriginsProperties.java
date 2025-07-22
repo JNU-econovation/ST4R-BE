@@ -1,4 +1,4 @@
-package star.common.auth.config;
+package star.common.security.config;
 
 import java.util.List;
 import lombok.Getter;
@@ -10,6 +10,6 @@ import org.springframework.context.annotation.Configuration;
 @ConfigurationProperties(prefix = "auth")
 @Getter
 @Setter
-public class AuthProperties {
+public class AllowedOriginsProperties {
     private List<String> allowedFeRedirectOrigins;
 }
