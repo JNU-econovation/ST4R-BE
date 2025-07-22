@@ -37,14 +37,15 @@ public class WebSecurityConfig {
     //todo: oauth2 나중에 시큐리티 고도화
     private final RestJwtAuthFilter restJwtAuthFilter;
     private final Rest401Handler rest401Handler;
+    private final AllowedOriginsProperties allowedOriginsProperties;
 
 
-    //todo: 프론트 배포시 url 추가
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOriginPatterns(
-                List.of("http://localhost:*", "https://localhost:*"));
+                allowedOriginsProperties.getAllowedFeRedirectOrigins()
+        );
         configuration.setAllowedMethods(
                 List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
