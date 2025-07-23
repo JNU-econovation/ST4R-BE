@@ -36,6 +36,10 @@ public class MemberStatusFilter extends OncePerRequestFilter {
             return true;
         }
 
+        if (HttpMethod.GET.matches(method) && uri.startsWith("/upload/s3/presigned-url")) {
+            return true;
+        }
+
         return false;
     }
 
