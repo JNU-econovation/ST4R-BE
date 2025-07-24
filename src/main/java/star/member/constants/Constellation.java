@@ -15,7 +15,7 @@ public enum Constellation {
     VIRGO("처녀자리", 8, 23, 9, 22),
     LIBRA("천칭자리", 9, 23, 10, 23),
     SCORPIO("전갈자리", 10, 24, 11, 22),
-    SAGITTARIUS("사수자리", 11, 23, 12, 24),
+    SAGITTARIUS("궁수자리", 11, 23, 12, 24),
     CAPRICORN("염소자리", 12, 25, 1, 19),
     AQUARIUS("물병자리", 1, 20, 2, 18),
     PISCES("물고기자리", 2, 19, 3, 20);
