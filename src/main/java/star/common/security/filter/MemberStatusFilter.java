@@ -15,7 +15,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import star.common.security.dto.StarUserDetails;
 import star.common.security.exception.AlreadyWithdrawMemberException;
 import star.common.security.exception.RegisterNotCompletedException;
-import star.common.security.exception.handler.Rest403Handler;
+import star.common.security.exception.handler.rest.Rest403Handler;
 
 @Slf4j
 @Component

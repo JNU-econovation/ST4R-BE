@@ -11,13 +11,13 @@ import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
-import org.springframework.messaging.support.ErrorMessage;
 import org.springframework.messaging.support.MessageHeaderAccessor;
 import org.springframework.security.authentication.AuthenticationServiceException;
-import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Component;
+import star.common.exception.ErrorCode;
+import star.common.security.exception.CustomAuthenticationException;
 import star.common.security.helper.JwtAuthHelper;
 
 @Component
@@ -39,7 +39,9 @@ public class WebSocketJwtAuthInterceptor implements ChannelInterceptor {
                         HttpHeaders.AUTHORIZATION);
 
                 if (authorizationHeaders == null || authorizationHeaders.isEmpty()) {
-                    throw new InsufficientAuthenticationException("Auth 헤더가 유효하지 않습니다.");
+                    log.warn("클라이언트의 유효하지 않은 Auth 헤더");
+
+                    throw new CustomAuthenticationException();
                 }
 
                 Authentication auth = jwtAuthHelper.authenticate(authorizationHeaders.getFirst());
@@ -47,12 +49,20 @@ public class WebSocketJwtAuthInterceptor implements ChannelInterceptor {
                 accessor.setUser(auth);
 
             } catch (AuthenticationException ex) {
-                log.warn("웹소켓 인증에 실패하였습니다. {}", ex.getMessage());
-                return new ErrorMessage(ex);
+
+                log.warn(
+                        "웹소켓 인증에 실패하였습니다 | 예외 메세지 -> {} | 요청 -> {}",
+                        ex.getMessage(),
+                        accessor.getDetailedLogMessage(message.getPayload())
+                );
+                throw ex;
+
             } catch (Exception ex) {
                 log.error(CRITICAL_AUTH_ERROR_MESSAGE, ex);
-                return new ErrorMessage(
-                        new AuthenticationServiceException(CRITICAL_AUTH_ERROR_MESSAGE, ex));
+
+                throw new AuthenticationServiceException(
+                        ErrorCode.INTERNAL_SERVER_ERROR.getMessage(), ex
+                );
             }
         }
         return message;

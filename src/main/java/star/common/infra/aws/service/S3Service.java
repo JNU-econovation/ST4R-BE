@@ -12,7 +12,7 @@ import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
 import star.common.infra.aws.dto.request.PresignRequest;
-import star.common.infra.exception.S3UnknownException;
+import star.common.infra.aws.exception.S3UnknownException;
 import star.member.dto.MemberInfoDTO;
 
 @Service

@@ -22,8 +22,8 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
-import star.common.security.exception.handler.Rest401Handler;
-import star.common.security.exception.handler.Rest500Handler;
+import star.common.security.exception.handler.rest.Rest401Handler;
+import star.common.security.exception.handler.rest.Rest500Handler;
 import star.common.security.helper.JwtAuthHelper;
 
 

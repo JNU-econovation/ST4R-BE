@@ -1,4 +1,4 @@
-package star.common.security.exception.handler;
+package star.common.security.exception.handler.rest;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
