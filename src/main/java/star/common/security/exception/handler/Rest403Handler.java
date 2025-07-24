@@ -9,6 +9,7 @@ import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.stereotype.Component;
 import star.common.dto.response.CommonResponse;
 import star.common.exception.ErrorCode;
+import star.common.security.exception.CustomAccessDeniedException;
 
 @Component
 public class Rest403Handler implements AccessDeniedHandler {
@@ -18,14 +19,19 @@ public class Rest403Handler implements AccessDeniedHandler {
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response,
             AccessDeniedException accessDeniedException) throws IOException {
+        ErrorCode errorCode = ErrorCode.UNKNOWN_FORBIDDEN_ERROR;
 
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        if (accessDeniedException instanceof CustomAccessDeniedException customEx) {
+            errorCode = customEx.getErrorCode();
+        }
+
+        response.setStatus(errorCode.getStatus().value());
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
 
         objectMapper.writeValue(
-                response.getWriter(), CommonResponse.failure(ErrorCode.FORBIDDEN_ERROR,
-                        accessDeniedException.getMessage())
+                response.getWriter(),
+                CommonResponse.failure(errorCode, errorCode.getMessage())
         );
     }
 }

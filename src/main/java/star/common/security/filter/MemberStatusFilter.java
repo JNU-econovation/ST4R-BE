@@ -8,12 +8,13 @@ import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import star.common.security.dto.StarUserDetails;
+import star.common.security.exception.AlreadyWithdrawMemberException;
+import star.common.security.exception.RegisterNotCompletedException;
 import star.common.security.exception.handler.Rest403Handler;
 
 @Slf4j
@@ -63,20 +64,20 @@ public class MemberStatusFilter extends OncePerRequestFilter {
             case REGISTERING -> {
                 log.warn("회원가입 미완료 사용자의 접근 시도 차단. MemberInfo: {}, URI: {}",
                         principal.getMemberInfoDTO(),
-                        request.getRequestURI());
+                        request.getRequestURI()
+                );
 
-                AccessDeniedException ex = new AccessDeniedException("회원가입이 완료되지 않은 사용자 입니다.");
-                rest403Handler.handle(request, response, ex);
+                rest403Handler.handle(request, response, new RegisterNotCompletedException());
                 return;
             }
 
             case INACTIVATED -> {
                 log.warn("비활성화된 사용자의 접근 시도 차단. MemberInfo: {}, URI: {}",
                         principal.getMemberInfoDTO(),
-                        request.getRequestURI());
+                        request.getRequestURI()
+                );
 
-                AccessDeniedException ex = new AccessDeniedException("이미 탈퇴한 사용자 입니다.");
-                rest403Handler.handle(request, response, ex);
+                rest403Handler.handle(request, response, new AlreadyWithdrawMemberException());
                 return;
             }
         }

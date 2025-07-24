@@ -33,7 +33,9 @@ public enum ErrorCode {
     ENCRYPTION_ERROR(Domain.SECURITY, HttpStatus.INTERNAL_SERVER_ERROR, 1, "암호화/복호화 중 예상치 못한 에러가 발생했습니다."),
     UNKNOWN_FILTER_ERROR(Domain.SECURITY, HttpStatus.INTERNAL_SERVER_ERROR, 2, "Spring Security Filter 에서 예상치 못한 에러가 발생했습니다."),
     UNAUTHORIZED_ERROR(Domain.SECURITY, HttpStatus.UNAUTHORIZED, 1, "인증이 필요합니다."),
-    FORBIDDEN_ERROR(Domain.SECURITY, HttpStatus.FORBIDDEN, 1, "권한 관련 에러입니다"),
+    UNKNOWN_FORBIDDEN_ERROR(Domain.SECURITY, HttpStatus.FORBIDDEN, 0, "권한 관련 확인되지 않은 오류입니다."),
+    REGISTER_NOT_COMPLETED_ERROR(Domain.SECURITY, HttpStatus.FORBIDDEN, 1, "회원가입이 미완료 된 사용자입니다."),
+    ALREADY_WITHDRAW_ERROR(Domain.SECURITY, HttpStatus.FORBIDDEN, 2, "이미 탈퇴한 사용자입니다."),
 
     // --- MEMBER ---
     ALREADY_INVALIDATED_TOKEN(Domain.MEMBER, HttpStatus.BAD_REQUEST, 1, "이미 유효하지 않은 토큰입니다."),
