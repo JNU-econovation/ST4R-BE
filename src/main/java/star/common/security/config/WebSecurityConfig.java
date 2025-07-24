@@ -23,7 +23,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import star.common.security.exception.handler.Rest401Handler;
+import star.common.security.exception.handler.rest.Rest401Handler;
 import star.common.security.filter.MemberStatusFilter;
 import star.common.security.filter.RestJwtAuthFilter;
 
