@@ -1,4 +1,4 @@
-package star.common.infra.exception;
+package star.common.infra.aws.exception;
 
 import star.common.exception.ErrorCode;
 import star.common.exception.server.InternalServerException;

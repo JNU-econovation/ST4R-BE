@@ -1,4 +1,4 @@
-package star.team.chat.config;
+package star.common.infra.websocket.config;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
@@ -8,17 +8,19 @@ import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBr
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 import star.common.security.config.AllowedOriginsProperties;
+import star.common.security.exception.handler.websocket.StompSecurityExceptionHandler;
 import star.common.security.interceptor.WebSocketJwtAuthInterceptor;
 import star.common.security.interceptor.WebSocketSecurityInterceptor;
 
 @Configuration
 @EnableWebSocketMessageBroker
 @RequiredArgsConstructor
-public class ChatConfig implements WebSocketMessageBrokerConfigurer {
+public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     private final WebSocketJwtAuthInterceptor jwtAuthInterceptor;
     private final WebSocketSecurityInterceptor securityInterceptor;
     private final AllowedOriginsProperties originsProperties;
+    private final StompSecurityExceptionHandler exceptionHandler;
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
@@ -27,6 +29,8 @@ public class ChatConfig implements WebSocketMessageBrokerConfigurer {
                         originsProperties.getAllowedFeRedirectOrigins().toArray(new String[0])
                 )
                 .withSockJS();
+
+        registry.setErrorHandler(exceptionHandler);
     }
 
     @Override
