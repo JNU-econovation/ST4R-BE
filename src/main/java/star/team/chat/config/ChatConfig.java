@@ -7,6 +7,7 @@ import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
+import star.common.security.config.AllowedOriginsProperties;
 import star.common.security.interceptor.WebSocketJwtAuthInterceptor;
 import star.common.security.interceptor.WebSocketSecurityInterceptor;
 
@@ -17,11 +18,14 @@ public class ChatConfig implements WebSocketMessageBrokerConfigurer {
 
     private final WebSocketJwtAuthInterceptor jwtAuthInterceptor;
     private final WebSocketSecurityInterceptor securityInterceptor;
+    private final AllowedOriginsProperties originsProperties;
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/websocket/connect")
-                .setAllowedOriginPatterns("http://localhost:*", "https://localhost:*")
+                .setAllowedOriginPatterns(
+                        originsProperties.getAllowedFeRedirectOrigins().toArray(new String[0])
+                )
                 .withSockJS();
     }
 
