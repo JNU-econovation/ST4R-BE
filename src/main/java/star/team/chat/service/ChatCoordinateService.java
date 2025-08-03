@@ -25,10 +25,11 @@ import star.team.chat.dto.response.ChatPreviewResponse;
 import star.team.chat.dto.response.ChatReadResponse;
 import star.team.chat.dto.send.ChatSend;
 import star.team.chat.enums.MessageType;
+import star.team.chat.redis.service.ChatRedisService;
 import star.team.chat.service.internal.ChatDataService;
-import star.team.chat.service.internal.ChatRedisService;
 import star.team.chat.service.internal.RedisChatPublisher;
 import star.team.service.internal.TeamMemberDataService;
+
 
 @Service
 @Slf4j
@@ -47,8 +48,6 @@ public class ChatCoordinateService {
     @Transactional
     @AssertTeamMember(teamId = "#teamId", memberInfo = "#memberInfoDTO")
     public void publishAndSaveChat(Long teamId, ChatSend chat, MemberInfoDTO memberInfoDTO) {
-
-        // DB에 채팅 저장
         ChatDTO savedChatDTO = chatDataService.saveChat(teamId, memberInfoDTO.id(),
                 chat.message());
 
