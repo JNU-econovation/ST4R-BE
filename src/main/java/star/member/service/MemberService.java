@@ -123,19 +123,19 @@ public class MemberService {
     public void updateProfile(Long memberId, UpdateProfileRequest request) {
         Member member = getMemberEntityById(memberId);
 
-        if (!request.changeNickname() && !request.changeProfileImage()) {
+        if (!request.getChangeNickname() && !request.getChangeProfileImage()) {
 
             log.error("changeNickname과 changeProfileImage 필드가 false임");
             throw new InternalServerException(ErrorCode.INTERNAL_SERVER_ERROR);
         }
 
-        if (request.changeProfileImage()) {
-            member.updateProfile(request.profileImageUrlToChange());
+        if (request.getChangeProfileImage()) {
+            member.updateProfile(request.getProfileImageUrlToChange());
         }
 
-        if (request.changeNickname()) {
-            assertNicknameNotDuplicated(request.nicknameToChange());
-            member.updateProfile(new Nickname(request.nicknameToChange()));
+        if (request.getChangeNickname()) {
+            assertNicknameNotDuplicated(request.getNicknameToChange());
+            member.updateProfile(new Nickname(request.getNicknameToChange()));
         }
     }
 
