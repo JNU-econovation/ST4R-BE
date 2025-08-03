@@ -37,6 +37,10 @@ public enum ErrorCode {
     REGISTER_NOT_COMPLETED_ERROR(Domain.SECURITY, HttpStatus.FORBIDDEN, 1, "회원가입이 미완료 된 사용자입니다."),
     ALREADY_WITHDRAW_ERROR(Domain.SECURITY, HttpStatus.FORBIDDEN, 2, "이미 탈퇴한 사용자입니다."),
 
+    // WebSocket
+    WEBSOCKET_INVALID_DESTINATION(Domain.WEBSOCKET, HttpStatus.BAD_REQUEST, 1, "허용되지 않은 %s URL 입니다."),
+
+
     // --- MEMBER ---
     ALREADY_INVALIDATED_TOKEN(Domain.MEMBER, HttpStatus.BAD_REQUEST, 1, "이미 유효하지 않은 토큰입니다."),
     TEAM_LEADER_CANNOT_WITHDRAW_MEMBER(Domain.MEMBER, HttpStatus.BAD_REQUEST, 2, "모임장은 회원 탈퇴할 수 없습니다. 모임장을 위임한 후에 팀을 나가시거나, 모임장 권한으로 팀을 삭제해주세요.\n해당 모임 : %s"),
