@@ -29,15 +29,15 @@ public class Fortune extends BaseEntity {
     private Constellation constellation;
 
     @Column(nullable = false, columnDefinition = "TEXT")
-    private String fortune;
+    private String content;
 
     @Column(nullable = false)
     private LocalDate date;
 
     @Builder
-    public Fortune(Constellation constellation, String fortune, LocalDate date) {
+    public Fortune(Constellation constellation, String content, LocalDate date) {
         this.constellation = constellation;
-        this.fortune = fortune;
+        this.content = content;
         this.date = date;
     }
 
