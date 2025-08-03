@@ -1,6 +1,9 @@
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '3.4.5'
+    id 'org.jetbrains.kotlin.jvm' version '2.2.0'
+    id 'org.jetbrains.kotlin.plugin.spring' version '2.2.0'
+    id 'org.jetbrains.kotlin.plugin.jpa' version '2.2.0'
+    id 'org.springframework.boot' version '3.5.4'
     id 'io.spring.dependency-management' version '1.1.7'
 }
 
@@ -29,12 +32,18 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
-    implementation "org.springframework.retry:spring-retry:2.0.11"
+    implementation "org.springframework.retry:spring-retry"
     implementation 'io.awspring.cloud:spring-cloud-aws-starter-s3:3.3.0'
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
     implementation 'org.springframework.security:spring-security-messaging'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    implementation 'org.springframework.boot:spring-boot-starter-data-redis:3.5.3'
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+    //spring - Kotlin
+    testImplementation 'org.jetbrains.kotlin:kotlin-test-junit5'
+
+    //kotlin
+    implementation 'org.jetbrains.kotlin:kotlin-reflect'
 
 
     //test

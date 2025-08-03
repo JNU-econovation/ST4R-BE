@@ -1,5 +1,8 @@
 package star.common.security.interceptor;
 
+import static org.springframework.messaging.simp.stomp.StompCommand.SEND;
+import static org.springframework.messaging.simp.stomp.StompCommand.SUBSCRIBE;
+
 import java.security.Principal;
 import java.util.regex.Pattern;
 import lombok.extern.slf4j.Slf4j;
@@ -11,8 +14,13 @@ import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Component;
+import star.common.exception.ErrorCode;
+import star.common.exception.server.InternalServerException;
+import star.common.infra.websocket.exception.StompMessageType;
+import star.common.infra.websocket.exception.WebSocketInvalidDestinationException;
 import star.common.security.dto.StarUserDetails;
 import star.member.dto.MemberInfoDTO;
+import star.team.chat.exception.client.YouAreNotChatRoomException;
 import star.team.service.TeamCoordinateService;
 
 @Component
@@ -43,13 +51,14 @@ public class WebSocketSecurityInterceptor implements ChannelInterceptor {
 
         StompCommand command = accessor.getCommand();
 
-        if (command == StompCommand.SUBSCRIBE || command == StompCommand.SEND) {
-            boolean isSubscribe = command == StompCommand.SUBSCRIBE;
+        if (command == SUBSCRIBE || command == StompCommand.SEND) {
+            boolean isSubscribe = command == SUBSCRIBE;
             Pattern pattern = isSubscribe ? ALLOWED_SUBSCRIBE_PATTERN : ALLOWED_SEND_PATTERN;
 
             if (!pattern.matcher(destination).matches()) {
-                log.warn("허용되지 않은 {} URL: {}", isSubscribe ? "구독" : "발행", destination);
-                throw new MessagingException("허용되지 않은 " + (isSubscribe ? "구독" : "발행") + " URL입니다.");
+                log.warn("허용되지 않은 {} URL: {}", isSubscribe ? SUBSCRIBE : SEND, destination);
+
+                throw new WebSocketInvalidDestinationException(StompMessageType.fromCode(command));
             }
 
             if (PREVIEW_URL.equals(destination)) {
@@ -62,15 +71,15 @@ public class WebSocketSecurityInterceptor implements ChannelInterceptor {
             // 2. 사용자 정보 추출
             Principal user = accessor.getUser();
             if (user == null) {
-                log.warn("WebSocket 요청에 인증된 사용자 없음");
-                throw new MessagingException("인증되지 않은 사용자입니다.");
+                log.error("WebSocket 요청에 인증된 사용자 없음");
+                throw new InternalServerException(ErrorCode.INTERNAL_SERVER_ERROR);
             }
 
             MemberInfoDTO memberInfoDTO = extractMemberInfoFromPrincipal(user);
 
             if (!teamCoordinateService.existsRealTeamMember(teamId, memberInfoDTO.id())) {
                 log.warn("memberInfo={} 는 teamId={} 의 팀원이 아님", memberInfoDTO, teamId);
-                throw new MessagingException("해당 팀에 속하지 않은 사용자입니다.");
+                throw new YouAreNotChatRoomException();
             }
         }
 

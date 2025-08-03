@@ -9,6 +9,7 @@ import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.messaging.StompSubProtocolErrorHandler;
 import star.common.exception.ErrorCode;
+import star.common.exception.client.ClientException;
 import star.common.security.exception.CustomAuthenticationException;
 
 @Component
@@ -17,13 +18,21 @@ import star.common.security.exception.CustomAuthenticationException;
 public class StompSecurityExceptionHandler extends StompSubProtocolErrorHandler {
 
     @Override
-    public Message<byte[]> handleClientMessageProcessingError(Message<byte[]> clientMessage, Throwable ex) {
-        Throwable cause = ex.getCause();
+    public Message<byte[]> handleClientMessageProcessingError(Message<byte[]> clientMessage,
+            Throwable ex) {
+        Throwable cause = ex.getCause() == null ? ex : ex.getCause();
 
         return switch (cause) {
             case CustomAuthenticationException e -> {
-                log.warn("CustomAuthenticationException이 StompSecurityExceptionHandler 에서 핸들링 됨 -> {}"
+                log.warn(
+                        "CustomAuthenticationException이 StompSecurityExceptionHandler 에서 핸들링 됨 -> {}"
                         , e.getMessage());
+
+                yield setErrorMessage(e.getMessage());
+            }
+
+            case ClientException e -> {
+                log.warn("ClientException이 StompSecurityExceptionHandler 에서 핸들링 됨 -> {}", e.getMessage());
 
                 yield setErrorMessage(e.getMessage());
             }
