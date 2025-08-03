@@ -10,5 +10,6 @@ public enum Domain {
     COMMENT,
     TEAM,
     CHAT,
-    WEBSOCKET
+    WEBSOCKET,
+    FORTUNE
 }
