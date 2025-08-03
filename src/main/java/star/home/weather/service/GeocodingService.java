@@ -27,4 +27,3 @@ public class GeocodingService {
         return new AddressDTO(structure.level1(), structure.level2());
     }
 }
-
