@@ -31,67 +31,11 @@ public class BoardRepositoryImpl implements BoardRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
 
-    @Override
-    public Page<Board> searchBoards(BoardSearchDTO searchDTO, Pageable pageable) {
-
-        QBoard board = QBoard.board;
-        QMember member = QMember.member;
-
-        BooleanBuilder builder = new BooleanBuilder();
-        NumberExpression<Double> distanceExpr = buildSelectQuery(builder, board, searchDTO);
-
-        JPAQuery<Board> selectQuery = queryFactory
-                .selectFrom(board)
-                .leftJoin(board.member, member)
-                .fetchJoin()
-                .where(builder);
-
-        JPAQuery<Long> countQuery = queryFactory
-                .select(board.count())
-                .from(board)
-                .leftJoin(board.member, member)
-                .where(builder);
-
-        Long totalCount = countQuery.fetchOne();
-        long total = (totalCount != null ? totalCount : 0L);
-
-        List<Board> results = selectQuery
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
-                .orderBy(pageable.getSort().stream()
-                        .map(order -> getOrderSpecifier(order, board, distanceExpr))
-                        .toArray(OrderSpecifier<?>[]::new))
-                .fetch();
-
-        return new PageImpl<>(results, pageable, total);
-    }
-
-    private NumberExpression<Double> buildSelectQuery(BooleanBuilder builder, QBoard board,
-            BoardSearchDTO searchDTO) {
-
-        LocalDateTimesDTO localDateTimesDTO = searchDTO.localDateTimesForSearch();
-        List<CategoryName> categories = searchDTO.categories();
-        CircularArea circularArea = searchDTO.circularArea();
-        String title = searchDTO.title();
-        String contentText = searchDTO.contentText();
-        String authorName = searchDTO.authorName();
-
-        buildCreatedAt(builder, board, localDateTimesDTO);
-
-        buildCategory(builder, board, searchDTO);
-
-        NumberExpression<Double> distanceExpr = buildDistance(builder, board, circularArea);
-
-        buildTitleAndContent(builder, board, title, contentText);
-
-        buildAuthorName(builder, board, authorName);
-
-        return distanceExpr;
-    }
-
     private static void buildCreatedAt(BooleanBuilder builder, QBoard board,
             LocalDateTimesDTO localDateTimesDTO) {
-        builder.and(board.createdAt.between(localDateTimesDTO.start(), localDateTimesDTO.end()));
+        builder.and(
+                board.createdAt.between(localDateTimesDTO.getStart(), localDateTimesDTO.getEnd())
+        );
     }
 
     private static void buildCategory(BooleanBuilder builder, QBoard board,
@@ -168,5 +112,63 @@ public class BoardRepositoryImpl implements BoardRepositoryCustom {
                 throw new InternalServerException(ErrorCode.INTERNAL_SERVER_ERROR);
             }
         };
+    }
+
+    @Override
+    public Page<Board> searchBoards(BoardSearchDTO searchDTO, Pageable pageable) {
+
+        QBoard board = QBoard.board;
+        QMember member = QMember.member;
+
+        BooleanBuilder builder = new BooleanBuilder();
+        NumberExpression<Double> distanceExpr = buildSelectQuery(builder, board, searchDTO);
+
+        JPAQuery<Board> selectQuery = queryFactory
+                .selectFrom(board)
+                .leftJoin(board.member, member)
+                .fetchJoin()
+                .where(builder);
+
+        JPAQuery<Long> countQuery = queryFactory
+                .select(board.count())
+                .from(board)
+                .leftJoin(board.member, member)
+                .where(builder);
+
+        Long totalCount = countQuery.fetchOne();
+        long total = (totalCount != null ? totalCount : 0L);
+
+        List<Board> results = selectQuery
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .orderBy(pageable.getSort().stream()
+                        .map(order -> getOrderSpecifier(order, board, distanceExpr))
+                        .toArray(OrderSpecifier<?>[]::new))
+                .fetch();
+
+        return new PageImpl<>(results, pageable, total);
+    }
+
+    private NumberExpression<Double> buildSelectQuery(BooleanBuilder builder, QBoard board,
+            BoardSearchDTO searchDTO) {
+
+        LocalDateTimesDTO localDateTimesDTO = searchDTO.localDateTimesForSearch();
+        List<CategoryName> categories = searchDTO.categories();
+        CircularArea circularArea = searchDTO.circularArea();
+        String title = searchDTO.title();
+        String contentText = searchDTO.contentText();
+        String authorName = searchDTO.authorName();
+
+        buildCreatedAt(builder, board, localDateTimesDTO);
+
+        buildCategory(builder, board, searchDTO);
+
+        NumberExpression<Double> distanceExpr = buildDistance(builder, board, circularArea);
+
+        buildTitleAndContent(builder, board, title, contentText);
+
+        buildAuthorName(builder, board, authorName);
+
+        return distanceExpr;
     }
 }

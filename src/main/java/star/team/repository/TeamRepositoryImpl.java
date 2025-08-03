@@ -116,7 +116,7 @@ public class TeamRepositoryImpl implements TeamRepositoryCustom {
         }
 
         if (meetBetween != null) {
-            builder.and(team.whenToMeet.between(meetBetween.start(), meetBetween.end()));
+            builder.and(team.whenToMeet.between(meetBetween.getStart(), meetBetween.getEnd()));
             return;
         }
 
