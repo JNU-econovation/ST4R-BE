@@ -1,4 +1,4 @@
-package star.fortune.model.entity;
+package star.home.fortune.model.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
