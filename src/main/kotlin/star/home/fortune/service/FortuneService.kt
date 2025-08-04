@@ -9,6 +9,8 @@ import star.home.fortune.repository.FortuneRepository
 import star.member.constants.Constellation
 import star.member.dto.MemberInfoDTO
 import star.member.service.MemberService
+import java.time.LocalDate
+import java.time.ZoneId
 
 @Service
 class FortuneService(
@@ -21,13 +23,13 @@ class FortuneService(
         val member = memberService.getMemberEntityById(memberInfo.id)
         val constellation = Constellation.fromDate(member.birthDate.value)
         val fortune: Fortune = repository
-            .findByConstellationAndDate(constellation, member.birthDate.value)
+            .findByConstellationAndDate(constellation, LocalDate.now(ZoneId.of("Asia/Seoul")))
             ?: throw FortuneUpdatingException()
 
         return FortuneResponse(
             date = fortune.date,
             constellation = constellation,
-            content = fortune.content.replace("%s",member.nickname.value)
+            content = fortune.content.replace("%s", member.nickname.value)
         )
     }
 
