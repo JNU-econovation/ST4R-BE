@@ -83,6 +83,18 @@ dependencies {
 
     //env
     implementation 'me.paulschwarz:spring-dotenv:4.0.0'
+
+    //Gemini
+    implementation 'com.google.genai:google-genai:1.10.0'
+
+    //coroutines
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-bom:1.10.2'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-reactor'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-jdk8'
+
+    //kotlin - logging
+    implementation 'io.github.microutils:kotlin-logging:3.0.5'
 }
 
 tasks.named('test') {
