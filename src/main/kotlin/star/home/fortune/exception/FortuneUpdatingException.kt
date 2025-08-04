@@ -1,4 +1,4 @@
-package star.fortune.exception
+package star.home.fortune.exception
 
 import star.common.exception.ErrorCode
 import star.common.exception.server.InternalServerException
