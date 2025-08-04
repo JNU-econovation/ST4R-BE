@@ -78,7 +78,7 @@ public enum ErrorCode {
     YOU_ARE_NOT_IN_CHAT_ROOM(Domain.CHAT, HttpStatus.FORBIDDEN, 1, "채팅방에 소속되어 있지 않습니다."),
 
 
-    // --- FORTUNE ===
+    // --- FORTUNE ---
     FORTUNE_UPDATING(Domain.FORTUNE, HttpStatus.SERVICE_UNAVAILABLE, 1, "오늘의 운세 서비스가 아직 준비 중 입니다.");
 
     private final Domain domain;

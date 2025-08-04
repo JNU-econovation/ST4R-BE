@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -158,6 +159,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<Object> handleServerException(InternalServerException e) {
         ErrorCode errorCode = e.getErrorCode();
         log.error("서버에 의한 오류 발생: Code={}, Message={}", errorCode.getCode(), e.getMessage(), e);
+
+        if (e.getErrorCode().getStatus() != HttpStatus.INTERNAL_SERVER_ERROR) {
+            return handleExceptionInternal(errorCode, e.getMessage());
+        }
+
         return handleExceptionInternal(errorCode, INTERNAL_SERVER_ERROR_MESSAGE);
     }
 
