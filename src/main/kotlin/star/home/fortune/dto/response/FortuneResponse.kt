@@ -1,4 +1,4 @@
-package star.fortune.dto.response
+package star.home.fortune.dto.response
 
 import star.member.constants.Constellation
 import java.time.LocalDate
