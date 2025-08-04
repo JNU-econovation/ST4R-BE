@@ -14,6 +14,7 @@ import star.home.fortune.model.entity.Fortune
 import star.home.fortune.repository.FortuneRepository
 import star.member.constants.Constellation
 import java.time.LocalDate
+import java.time.ZoneId
 
 private const val ONE_SECOND = 1000L
 private const val DELAY_TIME = 90 * ONE_SECOND
@@ -25,10 +26,10 @@ class FortuneUpdateService(
     private val client: FortuneClient,
     private val repository: FortuneRepository
 ) {
-    @Scheduled(cron = "0 0 0 * * ?")
+    @Scheduled(cron = "0 0 0 * * ?", zone = "Asia/Seoul")
     suspend fun updateFortuneWithDelay() {
         val allConstellations: List<Constellation> = Constellation.entries
-        val date = LocalDate.now()
+        val date = LocalDate.now(ZoneId.of("Asia/Seoul"))
         val chunks = allConstellations.chunked(6)
 
         chunks.getOrNull(0)?.let { processAndSaveBatch(it, date) }
